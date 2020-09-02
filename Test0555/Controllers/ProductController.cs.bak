@@ -1,0 +1,165 @@
+﻿using InquiryManageAPI.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using Test0555.Models;
+using Test0555.Models.ProductManagement;
+namespace Test0555.Controllers
+{
+    public class ProductController : ApiController
+    {
+        dbConnection dbc = new dbConnection();
+        CommonString cms = new CommonString();
+        public ProductModel.getproduct GetProductDetails()
+        {
+            ProductModel.getproduct objeprodt = new ProductModel.getproduct();
+            
+            try
+            {
+                string querymain = "select Product.id as Pid,(select top 1 taxvalue from GstTaxCategory where GstTaxCategory.id=Product.GstTaxId)as Tax,Product.unit+' - '+UnitMaster.UnitName as DUnit,* from Product inner join Unitmaster on Unitmaster.id=Product.UnitId Where StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and EndDate>='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "'";
+
+                //Darshan Temp Data view
+                //string querymain = "select top 1 Product.id as Pid,(select  taxvalue from GstTaxCategory where GstTaxCategory.id=Product.GstTaxId)as Tax,Product.unit+' - '+UnitMaster.UnitName as DUnit,* from Product inner join Unitmaster on Unitmaster.id=Product.UnitId Where StartDate>='05-Sep-2019' and EndDate<='16-Sep-2019'";
+
+                DataTable dtmain = dbc.GetDataTable(querymain);
+
+                string startdate = dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss");
+
+                string querystr = "select * from Product where IsActive=1 and IsDeleted=0 and [StartDate]<='" + startdate + "' and [EndDate]>='" + startdate + "' and id=1045";
+
+                if (dtmain != null && dtmain.Rows.Count > 0)
+                {
+                    string querydata = "select KeyValue from StringResources where KeyName='ProductImageUrl'";
+                    string queryvid = "select KeyValue from StringResources where KeyName='ProductVideoUrl'";
+
+                    DataTable dtpathimg = dbc.GetDataTable(querydata);
+                    DataTable dtpathvid = dbc.GetDataTable(queryvid);
+                    string urlpathimg = "";
+                    //string urlpathvid = "";
+                    if (dtpathimg != null && dtpathimg.Rows.Count > 0)
+                    {
+                        //Image Path
+
+                        urlpathimg = dtpathimg.Rows[0]["KeyValue"].ToString();
+                    }
+                          
+                    objeprodt.response = CommonString.successresponse;
+                    objeprodt.message = CommonString.successmessage;
+                    objeprodt.ProductList = new List<ProductModel.ProductDataList>();
+
+                    for (int i = 0; i < dtmain.Rows.Count; i++)
+                    {
+                        string pid = dtmain.Rows[i]["Pid"].ToString();
+                        string pname2 = dtmain.Rows[i]["Name"].ToString();
+                        string pdec2 = dtmain.Rows[i]["ProductDiscription"].ToString();
+                        string pkey2 = dtmain.Rows[i]["KeyFeatures"].ToString();
+                        string ptax2 = dtmain.Rows[i]["Tax"].ToString();
+                        string punit = dtmain.Rows[i]["DUnit"].ToString();
+                        string pnote2 = dtmain.Rows[i]["Note"].ToString();
+                        string price = dtmain.Rows[i]["Mrp"].ToString();
+                        string pvid = dtmain.Rows[i]["VideoName"].ToString();
+                        string poffer = dtmain.Rows[i]["Offer"].ToString();
+                        string person2 = dtmain.Rows[i]["BuyWith1FriendExtraDiscount"].ToString();
+                        string person5 = dtmain.Rows[i]["BuyWith5FriendExtraDiscount"].ToString();
+                        string shipp = dtmain.Rows[i]["FixedShipRate"].ToString();
+                        string psold = dtmain.Rows[i]["sold"].ToString();
+                        string pboug = dtmain.Rows[i]["JustBougth"].ToString();
+
+                        decimal price1 = 0;
+                        decimal.TryParse(price.ToString(), out price1);
+                        decimal shippincgcharge = 0;
+                        decimal.TryParse(shipp.ToString(), out shippincgcharge);
+
+
+                        decimal pp2 = 0;
+                        decimal.TryParse(person2.ToString(), out pp2);
+                        decimal pp5 = 0;
+                        decimal.TryParse(person5.ToString(), out pp5);
+
+
+                        //1 peson Price 
+
+                        //decimal price1person = price1 + shippincgcharge;
+                        //decimal price2person = price1 - pp2 + shippincgcharge;
+                        //decimal price5person = price1 - pp5 + shippincgcharge;
+
+
+                        ProductModel.ProductDataList objProduct = new ProductModel.ProductDataList();
+                        objProduct.pname = pname2;
+                        objProduct.pdec = pdec2;
+                        objProduct.pkey = pkey2;
+                        objProduct.pnote = pnote2;
+                        objProduct.pprice = price.ToString();
+                        objProduct.pwight = punit;
+                        objProduct.poffer = poffer;
+                        objProduct.pbuy2 = pp2.ToString();
+                        objProduct.pbuy5 = pp5.ToString();
+                        objProduct.shipping = shippincgcharge.ToString();
+                        objProduct.pvideo = pvid;
+                        objProduct.psold = psold;
+                        objProduct.pJustBougth=pboug;
+                        objProduct.pgst = ptax2;
+                        
+
+                        //Multiple Image Singal Product details List
+                        if (urlpathimg != "")
+                        {
+
+                            //
+                            string ImageDetails = "SELECT   [Id] ,[ImageFileName] ,Productid,DisplayOrder  FROM ProductImages where productid=" + dtmain.Rows[i]["Pid"].ToString() + " and isnull(Isdeleted,0)=0";
+
+                            //string ImageDetails = "SELECT   [Id] ,[ImageFileName] ,Productid,DisplayOrder  FROM ProductImages where productid=1 and isnull(Isdeleted,0)=0";
+
+                            DataTable dtdetails = dbc.GetDataTable(ImageDetails);
+
+                            if (dtdetails != null && dtdetails.Rows.Count > 0)
+                            {
+                                //objeprodt.ProductImageList = new List<ProductModel.ProductDataImagelist>();
+                                for (int j= 0; j < dtdetails.Rows.Count; j++)
+                                {
+                                    string productid3 = dtdetails.Rows[j]["Productid"].ToString();
+                                    string proimgid = dtdetails.Rows[j]["id"].ToString();
+                                    string Imagename = dtdetails.Rows[j]["ImageFileName"].ToString();
+                                    string pdisorder = dtdetails.Rows[j]["DisplayOrder"].ToString();
+
+                                    objProduct.ProductImageList.Add(new ProductModel.ProductDataImagelist
+                                    {
+                                        prodid = productid3,
+                                        proimagid = proimgid,
+                                       // PImgname = urlpathimg + Imagename,
+                                        PImgname =  Imagename,
+                                        PDisOrder = pdisorder,
+                                    });
+                                }
+                            }
+                        objeprodt.ProductList.Add(objProduct);   
+                    }
+
+                    }
+                    //objeprodt.ProductList.Add(
+                }
+                else
+                {
+                    objeprodt.response = CommonString.DataNotFoundResponse;
+                    objeprodt.message = CommonString.DataNotFoundMessage;
+
+                }
+                return objeprodt;
+            }
+            catch (Exception)
+            {
+                objeprodt.response = CommonString.Errorresponse;
+                objeprodt.message = "Somthing Wrong";
+                return objeprodt;
+            }
+
+        }
+
+
+
+    }
+}

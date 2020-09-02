@@ -1,0 +1,53 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace Test0555.Models.ProductManagement
+{
+    public class ProductModel
+    {
+        public class getproduct
+        {
+
+            public string response;
+            public string message;
+            public List<ProductDataList> ProductList { get; set; }
+
+           
+        }
+        public class ProductDataList
+        {
+            public ProductDataList()
+            {
+                ProductImageList = new List<ProductDataImagelist>();
+            }
+            public string pname;
+            public string pdec;
+            public string pkey;
+       
+            public string pnote;
+            public string pprice;
+            public string pwight;
+            public string pvideo;
+          
+            public string poffer;
+            public string pbuy2;
+            public string pbuy5;
+            public string shipping;
+             public string psold;
+            public string pJustBougth;
+            public string pgst;
+ 
+            public List<ProductDataImagelist> ProductImageList { get; set; }
+        }
+
+        public class ProductDataImagelist
+        {
+            public string prodid;
+            public string proimagid;
+            public string PImgname;
+            public string PDisOrder;
+        }
+    }
+}

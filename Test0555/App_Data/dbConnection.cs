@@ -1,0 +1,892 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Data;
+using System.Net;
+using System.Web;
+using System.IO;
+using paytm;
+
+namespace InquiryManageAPI.Controllers
+{
+    public class dbConnection
+    {
+
+        public static string getConnectionString()
+        {
+            string txtpath1 = HttpContext.Current.Server.MapPath("~/App_Data/setting.txt");
+            StreamReader sr = new StreamReader(txtpath1);
+            String line = sr.ReadToEnd();
+            return line;
+        }
+        public static string getProductExpiredOnDate(string prodid = "")
+        {
+            dbConnection dbc = new dbConnection();
+            string where = "";
+            if (prodid == "")
+            {
+                where = "where Product.StartDate<='" + dbc.getindiantime().ToString("dd-MMM-yyyy") + " 00:00:00' AND EndDate>='" + dbc.getindiantime().ToString("dd-MMM-yyyy") + " 23:59:59'";
+            }
+            else
+            {
+                where = "where Product.Id=" + prodid + "";
+            }
+
+            string date = "select CONVERT(varchar,EndDate,106) as dateprod, CONVERT(varchar,EndDate,100)as timeprod from Product " + where + " ";
+            DataTable dt = dbc.GetDataTable(date);
+            string edate = "";
+            if (dt != null && dt.Rows.Count > 0)
+            {
+                edate = dt.Rows[0]["dateprod"].ToString();
+
+                string timeeeee = "";
+
+                string timeee = dt.Rows[0]["timeprod"].ToString();
+                string[] time = timeee.Split(' ');
+                int t1 = time.Length;
+                timeeeee = time[t1 - 1];
+                edate = edate + ' ' + timeeeee;
+            }
+            return edate;
+        }
+        //public string consString = @"Data Source=EC2AMAZ-5AKBMRF\SQLEXPRESS;Initial Catalog=TestTaazaFood;Integrated Security=True";
+
+        // public string consString = ConfigurationManager.ConnectionStrings["SqlConnectionString"].ConnectionString.ToString();
+
+        //public string consString = @"Data Source=ESPL;Initial Catalog=InquiryManage;User Id=sa;Password=123";
+
+        public string consString = getConnectionString();
+
+        // public string consString = @"Data Source=S97-74-232-233\SQLEXPRESS;Initial Catalog=SalebhaiOnePage;Integrated Security=True";
+
+        //public string consString = @"Data Source=13.127.171.247;Initial Catalog=TaazaFood;User Id=sa;Password=Taaza765";
+
+        SqlConnection conn = new SqlConnection();
+        SqlTransaction objtrans = null;
+
+
+        //public  SqlConnection GetConnectionForAdapter()
+        //{
+        //    conn.ConnectionString = consString;
+        //    return conn;
+        //}
+
+
+        public void SendSMS(String Mobile, String Sms)
+        {
+            /// <summary>
+            /// FLAG FOR SMS
+            /// Did not respond 1
+            /// Movement 2    
+            /// Refund 3
+            /// Cashback 4
+            /// Informing collection 5
+            /// Delivery Late 6
+            /// </summary>
+            /// <param name="Mobile"></param>
+            /// <param name="Sms"></param>
+            try
+            {
+                //dbConnection dbc = new dbConnection();
+                //string[] prm = { Request.Cookies["TUser"]["Id"].ToString(), Mobile, Sms, flag.ToString() };
+                //int i = dbc.ExecuteQueryWithParams("insert into Taaza_Sms (Userid,Sentto,SmsText,Flag,doc) Values (@1,@2,@3,@4,DATEADD(MINUTE, 330, GETUTCDATE()))", prm);
+                //if (i > 0)
+                {
+                    //Sms = System.Web.HttpUtility.UrlEncode(Sms);
+                    //HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
+                    //("https://hapi.smsapi.org/SendSMS.aspx?UserName=TaazaFood&password=TaazaFood2016&MobileNo=" + Mobile
+                    //+ "&SenderID=TaazaF&CDMAHeader=TaazaF&Message=" + Sms);
+                    //HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
+                    //("http://hapi.smsapi.org/SendSMS.aspx?UserName=sms_salebhai&password=240955&MobileNo=" + Mobile
+                    //+ "&SenderID=ESOSHO&CDMAHeader=ESOSHO&Message=" + Sms);
+
+                    Sms = System.Web.HttpUtility.UrlEncode(Sms);
+                    HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
+                    ("http://sms.infisms.co.in/API/SendSMS.aspx?UserID=ESosho&UserPassword=sosho@123&PhoneNumber=" + Mobile
+                    + "&Text=" + Sms + "&SenderId=ESosho&AccountType=2&MessageType=0");
+
+                    HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
+
+                    System.IO.StreamReader respStreamReader = new System.IO.StreamReader(myResp.GetResponseStream());
+                    string responseString = respStreamReader.ReadToEnd();
+                    string correct = responseString.Substring(0, 2);
+                    respStreamReader.Close();
+                    myResp.Close();
+
+
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+
+
+
+
+        public SqlConnection GetConnectionSalebhai_AppServices()
+        {
+            try
+            {
+                if (conn.State == ConnectionState.Open)
+                {
+                    return conn;
+                }
+                else
+                {
+                    conn.ConnectionString = consString;
+                    return conn;
+                }
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetConnectionSalebhai_AppServices", ex.Message.ToString());
+                return null;
+                //cnn.Close();
+            }
+            //  return cnn;
+        }
+        public string genCheckSum(Dictionary<string, string> parameters, string merchantKey)
+        {
+            string checksum = CheckSum.generateCheckSum(merchantKey, parameters);
+            return checksum;
+        }
+        public SqlConnection GetConnectionSalebhai_AppServices1()
+        {
+            SqlConnection conn1 = new SqlConnection();
+            try
+            {
+                if (conn1.State == ConnectionState.Open)
+                {
+                    return conn1;
+                }
+                else
+                {
+                    conn1.ConnectionString = consString;
+                    return conn1;
+                }
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetConnectionSalebhai_AppServices", ex.Message.ToString());
+                return null;
+                //cnn.Close();
+            }
+            //  return cnn;
+        }
+        public object ExecuteSQLScaler(string sqlStatement)
+        {
+            object obj = null;
+            try
+            {
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = sqlStatement;
+                cmd.Connection = openConnection();
+
+                //objcmd.Connection = objcon;
+                cmd.CommandText = sqlStatement;
+                obj = cmd.ExecuteScalar();
+                cmd.Parameters.Clear();
+                cmd.Dispose();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public object ExecuteScallerWithParams(string query, string[] parameters)
+        {
+            object obj = null;
+            try
+            {
+                query = query.ToLower();
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                obj = cmd.ExecuteScalar();
+                cmd.Parameters.Clear();
+                cmd.Dispose();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "ExecuteScallerWithParams", query + ":::" + ex.Message.ToString() + " StackTrace:" + ex.StackTrace, "-200");
+                return new object();
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        public string GetCustomerMobileByCustomerId(string Customerid)
+        {
+            string mobile = "";
+            try
+            {
+                if (!String.IsNullOrEmpty(Customerid))
+                {
+                    string query = "Select Mobile from Customer where  Id='" + Customerid + "'";
+                    DataTable dt = GetDataTable(query);
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        DataRow dr = dt.Rows[0];
+                        mobile = dr["Mobile"].ToString();
+                    }
+                }
+                else
+                {
+
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+
+            return mobile;
+        }
+        public int ExecuteScalarQueryWithParams(string query, string[] parameters)
+        {
+            String CheckQry = query;
+            try
+            {
+                query = query.ToLower();
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                    string s1 = "@" + counter.ToString();
+                    string s2 = parameters[counter - 1];
+                    CheckQry = CheckQry.Replace(s1, s2);
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                object value = cmd.ExecuteScalar();
+                int val = Convert.ToInt32(value);
+                conn.Close();
+                return val;
+            }
+            catch (Exception e)
+            {
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        public String GetEmailFromCustomerId(String CustomerId = "")
+        {
+            string Email = "";
+            try
+            {
+                if (!String.IsNullOrEmpty(CustomerId))
+                {
+                    int cusid = Convert.ToInt32(CustomerId);
+                    string query = "select top 1 isnull(Email,'') as Email From Customer where Active=1 and Deleted=0 and Id=" + cusid;
+                    DataTable dt = new DataTable();
+                    dt = GetDataTable(query);
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        DataRow dr = dt.Rows[0];
+                        Email = dr["Email"].ToString();
+                    }
+                    else
+                    {
+                        Email = "";
+                    }
+                }
+                else
+                {
+                    Email = "";
+                }
+            }
+            catch (Exception err)
+            {
+                Email = "";
+            }
+            return Email;
+        }
+
+        public object ExecuteSQLScalerWithTrn(string sqlStatement, SqlConnection con, SqlTransaction Trn)
+        {
+            object obj = null;
+            try
+            {
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = sqlStatement;
+                cmd.Connection = con;
+                cmd.Transaction = Trn;
+                //objcmd.Connection = objcon;
+                cmd.CommandText = sqlStatement;
+                obj = cmd.ExecuteScalar();
+                cmd.Parameters.Clear();
+                cmd.Dispose();
+                return obj;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+
+        public string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+
+        #region Customer_Wallet_SMS
+        public int Customer_Wallet_SMS(string MobileNumber, string SMS_Text)
+        {
+            int result = 0;
+            try
+            {
+
+                //""
+                HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create("http://sms.infisms.co.in/API/SendSMS.aspx?UserID=ESosho&UserPassword=sosho@123&PhoneNumber=" + MobileNumber
+                    + "&Text=" + SMS_Text + "&SenderId=ESosho&AccountType=2&MessageType=0");
+                HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
+                System.IO.StreamReader respStreamReader = new System.IO.StreamReader(myResp.GetResponseStream());
+                string responseString = respStreamReader.ReadToEnd();
+                string correct = responseString.Substring(0, 2);
+                respStreamReader.Close();
+                myResp.Close();
+                result = 1;
+            }
+            catch (Exception err)
+            {
+
+            }
+            return result;
+        }
+        #endregion
+        public int CheckAvailability(int pncd, int ShipperId)
+        {
+            DataTable dataTable1 = new DataTable();
+            DataTable dataTable2 = new DataTable();
+            try
+            {
+                SqlConnection salebhaiAppServices = this.GetConnectionSalebhai_AppServices();
+                string selectCommandText1 = "";
+                if (ShipperId == 1)
+                    selectCommandText1 = "SELECT * FROM [dbo].[Zipcode] where [zipcode]=" + (object)pncd;
+
+                if (!string.IsNullOrEmpty(selectCommandText1))
+                {
+                    new SqlDataAdapter(selectCommandText1, salebhaiAppServices).Fill(dataTable1);
+                    if (dataTable1 != null && dataTable1.Rows.Count > 0)
+                    {
+                        if (ShipperId == 1)
+                        {
+                            pncd = int.Parse(dataTable1.Rows[0]["zipcode"].ToString());
+                            return pncd;
+                        }
+
+                        else
+                            pncd = int.Parse(dataTable1.Rows[0]["PINCODE"].ToString());
+                        return pncd;
+                    }
+                }
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+
+        public DataTable GetAllJurisdiction(int pncd)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = "select * from [JurisdictionDetail] where IsActive=1 and pincodeid = " + pncd;
+                dt = GetDataTable(query);
+            }
+            catch (Exception)
+            {
+                dt = null;
+            }
+            return dt;
+        }
+        public DataTable GetAllActiveShipperDetails()
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string query = "select * from [ShipperMaster] where Active=1 order by [PriorityOrder]";
+                dt = GetDataTable(query);
+            }
+            catch (Exception)
+            {
+                dt = null;
+            }
+            return dt;
+        }
+        public int ExecuteQueryWithTrn(string query, SqlConnection con, SqlTransaction Trn)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+                cmd.Transaction = Trn;
+                cmd.Connection = con;
+                int i = cmd.ExecuteNonQuery();
+                closeConnection();
+                return i;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "ExecuteQueryWithTrn", ex.Message.ToString() + " StackTrace:" + ex.StackTrace);
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        public DataTable GetDataTableWithTrn(string query, SqlConnection con, SqlTransaction Trn)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+                cmd.Transaction = Trn;
+                cmd.Connection = con;
+                SqlDataAdapter adap = new SqlDataAdapter(cmd);
+                adap.Fill(dt);
+                //closeConnection();
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return dt;
+        }
+        public SqlConnection openConnection()
+        {
+
+            if (conn.State == ConnectionState.Open)
+            {
+                return conn;
+            }
+            else
+            {
+                conn.ConnectionString = consString;
+                conn.Open();
+            }
+            return conn;
+        }
+        public void closeConnection()
+        {
+            if (conn.State == ConnectionState.Closed)
+            {
+                return;
+            }
+            else
+            {
+                conn.Close();
+            }
+
+        }
+
+        public DataTable GetDataTable(string query)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+
+                SqlDataAdapter adap = new SqlDataAdapter(query, GetConnectionSalebhai_AppServices());
+                adap.Fill(dt);
+                //closeConnection();
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            return dt;
+        }
+        public int ExecuteQuery(string query)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+                cmd.Connection = openConnection();
+                int i = cmd.ExecuteNonQuery();
+                closeConnection();
+                return i;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetIP4Address", ex.Message.ToString() + " StackTrace:" + ex.StackTrace);
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+        public DataTable GetDataTableWithParams(string query, string[] parameters)
+        {
+            try
+            {
+                query = query.ToLower();
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                SqlDataAdapter adap = new SqlDataAdapter();
+                adap.SelectCommand = cmd;
+                adap.Fill(dt);
+                conn.Close();
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetIP4Address", ex.Message.ToString() + " StackTrace:" + ex.StackTrace);
+                return null;
+            }
+            finally
+            {
+                conn.Close();
+            }
+
+        }
+
+        public int ExecuteQueryWithParams(string query, string[] parameters)
+        {
+            try
+            {
+                query = query.ToLower();
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                int val = cmd.ExecuteNonQuery();
+                conn.Close();
+                return val;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "ExecuteQueryWithParams", ex.Message.ToString() + " StackTrace:" + ex.StackTrace, "-200");
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+        public int InsertUpdateWithParams(string query, string[] parameters)
+        {
+            try
+            {
+                if (parameters.Length > 0)
+                {
+                    string valueQueryPart = " values ( ";
+                    for (int counter = 1; counter <= parameters.Length; counter++)
+                    {
+                        valueQueryPart = valueQueryPart + "@" + counter.ToString() + ", ";
+                    }
+                    valueQueryPart = valueQueryPart.TrimEnd();
+                    if (valueQueryPart.EndsWith(",") == true)
+                    {
+                        valueQueryPart = valueQueryPart.Substring(0, valueQueryPart.Length - 1);
+                    }
+                    valueQueryPart = valueQueryPart + " ) ";
+
+                    query = query + " " + valueQueryPart;
+                }
+                query = query.ToLower();
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
+
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                cmd.ExecuteNonQuery();
+                conn.Close();
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetIP4Address", ex.Message.ToString() + " StackTrace:" + ex.StackTrace);
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
+
+
+        //public void bulkInsert(DataTable dt)
+        //{
+        //    if (dt.Rows.Count > 0)
+        //    {
+        //        {
+        //            using (SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(openConnection()))
+        //            {
+        //                //Set the database table name
+        //                sqlBulkCopy.DestinationTableName = "dbo.iislogs";
+
+        //                sqlBulkCopy.WriteToServer(dt);
+        //                closeConnection();
+        //            }
+        //        }
+        //    }
+        //}
+        public int CreateTransaction(string transid, string customerid, decimal paidAmount)
+        {
+            try
+            {
+                string chektrans = "select id from CitrusPayment where TxnId=@1";
+                string[] param = { transid };
+                DataTable dtcheckTrans = GetDataTableWithParams(chektrans, param);
+                if (dtcheckTrans != null && dtcheckTrans.Rows.Count > 0)
+                {
+                    string Mobile = GetCustomerMobileByCustomerId(customerid);
+                    string Email = GetEmailFromCustomerId(customerid);
+                    return Transupdate(transid, customerid, Email, "1", paidAmount, Mobile);
+                }
+                else
+                {
+                    string Mobile = GetCustomerMobileByCustomerId(customerid);
+                    string Email = GetEmailFromCustomerId(customerid);
+                    return TransInsert(transid, customerid, Email, "1", paidAmount, Mobile);
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        private int TransInsert(string transid, string customerid, string Email, string paymentmethod, decimal Orderamount, string mobile)
+        {
+            try
+            {
+
+                string Transquery = @"insert into CitrusPayment ([TxnId],[CustomerId],[Email],[Mobile],[OrderId],[OrderAmount],[TimeOfTransaction],[Order_TimeOfTransaction],[Statuse],[StatuseString],[FeachTrial],[HasGone],[HasCame],[GoneTime],[CameTime],[Payment_Method_Id],[IsFailTransactionMailSent],[IsPaymentSuccess],[TransactionSource],[IsOrderGeneratedThroughScheduler]) values (@1,@2,@3,@4,@5,@6,GETDATE(),@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,@18,@19)";
+                string[] param = { transid, customerid, Email, mobile, "0", Orderamount.ToString(), "2001-01-01", "1", "Transaction", "1", "0", "0", "2001-01-01", "2001-01-01", paymentmethod, "false", "0", "3", "0" };
+                int result = ExecuteQueryWithParams(Transquery, param);
+
+                //string Transquery = @"insert into CitrusPayment (HasGone,GoneTime,CameTime,TxnId,CustomerId,Email,Mobile,Cit_TimeOfTransaction,Order_TimeOfTransaction,Cit_Refunded_DateTime,Statuse,StatuseString,TimeOfTransaction,Payment_Method_Id,IsFailTransactionMailSent,OrderAmount,TransactionSource,OrderId,IsGharSe,HasCame,Cit_RefundedAmount,FeachTrial) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,GETDATE(),@13,@14,@15,@16,@17,@18,@19,@20,@21)";
+                //string[] param = { "0", "2001-01-01", "2001-01-01", transid, customerid, Email, mobile, "2001-01-01", "2001-01-01", "2001-01-01", "1", "Transaction", paymentmethod, "false", Orderamount.ToString(), "3", "0", "0", "0", "0", "1" };
+                //int result = ExecuteQueryWithParams(Transquery, param);
+                if (result == 1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        private int Transupdate(string transid, string customerid, string Email, string paymentmethod, decimal Orderamount, string mobile)
+        {
+            try
+            {
+                string Transquery = @"update CitrusPayment set HasGone=@1,GoneTime=@2,CameTime=@3,CustomerId=@4,Email=@5,Mobile=@6,Order_TimeOfTransaction=@7,Statuse=@8,StatuseString=@9,TimeOfTransaction=@10,Payment_Method_Id=@11,IsFailTransactionMailSent=@12,OrderAmount=@13,TransactionSource=@14 where TxnId=@15) ";
+                string[] param = { "0", "2001-01-01", "2001-01-01", customerid, Email, mobile, "2001-01-01", "1", "Transaction", getindiantime().ToString("dd/MMM/yyyy HH:mm:ss"), paymentmethod, "false", Orderamount.ToString(), "3", transid };
+
+
+                int result = ExecuteQueryWithParams(Transquery, param);
+                if (result == 1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        public int deleteAlternateOrder(string trnid)
+        {
+            try
+            {
+                string insertquery = "delete * from AlterNetOrder where trnid=@1";
+                string[] param = { trnid };
+                int result = ExecuteQueryWithParams(insertquery, param);
+                if (result == 1)
+                {
+                    return 1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        public void InsertLogs(LOGS.LogLevel Logtype, string shortmsg, string detailmsg, string custId = "0")
+        {
+            try
+            {
+                string[] insert = { Logtype.ToString(), shortmsg, detailmsg, custId, getindiantimeString() };
+                string cmd = "INSERT INTO [dbo].[Logs_Application]([LogType],[DOC],[LogShortMsg],[LogLongMsg],[CustomerId],[CustomerIP])VALUES(@1,@5,@2,@3,@4,'" + GetIP4Address() + "')";
+                int value = ExecuteQueryWithParams(cmd, insert);
+            }
+            catch (Exception ex)
+            {
+            }
+            finally
+            {
+                //conn.Close();
+            }
+        }
+        public string GetStoreUrl()
+        {
+            string storeurl = "http://www.salebhai.com";
+            return storeurl;
+        }
+        public string GetIP4Address()
+        {
+            try
+            {
+                string hostName = Dns.GetHostName(); // Retrive the Name of HOST
+                Console.WriteLine(hostName);
+                // Get the IP
+                string myIP = Dns.GetHostByName(hostName).AddressList[0].ToString();
+                return myIP;
+            }
+            catch (Exception err)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetIP4Address", err.Message.ToString());
+                return null;
+            }
+        }
+        public DateTime getindiantime()
+        {
+            try
+            {
+                DateTime nonISD = DateTime.Now;
+
+                //Change Time zone to ISD timezone
+                TimeZoneInfo myTZ = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                //DateTime ISDTime = TimeZoneInfo.ConvertTime(nonISD, TimeZoneInfo.Local, myTZ);
+                DateTime ISDTime = TimeZoneInfo.ConvertTime(nonISD, myTZ);
+                //ISDTime = DateTime.ParseExact(ISDTime,"dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture);
+                return ISDTime;
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetConnectionSalebhai_AppServices", ex.Message.ToString());
+                return DateTime.Now;
+            }
+        }
+        public string getindiantimeString()
+        {
+            try
+            {
+                DateTime nonISD = DateTime.Now;
+
+                //Change Time zone to ISD timezone
+                TimeZoneInfo myTZ = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                //DateTime ISDTime = TimeZoneInfo.ConvertTime(nonISD, TimeZoneInfo.Local, myTZ);
+                DateTime ISDTime = TimeZoneInfo.ConvertTime(nonISD, myTZ);
+                //ISDTime = DateTime.ParseExact(ISDTime,"dd/MM/yyyy",System.Globalization.CultureInfo.InvariantCulture);
+                return ISDTime.ToString("dd-MMM-yyyy hh:mm:ss tt");
+            }
+            catch (Exception ex)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "GetConnectionSalebhai_AppServices", ex.Message.ToString());
+                return DateTime.Now.ToString("dd-MMM-yyyy hh:mm:ss tt");
+            }
+        }
+        public int GenerateRandomNumber()
+        {
+            Random rand = new Random();
+            return rand.Next(100000, 999999);
+            //string PasswordLength = "4";
+            //string NewPassword = "";
+            //string allowedChars = "";
+            //allowedChars = "1,2,3,4,5,6,7,8,9";
+            //char[] sep = { ',' };
+            //string[] arr = allowedChars.Split(sep);
+            //string IDString = "";
+            //string temp = "";
+            //Random rand = new Random();
+            //for (int i = 0; i < Convert.ToInt32(PasswordLength); i++)
+            //{
+            //    temp = arr[rand.Next(0, arr.Length)];
+            //    IDString += temp;
+            //    NewPassword = IDString;
+            //}
+            //int ans = Convert.ToInt32(NewPassword);
+            //return ans;
+        }
+    }
+
+
+    public class LOGS
+    {
+        public enum LogLevel
+        {
+            Debug = 10,
+            Information = 20,
+            Warning = 30,
+            Error = 40,
+            Fatal = 50
+        }
+    }
+}

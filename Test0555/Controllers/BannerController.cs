@@ -79,7 +79,7 @@ namespace Test0555.Controllers
 
         [HttpGet]
 
-        public BannerModel.NewBnnerImage GetDashBoardBannerImag()
+        public BannerModel.NewBnnerImage GetDashBoardBannerImag(string JurisdictionId = "")
         {
             BannerModel.NewBnnerImage objbaner = new BannerModel.NewBnnerImage();
             try
@@ -144,11 +144,34 @@ namespace Test0555.Controllers
                     for (int i = 0; i < dtBanner.Rows.Count; i++)
                     {
                         sTypeId = dtBanner.Rows[i]["TypeId"].ToString();
-
-                        string qry = "Select  cg.CategoryName,* From IntermediateBanners Im Left join category cg on  cg.categoryId = Im.categoryId where Im.IsActive=1 and Im.IsDeleted=0 and StartDate>='" + startdate + "' and StartDate<='" + startend + "' and TypeId = " + sTypeId + "  order by Id desc";
+                        string cond = "";
+                        if (JurisdictionId != "" && JurisdictionId != null)
+                        {
+                            cond = " and JB.JurisdictionId = " + JurisdictionId;
+                        }
+                            string qry = "Select  cg.CategoryName,P.Name AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," + 
+                                     " PC.CategoryName AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
+                                     " ISNULL(P.ProductMRP,0) AS MRP, ISNULL(P.Discount,0) AS Discount," +
+                                     " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, Im.Action, ISNULL(Im.CategoryId,0) AS CategoryId, Im.Link, " +
+                                     " Im.ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " + 
+                                     " U.UnitName " + 
+                                     " From IntermediateBanners Im " +
+                                     " Left join category cg on  cg.categoryId = Im.categoryId " +
+                                     " Left join Product P on  P.Id = Im.ProductId " +
+                                     " Left join category PC on PC.CategoryID = P.CategoryID " +
+                                     " Left join UnitMaster U on U.Id = P.UnitId " +
+                                     " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
+                                     " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate + 
+                                     "' and Im.StartDate<='" + startend + "' and TypeId = " + sTypeId + "" +
+                                     cond + 
+                                     "  order by Im.Id desc";
                         DataTable dtMainBanner = dbc.GetDataTable(qry);
 
                         string Id = "", ImageName1 = "", sAction = "", sCategoryId = "", sCategoryName = "", sopenUrlLink="";
+                        string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", sDiscount = "";
+                        string sMaxQty = "", sMinQty = "";
+                        int sActionId = 0, sProductId = 0;
+                        bool sIsQtyFreeze = false;
                         if (dtMainBanner != null && dtMainBanner.Rows.Count > 0)
                         {
                             string imagepathqry = "select KeyValue from StringResources where KeyName='TopBannerImageUrl'";
@@ -160,13 +183,57 @@ namespace Test0555.Controllers
                                 string urlpath1 = dtimagepath.Rows[0]["KeyValue"].ToString();
 
                                 Id = ""; ImageName1 = ""; sAction = ""; sCategoryId = ""; sCategoryName = ""; sopenUrlLink = "";
+                                sProductName = ""; sUnitName = ""; sWeight = ""; sSellingPrice = ""; sMRP = ""; sDiscount = "";
+                                sMaxQty = ""; sMinQty = "";
+                                sActionId = 0;  sProductId = 0;
+                                sIsQtyFreeze = false;
                                 for (int j = 0; j < dtMainBanner.Rows.Count; j++)
                                 {
                                     Id = dtMainBanner.Rows[j]["Id"].ToString();
                                     ImageName1 = dtMainBanner.Rows[j]["ImageName"].ToString();
                                     sAction = dtMainBanner.Rows[j]["Action"].ToString();
-
-                                    if (sAction.ToString() == "Navigate To Category")
+                                    if (!String.IsNullOrEmpty( dtMainBanner.Rows[j]["ActionId"].ToString()) || Convert.ToInt32(dtMainBanner.Rows[j]["ActionId"]) > 0 )
+                                    {
+                                        sActionId = Convert.ToInt32(dtMainBanner.Rows[j]["ActionId"]);
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["MaxQty"]) > 0)
+                                    {
+                                        sMaxQty = dtMainBanner.Rows[j]["MaxQty"].ToString();
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["MinQty"]) > 0)
+                                    {
+                                        sMinQty = dtMainBanner.Rows[j]["MinQty"].ToString();
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["ProductId"]) > 0)
+                                    {
+                                        sProductId = Convert.ToInt32(dtMainBanner.Rows[j]["ProductId"]);
+                                    }
+                                    sProductName = dtMainBanner.Rows[j]["ProductName"].ToString();
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["IsQtyFreeze"]) > 0)
+                                    {
+                                        sIsQtyFreeze = Convert.ToBoolean(dtMainBanner.Rows[j]["IsQtyFreeze"]);
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["MRP"]) > 0)
+                                    {
+                                        sMRP = dtMainBanner.Rows[j]["MRP"].ToString();
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["Discount"]) > 0)
+                                    {
+                                        sDiscount = dtMainBanner.Rows[j]["Discount"].ToString();
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["SellingPrice"]) > 0)
+                                    {
+                                        sSellingPrice = dtMainBanner.Rows[j]["SellingPrice"].ToString();
+                                    }
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["Weight"]) > 0)
+                                    {
+                                        sWeight = dtMainBanner.Rows[j]["Weight"].ToString();
+                                    }
+                                    if (!String.IsNullOrEmpty(dtMainBanner.Rows[j]["UnitName"].ToString()))
+                                    {
+                                        sUnitName = "-" + dtMainBanner.Rows[j]["UnitName"].ToString();
+                                    }
+                                    if (sAction.ToString() == "2")
                                     {
                                         sCategoryId = dtMainBanner.Rows[j]["CategoryID"].ToString();
                                         sCategoryName = dtMainBanner.Rows[j]["CategoryName"].ToString();
@@ -176,7 +243,7 @@ namespace Test0555.Controllers
                                         sCategoryId = "0";
                                         sCategoryName = "";
                                     }
-                                    if (sAction.ToString() == "Open Url")
+                                    if (sAction.ToString() == "1")
                                         sopenUrlLink = dtMainBanner.Rows[j]["Link"].ToString();
                                     else
                                         sopenUrlLink = "";
@@ -185,10 +252,20 @@ namespace Test0555.Controllers
                                     {
                                         bannerURL = urlpath1 + ImageName1,
                                         bannerId = Id,
+                                        ActionId = sActionId,
                                         action = sAction,
                                         categoryId = sCategoryId,
                                         categoryName = sCategoryName,
-                                        openUrlLink = sopenUrlLink
+                                        openUrlLink = sopenUrlLink,
+                                        ProductId = sProductId,
+                                        ProductName = sProductName,
+                                        MaxQty = sMaxQty,
+                                        MinQty = sMinQty,
+                                        IsQtyFreeze = sIsQtyFreeze,
+                                        MRP = sMRP,
+                                        Discount = sDiscount,
+                                        SellingPrice = sSellingPrice,
+                                        Weight = sWeight + sUnitName
                                     });
 
                                 }

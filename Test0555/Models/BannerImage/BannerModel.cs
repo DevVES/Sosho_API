@@ -36,10 +36,20 @@ namespace Test0555.Models
         {
             public string bannerURL;
             public string bannerId;
+            public int ActionId;
             public string action;
             public string categoryId;
             public string categoryName;
+            public int ProductId;
+            public string ProductName;
             public string openUrlLink;
+            public string  MaxQty;
+            public string MinQty;
+            public bool IsQtyFreeze;
+            public string MRP;
+            public string Discount;
+            public string SellingPrice;
+            public string Weight;
         }
     }
 }

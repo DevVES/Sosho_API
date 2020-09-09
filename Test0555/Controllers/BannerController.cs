@@ -89,7 +89,7 @@ namespace Test0555.Controllers
 
                 int iBannerPosition = (ConfigurationManager.AppSettings["BannerPosition"] != null && ConfigurationManager.AppSettings["BannerPosition"].Trim() != "") ? Convert.ToInt16(ConfigurationManager.AppSettings["BannerPosition"].Trim()) : 0;
                 objbaner.BannerPosition = iBannerPosition.ToString();
-                string querystr = "select top 1 * from HomepageBanner where IsActive=1 and IsDeleted=0 and Doc>='" + startdate + "' and Doc<='" + startend + "' order by Id desc";
+                string querystr = "select * from HomepageBanner where IsActive=1 and IsDeleted=0 and Doc>='" + startdate + "' and Doc<='" + startend + "' order by Id desc";
                 DataTable dtmain = dbc.GetDataTable(querystr);
 
                 if (dtmain != null && dtmain.Rows.Count > 0)
@@ -107,14 +107,24 @@ namespace Test0555.Controllers
                         {
                             string ImageName1 = dtmain.Rows[i]["ImageName"].ToString();
                             string Id = dtmain.Rows[i]["Id"].ToString();
+                            string title = dtmain.Rows[i]["Title"].ToString();
                             objbaner.BannerImageList.Add(new BannerModel.IntermediateBannerImage
                             {
+                                Title = title,
                                 bannerURL = urlpath + ImageName1,
                                 bannerId = Id,
                                 action = "",
                                 categoryId = "",
                                 categoryName = "",
-                                openUrlLink = ""
+                                openUrlLink = "",
+                                ProductName = "",
+                                MaxQty = "",
+                                MinQty = "",
+                                IsQtyFreeze = false,
+                                MRP = "",
+                                Discount = "",
+                                SellingPrice = "",
+                                Weight = ""
 
                             });
                         }
@@ -149,12 +159,12 @@ namespace Test0555.Controllers
                         {
                             cond = " and JB.JurisdictionId = " + JurisdictionId;
                         }
-                            string qry = "Select  cg.CategoryName,P.Name AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," + 
-                                     " PC.CategoryName AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
-                                     " ISNULL(P.ProductMRP,0) AS MRP, ISNULL(P.Discount,0) AS Discount," +
-                                     " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, Im.Action, ISNULL(Im.CategoryId,0) AS CategoryId, Im.Link, " +
-                                     " Im.ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " + 
-                                     " U.UnitName " + 
+                            string qry = "Select  ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," + 
+                                     " ISNULL(PC.CategoryName,'') AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
+                                     " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
+                                     " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.Action,'') AS Action, ISNULL(Im.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
+                                     " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " + 
+                                     " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title " + 
                                      " From IntermediateBanners Im " +
                                      " Left join category cg on  cg.categoryId = Im.categoryId " +
                                      " Left join Product P on  P.Id = Im.ProductId " +
@@ -169,6 +179,7 @@ namespace Test0555.Controllers
 
                         string Id = "", ImageName1 = "", sAction = "", sCategoryId = "", sCategoryName = "", sopenUrlLink="";
                         string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", sDiscount = "";
+                        string sTitle = "";
                         string sMaxQty = "", sMinQty = "";
                         int sActionId = 0, sProductId = 0;
                         bool sIsQtyFreeze = false;
@@ -209,6 +220,7 @@ namespace Test0555.Controllers
                                         sProductId = Convert.ToInt32(dtMainBanner.Rows[j]["ProductId"]);
                                     }
                                     sProductName = dtMainBanner.Rows[j]["ProductName"].ToString();
+                                    sTitle = dtMainBanner.Rows[j]["Title"].ToString();
                                     if (Convert.ToInt32(dtMainBanner.Rows[j]["IsQtyFreeze"]) > 0)
                                     {
                                         sIsQtyFreeze = Convert.ToBoolean(dtMainBanner.Rows[j]["IsQtyFreeze"]);
@@ -233,7 +245,7 @@ namespace Test0555.Controllers
                                     {
                                         sUnitName = "-" + dtMainBanner.Rows[j]["UnitName"].ToString();
                                     }
-                                    if (sAction.ToString() == "2")
+                                    if (!string.IsNullOrEmpty(dtMainBanner.Rows[j]["CategoryID"].ToString()))
                                     {
                                         sCategoryId = dtMainBanner.Rows[j]["CategoryID"].ToString();
                                         sCategoryName = dtMainBanner.Rows[j]["CategoryName"].ToString();
@@ -243,13 +255,14 @@ namespace Test0555.Controllers
                                         sCategoryId = "0";
                                         sCategoryName = "";
                                     }
-                                    if (sAction.ToString() == "1")
+                                    if (!string.IsNullOrEmpty(dtMainBanner.Rows[j]["Link"].ToString()))
                                         sopenUrlLink = dtMainBanner.Rows[j]["Link"].ToString();
                                     else
                                         sopenUrlLink = "";
 
                                     objbaner.IntermediateBannerImages.Add(new BannerModel.IntermediateBannerImage
                                     {
+                                        Title = sTitle,
                                         bannerURL = urlpath1 + ImageName1,
                                         bannerId = Id,
                                         ActionId = sActionId,

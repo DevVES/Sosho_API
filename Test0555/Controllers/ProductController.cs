@@ -121,7 +121,7 @@ namespace Test0555.Controllers
                 querymain += " case when isnull(ProductTemplateID,'') = '2' then 'true' else 'false' end as Productvariant,";
                 querymain += " case when isnull(Recommended,'') = '' then 'false' else 'true' end as IsSoshoRecommended,";
                 querymain += "case when isnull(ProductBanner,'') = '' then 'false' else 'true' end as IsSpecialMessage ";
-                querymain += "  ,Product.CategoryID,ProductMRP AS mrp,discount,DiscountType,SoshoPrice,MaxQty,MinQty,case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription ";
+                querymain += "  ,Product.CategoryID,ProductMRP AS mrp,Isnull(cast(cast(discount as decimal(10,2)) AS FLOAT),'') AS discount,DiscountType,SoshoPrice,MaxQty,MinQty,case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription ";
                 querymain += " from Product ";
                 querymain += " inner join Unitmaster on Unitmaster.id=Product.UnitId ";
                 querymain += " inner join Category cat on cat.CategoryID = Product.CategoryID ";
@@ -198,7 +198,10 @@ namespace Test0555.Controllers
                         }
                         if (Attribuepathimg != "")
                         {
-                            string AttImageDetails = "SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails,*  FROM Product_ProductAttribute_Mapping pam inner join Unitmaster um on um.id=pam.UnitId where pam.productid=" + sProductId + " and pam.IsActive=1 and pam.IsDeleted = 0";
+                            string AttImageDetails = "SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails,Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
+                                                     " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice,pam.PackingType,pam.ProductImage, " +
+                                                     " pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy,pam.isOutOfStock " +
+                                                     " FROM Product_ProductAttribute_Mapping pam inner join Unitmaster um on um.id=pam.UnitId where pam.productid=" + sProductId + " and pam.IsActive=1 and pam.IsDeleted = 0";
                             DataTable dtAttdetails = dbc.GetDataTable(AttImageDetails);
 
                             if (dtAttdetails != null && dtAttdetails.Rows.Count > 0)

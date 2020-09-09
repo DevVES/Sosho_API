@@ -34,6 +34,7 @@ namespace Test0555.Models
         }
         public class IntermediateBannerImage
         {
+            public string Title;
             public string bannerURL;
             public string bannerId;
             public int ActionId;

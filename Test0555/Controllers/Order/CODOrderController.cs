@@ -1519,8 +1519,9 @@ namespace Test0555.Controllers.Order
                                     {
                                         newprice = newfinalamount;
                                     }
-                                    gram = Convert.ToInt32(dtmain.Rows[i]["Unit"].ToString());
-                                    totalgram += (gram * quantity);
+                                    //gram = Convert.ToInt32(dtmain.Rows[i]["Unit"].ToString());
+                                    //totalgram += (gram * quantity);
+                                    totalgram += (Convert.ToInt32(item.Unit) * quantity);
                                     shiprate = Convert.ToDecimal(dtmain.Rows[i]["Offer"].ToString());
                                     if (dtmain.Rows[i]["FixedShipRate"].ToString() != null && shiprate > 0)
                                         NewTotalAmount = newprice + shiprate;

@@ -133,14 +133,16 @@ namespace Test0555.Controllers
                     {
                         objbaner.response = "0";
                         objbaner.message = "Details Not Found";
-                        objbaner.BannerPosition = "0";
+                        objbaner.BannerPosition = iBannerPosition.ToString();
+                        objbaner.BannerImageList = new List<BannerModel.IntermediateBannerImage>();
                     }
                 }
                 else
                 {
                     objbaner.response = "0";
                     objbaner.message = "Details Not Found";
-                    objbaner.BannerPosition = "0";
+                    objbaner.BannerPosition = iBannerPosition.ToString();
+                    objbaner.BannerImageList = new List<BannerModel.IntermediateBannerImage>();
 
                 }
                 //Intermediate Banner
@@ -191,6 +193,7 @@ namespace Test0555.Controllers
                             {
                                 objbaner.response = "1";
                                 objbaner.message = "Successfully";
+                                objbaner.BannerPosition = iBannerPosition.ToString();
                                 string urlpath1 = dtimagepath.Rows[0]["KeyValue"].ToString();
 
                                 Id = ""; ImageName1 = ""; sAction = ""; sCategoryId = ""; sCategoryName = ""; sopenUrlLink = "";

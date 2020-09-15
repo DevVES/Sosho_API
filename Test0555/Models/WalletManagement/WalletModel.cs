@@ -35,6 +35,7 @@ namespace Test0555.Models.WalletManagement
             public string message;
             public string RedeemeAmount;
             public List<CouponCodeDataList> CouponCodeList { get; set; }
+            public List<CashbackDataList> CashbackList { get; set; }
 
         }
 
@@ -42,13 +43,32 @@ namespace Test0555.Models.WalletManagement
         {
             public string wallet_id;
             public string campaign_name;
-            public string wallet_amount;
             public string coupon_code;
             public string per_type;
             public string per_amount;
             public string min_order_amount;
+            public string balance;
             public string start_date;
             public string end_date;
+        }
+
+        public class CashbackDataList
+        {
+            public string wallet_id;
+            public string campaign_name;
+            public string per_type;
+            public string per_amount;
+            public string min_order_amount;
+            public string balance;
+            public string start_date;
+            public string end_date;
+        }
+
+        public class RedeemeWalletFromOrder
+        {
+            public string response;
+            public string message;
+            public string ValidationMessage;
         }
     }
 }

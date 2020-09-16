@@ -340,6 +340,7 @@ namespace Test0555.Controllers
                     {
                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                         objeWalletdt.message = CommonString.DataNotFoundMessage;
+                        objeWalletdt.ValidationMessage = "";
                     }
                 }
                 return objeWalletdt;

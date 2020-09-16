@@ -374,7 +374,93 @@ namespace Test0555.Controllers
 
         #endregion
 
-        
+        #region AREA
+        [HttpGet]
+        public AreaModels.ZipCodeLocationList LocationList(string zipcode)
+        {
+            AreaModels.ZipCodeLocationList objLocation = new AreaModels.ZipCodeLocationList();
+            try
+            {
+                objLocation.Locationlist = new List<AreaModels.LocationDatalist>();
+                string Querydata = "SELECT Id, Location from Zipcode where IsActive=1 AND ZipCode = '" + zipcode + "'";
+                DataTable dtArea = dbc.GetDataTable(Querydata);
+                if (dtArea != null && dtArea.Rows.Count > 0)
+                {
+                    objLocation.Response = CommonString.successresponse;
+                    objLocation.Message = CommonString.successmessage;
+                    
+                    for (int i = 0; i < dtArea.Rows.Count; i++)
+                    {
+                        string id = dtArea.Rows[i]["Id"].ToString();
+                        string location = dtArea.Rows[i]["Location"].ToString();
+
+                        objLocation.Locationlist.Add(new AreaModels.LocationDatalist
+                        {
+                            LocationId = id,
+                            LocationName = location
+                        });
+                    }
+                }
+                else
+                {
+                    objLocation.Response = CommonString.DataNotFoundResponse;
+                    objLocation.Message = CommonString.DataNotFoundMessage;
+                }
+                return objLocation;
+            }
+            catch (Exception ee)
+            {
+                objLocation.Response = CommonString.Errorresponse;
+                objLocation.Message = ee.StackTrace;
+                return objLocation;
+            }
+        }
+
+        [HttpGet]
+        public AreaModels.LocationAreaList AreaList(string locationid)
+        {
+            AreaModels.LocationAreaList objArea = new AreaModels.LocationAreaList();
+            try
+            {
+                objArea.Arealist = new List<AreaModels.AreaDatalist>();
+                string Querydata = "SELECT Id, Area, Location from tblArea where IsActive=1 AND ZipCodeId = " + locationid;
+                DataTable dtArea = dbc.GetDataTable(Querydata);
+                if (dtArea != null && dtArea.Rows.Count > 0)
+                {
+                    objArea.Response = CommonString.successresponse;
+                    objArea.Message = CommonString.successmessage;
+                    
+                    for (int i = 0; i < dtArea.Rows.Count; i++)
+                    {
+                        string id = dtArea.Rows[i]["Id"].ToString();
+                        string Area = dtArea.Rows[i]["Area"].ToString();
+                        string location = dtArea.Rows[i]["Location"].ToString();
+                        objArea.Arealist.Add(new AreaModels.AreaDatalist
+                        {
+                            LocationId = locationid,
+                            Location = location,
+                            AreaId = id,
+                            AreaName = Area
+                        });
+                    }
+                }
+                else
+                {
+                    objArea.Response = CommonString.DataNotFoundResponse;
+                    objArea.Message = CommonString.DataNotFoundMessage;
+                }
+                return objArea;
+            }
+            catch (Exception ee)
+            {
+                objArea.Response = CommonString.Errorresponse;
+                objArea.Message = ee.StackTrace;
+                return objArea;
+            }
+        }
+        #endregion
+
+
 
     }
 }

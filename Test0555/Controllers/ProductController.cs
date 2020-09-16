@@ -214,10 +214,15 @@ namespace Test0555.Controllers
                                     sApackSizeId = dtAttdetails.Rows[j]["Id"].ToString();
                                     sAMrp = dtAttdetails.Rows[j]["Mrp"].ToString();
                                     sADiscount = dtAttdetails.Rows[j]["Discount"].ToString();
-                                    if (dtAttdetails.Rows[j]["DiscountType"].ToString() == "%")
-                                        sAPDiscount = sADiscount.ToString() + "% Off";
-                                    else if (dtAttdetails.Rows[j]["DiscountType"].ToString() == "Fixed")
-                                        sAPDiscount = CommonString.rusymbol + " " + sADiscount.ToString() + " Off";
+                                    if (sADiscount.ToString() != "0")
+                                    {
+                                        if (dtAttdetails.Rows[j]["DiscountType"].ToString() == "%")
+                                            sAPDiscount = sADiscount.ToString() + "% Off";
+                                        else if (dtAttdetails.Rows[j]["DiscountType"].ToString() == "Fixed")
+                                            sAPDiscount = CommonString.rusymbol + " " + sADiscount.ToString() + " Off";
+                                        else
+                                            sAPDiscount = "";
+                                    }
                                     else
                                         sAPDiscount = "";
 
@@ -257,10 +262,15 @@ namespace Test0555.Controllers
                         sMrp = dtproduct.Rows[i]["mrp"].ToString();
                         sDiscount = dtproduct.Rows[i]["Discount"].ToString();
 
-                        if (dtproduct.Rows[i]["DiscountType"].ToString() == "%")
-                            sPDiscount = sDiscount.ToString() + "% Off";
-                        else if (dtproduct.Rows[i]["DiscountType"].ToString() == "Fixed")
-                            sPDiscount = CommonString.rusymbol + " " + sDiscount.ToString() + " Off";
+                        if (sDiscount.ToString() != "0")
+                        {
+                            if (dtproduct.Rows[i]["DiscountType"].ToString() == "%")
+                                sPDiscount = sDiscount.ToString() + "% Off";
+                            else if (dtproduct.Rows[i]["DiscountType"].ToString() == "Fixed")
+                                sPDiscount = CommonString.rusymbol + " " + sDiscount.ToString() + " Off";
+                            else
+                                sPDiscount = "";
+                        }
                         else
                             sPDiscount = "";
 

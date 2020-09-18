@@ -68,6 +68,12 @@ namespace Test0555.Models.WalletManagement
         {
             public string response;
             public string message;
+            public string WalletId;
+            public string WalletLinkId;
+            public string CrAmount;
+            public string CrDate;
+            public string CrDescription;
+            public string balance;
             public string ValidationMessage;
         }
     }

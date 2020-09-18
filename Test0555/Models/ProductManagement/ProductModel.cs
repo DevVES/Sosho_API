@@ -62,11 +62,15 @@ namespace Test0555.Models.ProductManagement
             public string IsSpecialMessage;
             public string MaxQty;
             public string MinQty;
+            public string isFreeShipping;
+            public string isFixedShipping;
+            public string FixedShipRate;
             public string IsProductDescription;
             public string ProductDescription;
             public string ProductNotes;
             public string ProductKeyFeatures;
             public string ProductId;
+
         }
         public class ProductDataList
         {
@@ -101,6 +105,7 @@ namespace Test0555.Models.ProductManagement
             public string pJustBougth;
             public string pgst;
             public string IsQtyFreeze;
+           
 
 
 
@@ -150,6 +155,10 @@ namespace Test0555.Models.ProductManagement
             public string weight;
             public string isOutOfStock;
             public string isSelected;
+            public string isQtyFreeze;
+            public string isBestBuy;
+            public string MinQty;
+            public string MaxQty;
             public string packSizeId;
             public string AImageName;
         }

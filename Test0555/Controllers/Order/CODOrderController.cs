@@ -1299,6 +1299,19 @@ namespace Test0555.Controllers.Order
                                     //START 20-02-2020 - Added Code To Track Source
                                     try
                                     {
+                                        if (model.Redeemeamount.ToString() != "0" && model.balance.ToString() != "0")
+                                        {
+                                            string[] parm1 = { model.WalletId, model.CustomerId, OrderId.ToString(),model.WalletLinkId, model.CrDate,model.CrDescription,model.CrAmount,
+                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CrDescription,
+                                                model.Redeemeamount,(Convert.ToInt32(model.balance) - Convert.ToInt32(model.Redeemeamount)).ToString(),"1",
+                                            dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
+
+                                            string insertredeemewallet = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
+                                                                          " [wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description], " +
+                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
+                                            int historyid = dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
+                                        }
+
                                         string values = string.Empty;
                                         Logger.InsertLogsApp("Inserting Source Of Order");
                                         if (Request.Headers.GetValues("DeviceType").First() != null)
@@ -1312,6 +1325,8 @@ namespace Test0555.Controllers.Order
                                                 int sourceid = dbCon.ExecuteScalarQueryWithParams(insertdeviceidentity, insert);
                                             }
                                         }
+
+                                    
                                     }
                                     catch (Exception ex)
                                     {

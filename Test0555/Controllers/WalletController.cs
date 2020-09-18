@@ -269,69 +269,204 @@ namespace Test0555.Controllers
                 if (CustomerId != "" && CustomerId != null)
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
-                    string querymain = "SELECT distinct w.wallet_id,campaign_name,wallet_amount,per_type,per_amount, W.min_order_amount " +
-                                       " FROM[tblWalletCustomerHistory] H " +
-                                       " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
-                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
-                                        where +
-                                       " AND W.offer_id = 1 " +
-                                       " AND W.is_active = 1 " +
-                                       " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date ";
-
-//                    " AND W.min_order_amount <= " + OrderAmount +
-  //                                     " AND H.balance >= " + RedeemeAmount +
+                    string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.campaign_name AS CR_description, " +
+                                       " WC.created_date AS CR_date,campaign_name,wallet_amount,per_type,per_amount, " +
+                    " W.min_order_amount, H.balance " +
+                    " FROM[tblWalletCustomerHistory] H " +
+                    " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
+                    " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                     where +
+                    " AND W.offer_id = 1 " +
+                    " AND W.is_active = 1 " +
+                    " AND H.balance > 0 " +
+                    " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
+                    " Order by H.Id desc";
 
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
-                        //string sWalletId = "";
-                        string type = "";
                         for (int i = 0; i < dtmain.Rows.Count; i++)
                         {
-
+                            string walletId = dtmain.Rows[i]["wallet_id"].ToString();
+                            string walletlinkId = dtmain.Rows[i]["wallet_link_id"].ToString();
                             int walletAmt = Convert.ToInt32(dtmain.Rows[i]["wallet_amount"]);
                             int perAmt = Convert.ToInt32(dtmain.Rows[i]["per_amount"]);
                             int minOrdAmt = Convert.ToInt32(dtmain.Rows[i]["min_order_amount"]);
+                            string crDate = dtmain.Rows[i]["CR_date"].ToString();
+                            string crDescription = dtmain.Rows[i]["CR_description"].ToString();
+                            string balance = dtmain.Rows[i]["balance"].ToString();
 
-                            if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
-                            {
-                                if (Convert.ToInt32(RedeemeAmount) > perAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
-                                }
-                                else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
-                                }
-                            }
-                            if (dtmain.Rows[i]["per_type"].ToString() == "%")
-                            {
-                                int redeemPerAmt = (walletAmt * perAmt) / 100;
-                                if (Convert.ToInt32(RedeemeAmount) > redeemPerAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
-                                }
-                                else if (Convert.ToInt32(RedeemeAmount) <= redeemPerAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
-                                }
-                            }
-                            if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
-                            {
-                                if (Convert.ToInt32(RedeemeAmount) > perAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
-                                }
-                                else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
-                                {
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
-                                }
-                            }
-                            if(minOrdAmt > Convert.ToInt32(OrderAmount))
-                            {
-                                objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
-                            }
+                            objeWalletdt.WalletId = walletId;
+                            objeWalletdt.WalletLinkId = walletlinkId;
+                            objeWalletdt.CrAmount = walletAmt.ToString();
+                            objeWalletdt.CrDate = crDate;
+                            objeWalletdt.CrDescription = crDescription;
+                            objeWalletdt.balance = balance;
                             
+                            if (Convert.ToInt32(balance) >= Convert.ToInt32(RedeemeAmount))
+                            {
+                                if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
+                                {
+                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                                {
+                                    int redeemPerAmt = (walletAmt * perAmt) / 100;
+                                    if (Convert.ToInt32(RedeemeAmount) > redeemPerAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= redeemPerAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                                {
+                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (minOrdAmt > Convert.ToInt32(OrderAmount))
+                                {
+                                    objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
+                                }
+
+                            }
+                            else
+                            {
+                                objeWalletdt.ValidationMessage = "Your Wallet money is ₹ " + balance;
+                            }
+
+                            
+                        }
+                        objeWalletdt.response = CommonString.successresponse;
+                        objeWalletdt.message = CommonString.successmessage;
+                    }
+                    else
+                    {
+                        objeWalletdt.response = CommonString.DataNotFoundResponse;
+                        objeWalletdt.message = CommonString.DataNotFoundMessage;
+                        objeWalletdt.ValidationMessage = "";
+                    }
+                }
+                return objeWalletdt;
+            }
+            catch (Exception ex)
+            {
+                objeWalletdt.response = CommonString.Errorresponse;
+                objeWalletdt.message = ex.StackTrace + " " + ex.Message;
+                return objeWalletdt;
+            }
+        }
+
+        [HttpGet]
+        public WalletModel.RedeemeWalletFromOrder RedeemeCouponCodeFromOrder(string CustomerId = "", string OrderAmount = "", string RedeemeAmount = "")
+        {
+            WalletModel.RedeemeWalletFromOrder objeWalletdt = new WalletModel.RedeemeWalletFromOrder();
+
+            try
+            {
+                objeWalletdt.response = "1";
+                objeWalletdt.message = "Successfully";
+                string where = "";
+                if (CustomerId != "" && CustomerId != null)
+                {
+                    where = "AND [WC].customer_id=" + CustomerId;
+                    string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.campaign_name AS CR_description, " +
+                                       " WC.created_date AS CR_date,campaign_name,wallet_amount,per_type,per_amount, " +
+                    " W.min_order_amount, H.balance " +
+                    " FROM[tblWalletCustomerHistory] H " +
+                    " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
+                    " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                     where +
+                    " AND W.offer_id = 3 " +
+                    " AND W.is_active = 1 " +
+                    " AND H.balance > 0 " +
+                    " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
+                    " Order by H.Id desc";
+
+                    DataTable dtmain = dbc.GetDataTable(querymain);
+                    if (dtmain != null && dtmain.Rows.Count > 0)
+                    {
+                        for (int i = 0; i < dtmain.Rows.Count; i++)
+                        {
+                            string walletId = dtmain.Rows[i]["wallet_id"].ToString();
+                            string walletlinkId = dtmain.Rows[i]["wallet_link_id"].ToString();
+                            int walletAmt = Convert.ToInt32(dtmain.Rows[i]["wallet_amount"]);
+                            int perAmt = Convert.ToInt32(dtmain.Rows[i]["per_amount"]);
+                            int minOrdAmt = Convert.ToInt32(dtmain.Rows[i]["min_order_amount"]);
+                            string crDate = dtmain.Rows[i]["CR_date"].ToString();
+                            string crDescription = dtmain.Rows[i]["CR_description"].ToString();
+                            string balance = dtmain.Rows[i]["balance"].ToString();
+
+                            objeWalletdt.WalletId = walletId;
+                            objeWalletdt.WalletLinkId = walletlinkId;
+                            objeWalletdt.CrAmount = walletAmt.ToString();
+                            objeWalletdt.CrDate = crDate;
+                            objeWalletdt.CrDescription = crDescription;
+                            objeWalletdt.balance = balance;
+
+                            if (Convert.ToInt32(balance) >= Convert.ToInt32(RedeemeAmount))
+                            {
+                                if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
+                                {
+                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                                {
+                                    int redeemPerAmt = (walletAmt * perAmt) / 100;
+                                    if (Convert.ToInt32(RedeemeAmount) > redeemPerAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= redeemPerAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                                {
+                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    }
+                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    {
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                    }
+                                }
+                                if (minOrdAmt > Convert.ToInt32(OrderAmount))
+                                {
+                                    objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
+                                }
+
+                            }
+                            else
+                            {
+                                objeWalletdt.ValidationMessage = "Your Wallet money is ₹ " + balance;
+                            }
+
+
                         }
                         objeWalletdt.response = CommonString.successresponse;
                         objeWalletdt.message = CommonString.successmessage;

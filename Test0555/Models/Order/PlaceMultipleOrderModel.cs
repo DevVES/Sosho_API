@@ -33,6 +33,12 @@ namespace Test0555.Models.Order
         public string AddressId { get; set; }
         public string discountamount { get; set; } = "";
         public string Redeemeamount { get; set; } = "";
+        public string WalletId;
+        public string WalletLinkId;
+        public string CrAmount;
+        public string CrDate;
+        public string CrDescription;
+        public string balance;
         public string orderMRP { get; set; }
         public string totalAmount { get; set; }
         public string totalQty { get; set; }

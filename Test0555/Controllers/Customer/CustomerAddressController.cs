@@ -274,12 +274,12 @@ namespace Test0555.Controllers
                                     " from CustomerAddress where IsActive=1 and IsDeleted=0 and CustomerAddress.CustomerId=" + custid; 
 
                 DataTable dtdata = dbc.GetDataTable(Insertdata);
-
+                Objlistaddr.CustAddressList = new List<DeliveryAddressModel.CustAddressDataList>();
                 if (dtdata != null && dtdata.Rows.Count > 0)
                 {
                     Objlistaddr.Response = CommonString.successresponse;
                     Objlistaddr.Message = CommonString.successmessage;
-                    Objlistaddr.CustAddressList = new List<DeliveryAddressModel.CustAddressDataList>();
+                    
 
                     for (int i = 0; i < dtdata.Rows.Count; i++)
                     {

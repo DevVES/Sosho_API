@@ -122,6 +122,8 @@ namespace Test0555.Controllers
                 querymain += " case when isnull(Recommended,'') = '' then 'false' else 'true' end as IsSoshoRecommended,";
                 querymain += "case when isnull(ProductBanner,'') = '' then 'false' else 'true' end as IsSpecialMessage ";
                 querymain += "  ,Product.CategoryID,ProductMRP AS mrp,Isnull(cast(cast(discount as decimal(10,2)) AS FLOAT),'') AS discount,DiscountType,SoshoPrice,MaxQty,MinQty,case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription ";
+                querymain += " ,case when isnull(IsFreeShipping,'') = '' then 'false' else 'true' end as IsFreeShipping  ";
+                querymain += " ,case when isnull(IsFixedShipping,'') = '' then 'false' else 'true' end as IsFixedShipping, FixedShipRate ";
                 querymain += " from Product ";
                 querymain += " inner join Unitmaster on Unitmaster.id=Product.UnitId ";
                 querymain += " inner join Category cat on cat.CategoryID = Product.CategoryID ";
@@ -162,6 +164,7 @@ namespace Test0555.Controllers
                     string sProductId = "", sMrp = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSoshoPrice = "", sSold = "", sProductBanner = "";
                     string sDUnit = "", sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sProductvariant = "", sIsSoshoRecommended = "";
                     string sIsSpecialMessage = "", sProductDiscription = "", sIsProductDetails = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription="";
+                    string  sisFreeShipping = "", sisFixedShipping = "", sFixedShipRate = "";
                     decimal dDiscount = 0;
                     Boolean bIsQtyFreeze = false;
                     for (int i = 0; i < dtproduct.Rows.Count; i++)
@@ -200,19 +203,26 @@ namespace Test0555.Controllers
                         {
                             string AttImageDetails = "SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails,Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
                                                      " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice,pam.PackingType,pam.ProductImage, " +
-                                                     " pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy,pam.isOutOfStock " +
+                                                     " pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy,pam.isOutOfStock,case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, " +
+                                                     " pam.MaxQty, pam.MinQty,case when isnull(IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze " +
                                                      " FROM Product_ProductAttribute_Mapping pam inner join Unitmaster um on um.id=pam.UnitId where pam.productid=" + sProductId + " and pam.IsActive=1 and pam.IsDeleted = 0";
                             DataTable dtAttdetails = dbc.GetDataTable(AttImageDetails);
 
                             if (dtAttdetails != null && dtAttdetails.Rows.Count > 0)
                             {
-                                string sAMrp = "", sADiscount = "", sAPackingType = "", sAsoshoPrice = "", sAweight = "", sApackSizeId = "", sAImage = "", sAPDiscount = "", sisSelected="";
+                                string sAMrp = "", sADiscount = "", sAPackingType = "", sAsoshoPrice = "", sAweight = "", sApackSizeId = "", sAImage = "";
+                                string sAPDiscount = "", sisSelected="", sisbestbuy = "", sisQtyFreeze = "";
+                                sMaxQty = ""; sMinQty = "";
                                 Boolean bAisOutOfStock = false, bAisSelected = false;
                                 for (int j = 0; j < dtAttdetails.Rows.Count; j++)
                                 {
                                     attributelist = new ProductModel.ProductAttributelist();
                                     sApackSizeId = dtAttdetails.Rows[j]["Id"].ToString();
                                     sAMrp = dtAttdetails.Rows[j]["Mrp"].ToString();
+                                    sMinQty = dtAttdetails.Rows[j]["MinQty"].ToString();
+                                    sMaxQty = dtAttdetails.Rows[j]["MaxQty"].ToString();
+                                    
+
                                     sADiscount = dtAttdetails.Rows[j]["Discount"].ToString();
                                     if (sADiscount.ToString() != "0")
                                     {
@@ -241,6 +251,8 @@ namespace Test0555.Controllers
                                     //    bAisSelected = false;
 
                                     sisSelected = dtAttdetails.Rows[j]["isSelectedDetails"].ToString();
+                                    sisbestbuy = dtAttdetails.Rows[j]["IsBestBuy"].ToString();
+                                    sisQtyFreeze = dtAttdetails.Rows[j]["IsQtyFreeze"].ToString();
 
                                     attributelist.Mrp = sAMrp;
                                     //attributelist.Discount = sADiscount;
@@ -250,7 +262,11 @@ namespace Test0555.Controllers
                                     attributelist.weight = sAweight;
                                     attributelist.AImageName = Attribuepathimg + sAImage;
                                     attributelist.isOutOfStock = bAisOutOfStock.ToString();
+                                    attributelist.MinQty = sMinQty;
+                                    attributelist.MaxQty = sMaxQty;
                                     attributelist.isSelected = sisSelected;
+                                    attributelist.isQtyFreeze = sisQtyFreeze;
+                                    attributelist.isBestBuy = sisbestbuy;
                                     attributelist.packSizeId = sApackSizeId;
                                     objProduct.ProductAttributesList.Add(attributelist);
                                 }
@@ -298,6 +314,9 @@ namespace Test0555.Controllers
                         sProductDiscription = dtproduct.Rows[i]["ProductDiscription"].ToString();
                         sProductNotes = dtproduct.Rows[i]["Note"].ToString();
                         sProductKeyFeatures = dtproduct.Rows[i]["KeyFeatures"].ToString();
+                        sisFreeShipping = dtproduct.Rows[i]["IsFreeShipping"].ToString();
+                        sisFixedShipping = dtproduct.Rows[i]["IsFixedShipping"].ToString();
+                        sFixedShipRate = dtproduct.Rows[i]["FixedShipRate"].ToString();
 
                         if (dtproduct.Rows[i]["IsQtyFreeze"].ToString() == "1")
                             bIsQtyFreeze = true;
@@ -330,7 +349,10 @@ namespace Test0555.Controllers
                         objProduct.ProductNotes = sProductNotes;
                         objProduct.ProductKeyFeatures = sProductKeyFeatures;
                         objProduct.ProductId = sProductId;
-
+                        objProduct.isFreeShipping = sisFreeShipping;
+                        objProduct.isFixedShipping = sisFixedShipping;
+                        objProduct.FixedShipRate = sFixedShipRate;
+                       
                         objeprodt.ProductList.Add(objProduct);
                     }
                 }

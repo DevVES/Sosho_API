@@ -1299,17 +1299,54 @@ namespace Test0555.Controllers.Order
                                     //START 20-02-2020 - Added Code To Track Source
                                     try
                                     {
-                                        if (model.Redeemeamount.ToString() != "0" && model.balance.ToString() != "0")
+                                        decimal redeemeAmt = 0;
+                                        decimal balanceAmt = 0;
+                                        if (model.Redeemeamount.ToString() != "0" && model.Walletbalance.ToString() != "0")
                                         {
-                                            string[] parm1 = { model.WalletId, model.CustomerId, OrderId.ToString(),model.WalletLinkId, model.CrDate,model.CrDescription,model.CrAmount,
-                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CrDescription,
-                                                model.Redeemeamount,(Convert.ToInt32(model.balance) - Convert.ToInt32(model.Redeemeamount)).ToString(),"1",
+                                            if(model.WalletType == "%")
+                                            {
+                                                redeemeAmt = Convert.ToDecimal(Convert.ToDecimal(model.totalAmount) * Convert.ToDecimal(model.WalletCrAmount) / 100);
+                                            }
+                                            else
+                                            {
+                                                redeemeAmt = Convert.ToDecimal(model.Redeemeamount);
+                                            }
+                                            balanceAmt = Convert.ToDecimal(model.Walletbalance) - redeemeAmt;
+                                            string[] parm1 = { model.WalletId, model.CustomerId, OrderId.ToString(),model.WalletLinkId, model.WalletCrDate,model.WalletCrDescription,model.WalletCrAmount,
+                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.WalletCrDescription,
+                                                redeemeAmt.ToString(),balanceAmt.ToString(),"1",
                                             dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
 
                                             string insertredeemewallet = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
                                                                           " [wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description], " +
                                                                           " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
-                                            int historyid = dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
+                                            dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
+                                        }
+                                        if(model.PromoCodeamount.ToString() != "0" )
+                                        {
+                                            decimal promocodeAmt = 0;
+                                            if (model.PromoCodetype == "%")
+                                            {
+                                                promocodeAmt = Convert.ToDecimal(Convert.ToDecimal(model.totalAmount) * (Convert.ToDecimal(model.PromoCodeCrAmount) / 100));
+                                                balanceAmt = 0;
+                                            }
+                                            else
+                                            {
+                                                promocodeAmt = Convert.ToDecimal(model.PromoCodebalance);
+                                                balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) - Convert.ToInt32(model.PromoCodeamount));
+                                            }
+                                            string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, model.PromoCodeCrDate,model.PromoCodeCrDescription,promocodeAmt.ToString(),
+                                                               dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.PromoCodeCrDescription,
+                                                               "0",promocodeAmt.ToString(),"1",
+                                                               dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
+                                                string insertCouponCodeAmt = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
+                                                                          " [wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description], " +
+                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
+                                                int historyid = dbCon.ExecuteScalarQueryWithParams(insertCouponCodeAmt, parm2);
+
+                                            string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
+                                                                         " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
+                                            dbCon.ExecuteQuery(updatePromoCodeMark);
                                         }
 
                                         string values = string.Empty;

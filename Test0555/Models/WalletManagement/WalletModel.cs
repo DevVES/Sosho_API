@@ -20,7 +20,7 @@ namespace Test0555.Models.WalletManagement
             public string wallet_id;
             public string campaign_name;
             public string wallet_amount;
-            public string coupon_code;
+            public string PromoCode;
             public string is_applicable_first_order;
             public string per_type;
             public string per_amount;
@@ -34,16 +34,16 @@ namespace Test0555.Models.WalletManagement
             public string response;
             public string message;
             public string RedeemeAmount;
-            public List<CouponCodeDataList> CouponCodeList { get; set; }
-            public List<CashbackDataList> CashbackList { get; set; }
+            public List<PromoCodeDataList> PromoCodeList { get; set; }
+            //public List<CashbackDataList> CashbackList { get; set; }
 
         }
 
-        public class CouponCodeDataList
+        public class PromoCodeDataList
         {
             public string wallet_id;
             public string campaign_name;
-            public string coupon_code;
+            public string PromoCode;
             public string per_type;
             public string per_amount;
             public string min_order_amount;
@@ -52,17 +52,17 @@ namespace Test0555.Models.WalletManagement
             public string end_date;
         }
 
-        public class CashbackDataList
-        {
-            public string wallet_id;
-            public string campaign_name;
-            public string per_type;
-            public string per_amount;
-            public string min_order_amount;
-            public string balance;
-            public string start_date;
-            public string end_date;
-        }
+        //public class CashbackDataList
+        //{
+        //    public string wallet_id;
+        //    public string campaign_name;
+        //    public string per_type;
+        //    public string per_amount;
+        //    public string min_order_amount;
+        //    public string balance;
+        //    public string start_date;
+        //    public string end_date;
+        //}
 
         public class RedeemeWalletFromOrder
         {
@@ -70,10 +70,25 @@ namespace Test0555.Models.WalletManagement
             public string message;
             public string WalletId;
             public string WalletLinkId;
+            public string WalletType;
             public string CrAmount;
             public string CrDate;
             public string CrDescription;
             public string balance;
+            public string ValidationMessage;
+        }
+
+        public class RedeemePromoCodeFromOrder
+        {
+            public string response;
+            public string message;
+            public string PromoCodeId;
+            public string PromoCodeLinkId;
+            public string PromoCodetype;
+            public string PromoCodeCrAmount;
+            public string PromoCodeCrDate;
+            public string PromoCodeCrDescription;
+            public string PromoCodebalance;
             public string ValidationMessage;
         }
     }

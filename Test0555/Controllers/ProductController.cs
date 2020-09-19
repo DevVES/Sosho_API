@@ -127,7 +127,7 @@ namespace Test0555.Controllers
                 querymain += " from Product ";
                 querymain += " inner join Unitmaster on Unitmaster.id=Product.UnitId ";
                 querymain += " inner join Category cat on cat.CategoryID = Product.CategoryID ";
-                querymain += " Where StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and EndDate>='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "'";
+                querymain += " Where StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and EndDate>='" + dbc.getindiantime().ToString("dd/MMM/yyyy") + "'";
                 querymain += "and Product.IsActive = 1 and Product.IsDeleted = 0 and Isnull(Product.IsApproved,'') = 1 and Product.JurisdictionID =" + JurisdictionID;
                 if (!string.IsNullOrEmpty(CategoryId))
                 {

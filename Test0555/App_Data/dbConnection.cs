@@ -68,14 +68,47 @@ namespace InquiryManageAPI.Controllers
         SqlConnection conn = new SqlConnection();
         SqlTransaction objtrans = null;
 
-
         //public  SqlConnection GetConnectionForAdapter()
         //{
         //    conn.ConnectionString = consString;
         //    return conn;
         //}
 
+        public int ExecuteQueryWithParamsId(string query, string[] parameters)
+        {
+            try
+            {
+                query = query.ToLower();
+                String CheckQry = query;
+                DataTable dt = new DataTable();
+                SqlCommand cmd = new SqlCommand();
+                cmd.CommandText = query;
 
+                for (int counter = 1; counter <= parameters.Length; counter++)
+                {
+                    cmd.Parameters.AddWithValue("@" + counter.ToString(), parameters[counter - 1]);
+                    string s1 = "@" + counter.ToString();
+                    string s2 = parameters[counter - 1];
+                    CheckQry = CheckQry.Replace(s1, s2);
+
+                }
+                conn = openConnection();
+                cmd.Connection = conn;
+                //int val = cmd.ExecuteNonQuery();
+                int val1 = Convert.ToInt32(cmd.ExecuteScalar());
+                conn.Close();
+                return val1;
+            }
+            catch (Exception e)
+            {
+                InsertLogs(LOGS.LogLevel.Error, "SavePartDetail Msg:", e.Message.ToString());
+                return 0;
+            }
+            finally
+            {
+                conn.Close();
+            }
+        }
         public void SendSMS(String Mobile, String Sms)
         {
             /// <summary>

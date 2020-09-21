@@ -50,6 +50,7 @@ namespace Test0555.Models.WalletManagement
             public string balance;
             public string start_date;
             public string end_date;
+            public string terms;
         }
 
         //public class CashbackDataList

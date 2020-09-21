@@ -134,7 +134,7 @@ namespace Test0555.Controllers
 
                         }
                         //For PromoCode
-                        string queryPromoCode = " Select  w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, " +
+                        string queryPromoCode = " Select  w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
                                         " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date,  (select isnull(H.balance,0) " +
                                         " from[tblWalletCustomerHistory] H " +
                                         " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) as Balance " +
@@ -149,7 +149,7 @@ namespace Test0555.Controllers
                                         " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) = 0 " +
 	                                    " ) " +
                                         " Union " +
-                                        " SELECT w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, " +
+                                        " SELECT w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
                                         " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date, 0 AS Balance " +
                                         " FROM[WalletMaster] W " +
                                         " LEFT JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
@@ -173,6 +173,7 @@ namespace Test0555.Controllers
                                 string startDate = dtPromoCode.Rows[i]["start_date"].ToString();
                                 string endDate = dtPromoCode.Rows[i]["end_date"].ToString();
                                 string balance = dtPromoCode.Rows[i]["Balance"].ToString();
+                                string terms = dtPromoCode.Rows[i]["terms"].ToString();
 
                                 objPromoCode.wallet_id = walletId;
                                 objPromoCode.PromoCode = promocode;
@@ -183,7 +184,7 @@ namespace Test0555.Controllers
                                 objPromoCode.balance = balance;
                                 objPromoCode.start_date = startDate;
                                 objPromoCode.end_date = endDate;
-
+                                objPromoCode.terms = terms;
                                 objRedeemeWalletdt.PromoCodeList.Add(objPromoCode);
 
                             }
@@ -274,7 +275,7 @@ namespace Test0555.Controllers
                 if (CustomerId != "" && CustomerId != null)
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
-                    string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.campaign_name AS CR_description, " +
+                    string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.terms AS CR_description, " +
                                        " WC.created_date AS CR_date,campaign_name,wallet_amount,per_type,per_amount, " +
                     " W.min_order_amount, H.balance " +
                     " FROM[tblWalletCustomerHistory] H " +
@@ -392,21 +393,8 @@ namespace Test0555.Controllers
                 if (CustomerId != "" && CustomerId != null)
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
-                    //string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.campaign_name AS CR_description, " +
-                    //                   " WC.created_date AS CR_date,H.CR_amount,campaign_name,wallet_amount,per_type,per_amount, " +
-                    //" W.min_order_amount, H.balance " +
-                    //" FROM[tblWalletCustomerLink] WC " +
-                    //" LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
-                    //" INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
-                    // where +
-                    //" AND W.offer_id = 3 " +
-                    //" AND W.is_active = 1 " +
-                    //" AND H.balance > 0 " +
-                    //" AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
-                    //" AND W.coupon_code = '" + PromoCode + "'"+
-                    //" Order by H.Id desc";
 
-                    string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.campaign_name AS CR_description,  WC.created_date AS CR_date,W.per_type," +
+                    string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.terms AS CR_description,  WC.created_date AS CR_date,W.per_type," +
                                        " W.per_amount,wallet_amount,per_type,per_amount,  W.min_order_amount, ISNULL((select isnull(H.balance,0) " +
                                        " from [tblWalletCustomerHistory] H " +
                                        " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)),0) as Balance " +

@@ -159,7 +159,7 @@ namespace Test0555.Models.ProductManagement
             public string isBestBuy;
             public string MinQty;
             public string MaxQty;
-            public string packSizeId;
+            public string AttributeId;
             public string AImageName;
         }
         

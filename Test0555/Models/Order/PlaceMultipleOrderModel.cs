@@ -65,5 +65,6 @@ namespace Test0555.Models.Order
         public decimal PaidAmount { get; set; }
         public string UnitId { get; set; }
         public string Unit { get; set; }
+        public string AttributeId { get; set; }
     }
 }

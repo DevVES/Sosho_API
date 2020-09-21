@@ -42,6 +42,7 @@ namespace Test0555.Models
             public string categoryId;
             public string categoryName;
             public int ProductId;
+            public string AttributeId;
             public string ProductName;
             public string openUrlLink;
             public string  MaxQty;

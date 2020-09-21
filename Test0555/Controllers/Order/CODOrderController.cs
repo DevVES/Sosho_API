@@ -1301,7 +1301,7 @@ namespace Test0555.Controllers.Order
                                     {
                                         decimal redeemeAmt = 0;
                                         decimal balanceAmt = 0;
-                                        if (model.Redeemeamount.ToString() != "0" && model.Walletbalance.ToString() != "0")
+                                        if (model.Redeemeamount.ToString() != "0" && model.Walletbalance.ToString() != "0" && model.WalletId != "0")
                                         {
                                             if(model.WalletType == "%")
                                             {
@@ -1322,7 +1322,7 @@ namespace Test0555.Controllers.Order
                                                                           " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
                                             dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
                                         }
-                                        if(model.PromoCodeamount.ToString() != "0" )
+                                        if(model.PromoCodeamount.ToString() != "0" && model.WalletId != "0")
                                         {
                                             decimal promocodeAmt = 0;
                                             if (model.PromoCodetype == "%")
@@ -1489,7 +1489,7 @@ namespace Test0555.Controllers.Order
 
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 4");
                         string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE());Select SCOPE_IDENTITY()";
-                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, "0", totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" };
+                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, "0", totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0"  };
                         int Orderrslt = dbCon.ExecuteScalarQueryWithParams(insertquery, param1);
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 5 - " + Orderrslt.ToString());
 
@@ -1598,9 +1598,9 @@ namespace Test0555.Controllers.Order
                                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder dtmain start : step 11");
                                             string gst = "select [TaxValue] from [GstTaxCategory] where Id=" + dtmain.Rows[i]["GSTTaxId"].ToString();
                                             DataTable dtgstv = dbCon.GetDataTable(gst);
-                                            string insertquery1 = "insert into [AlternetOrderItem](OrderId,[ProductId],[Quantity],[MrpPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[BuyWithPerUnit],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,GETDATE(),@18,@19,@20,@21);Select SCOPE_IDENTITY()";
+                                            string insertquery1 = "insert into [AlternetOrderItem](OrderId,[ProductId],[Quantity],[MrpPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[BuyWithPerUnit],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit],[AttributeId]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,GETDATE(),@18,@19,@20,@21,@22);Select SCOPE_IDENTITY()";
                                             //string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, item.buywith, buywithprice.ToString(), item.couponCode, item.refrcode };
-                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), item.couponCode, item.refrcode ,unitid.ToString(),sUnit.ToString()};
+                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), item.couponCode, item.refrcode ,unitid.ToString(),sUnit.ToString(), item.AttributeId.ToString()};
                                             result11 = dbCon.ExecuteScalarQueryWithParams(insertquery1, param11);
                                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder dtmain start : step 12 " + result11.ToString());
                                             try

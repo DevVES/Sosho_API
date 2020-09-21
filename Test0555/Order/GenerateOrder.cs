@@ -399,8 +399,9 @@ Get_AlternetOrderItem.Rows[orderitem]["CustOfferCode"].ToString(),
 Get_AlternetOrderItem.Rows[orderitem]["RefferedOfferCode"].ToString(),
 Get_AlternetOrderItem.Rows[orderitem]["UnitId"].ToString(),
 Get_AlternetOrderItem.Rows[orderitem]["Unit"].ToString(),
+Get_AlternetOrderItem.Rows[orderitem]["AttributeId"].ToString(),
 };
-                                            string cmditem = "INSERT INTO [dbo].[OrderItem] ([OrderId] ,[ProductId] ,[Quantity] ,[MrpPerUnit],[BuyWithPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit]) VALUES  (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,DATEADD(MINUTE, 330, GETUTCDATE()),@18,@19,@20,@21); SELECT SCOPE_IDENTITY();";
+                                            string cmditem = "INSERT INTO [dbo].[OrderItem] ([OrderId] ,[ProductId] ,[Quantity] ,[MrpPerUnit],[BuyWithPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit],[AttributeId]) VALUES  (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,DATEADD(MINUTE, 330, GETUTCDATE()),@18,@19,@20,@21,@22); SELECT SCOPE_IDENTITY();";
 
                                             int OrderItemId = dbCon.ExecuteScalarQueryWithParams(cmditem, insertitem);
                                             try

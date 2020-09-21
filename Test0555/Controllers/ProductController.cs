@@ -267,7 +267,7 @@ namespace Test0555.Controllers
                                     attributelist.isSelected = sisSelected;
                                     attributelist.isQtyFreeze = sisQtyFreeze;
                                     attributelist.isBestBuy = sisbestbuy;
-                                    attributelist.packSizeId = sApackSizeId;
+                                    attributelist.AttributeId = sApackSizeId;
                                     objProduct.ProductAttributesList.Add(attributelist);
                                 }
 

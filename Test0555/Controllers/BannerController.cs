@@ -166,13 +166,15 @@ namespace Test0555.Controllers
                                      " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
                                      " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.Action,'') AS Action, ISNULL(Im.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
                                      " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " + 
-                                     " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title " + 
+                                     " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
+                                     " ISNULL(PA.AttributeId,0) AS AttributeId" +
                                      " From IntermediateBanners Im " +
                                      " Left join category cg on  cg.categoryId = Im.categoryId " +
                                      " Left join Product P on  P.Id = Im.ProductId " +
                                      " Left join category PC on PC.CategoryID = P.CategoryID " +
                                      " Left join UnitMaster U on U.Id = P.UnitId " +
                                      " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
+                                     " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
                                      " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate + 
                                      "' and Im.StartDate<='" + startend + "' and TypeId = " + sTypeId + "" +
                                      cond + 
@@ -182,7 +184,7 @@ namespace Test0555.Controllers
                         string Id = "", ImageName1 = "", sAction = "", sCategoryId = "", sCategoryName = "", sopenUrlLink="";
                         string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", sDiscount = "";
                         string sTitle = "";
-                        string sMaxQty = "", sMinQty = "";
+                        string sMaxQty = "", sMinQty = "", sAttributeId = "";
                         int sActionId = 0, sProductId = 0;
                         bool sIsQtyFreeze = false;
                         if (dtMainBanner != null && dtMainBanner.Rows.Count > 0)
@@ -198,7 +200,7 @@ namespace Test0555.Controllers
 
                                 Id = ""; ImageName1 = ""; sAction = ""; sCategoryId = ""; sCategoryName = ""; sopenUrlLink = "";
                                 sProductName = ""; sUnitName = ""; sWeight = ""; sSellingPrice = ""; sMRP = ""; sDiscount = "";
-                                sMaxQty = ""; sMinQty = "";
+                                sMaxQty = ""; sMinQty = ""; sAttributeId = "";
                                 sActionId = 0;  sProductId = 0;
                                 sIsQtyFreeze = false;
                                 for (int j = 0; j < dtMainBanner.Rows.Count; j++)
@@ -240,7 +242,7 @@ namespace Test0555.Controllers
                                     {
                                         sSellingPrice = dtMainBanner.Rows[j]["SellingPrice"].ToString();
                                     }
-                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["Weight"]) > 0)
+                                    if (!string.IsNullOrEmpty(dtMainBanner.Rows[j]["Weight"].ToString()) && Convert.ToInt32(dtMainBanner.Rows[j]["Weight"]) > 0)
                                     {
                                         sWeight = dtMainBanner.Rows[j]["Weight"].ToString();
                                     }
@@ -263,6 +265,11 @@ namespace Test0555.Controllers
                                     else
                                         sopenUrlLink = "";
 
+                                    if (Convert.ToInt32(dtMainBanner.Rows[j]["AttributeId"]) > 0)
+                                    {
+                                        sAttributeId = dtMainBanner.Rows[j]["AttributeId"].ToString();
+                                    }
+
                                     objbaner.IntermediateBannerImages.Add(new BannerModel.IntermediateBannerImage
                                     {
                                         Title = sTitle,
@@ -281,7 +288,8 @@ namespace Test0555.Controllers
                                         MRP = sMRP,
                                         Discount = sDiscount,
                                         SellingPrice = sSellingPrice,
-                                        Weight = sWeight + sUnitName
+                                        Weight = sWeight + sUnitName,
+                                        AttributeId = sAttributeId
                                     });
 
                                 }

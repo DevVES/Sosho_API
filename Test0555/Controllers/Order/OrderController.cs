@@ -1019,14 +1019,19 @@ namespace Test0555.Controllers.Order
                 string CustomerId = custid;
                 if (!string.IsNullOrWhiteSpace(CustomerId))
                 {
-                    string query = "SELECT [KeyValue] FROM [StringResources] where KeyName='ProductImageUrl'";
-                    DataTable dtfolder = dbCon.GetDataTable(query);
-                    string folder = "";
-                    if (dtfolder.Rows.Count > 0)
-                    {
-                        folder = dtfolder.Rows[0]["KeyValue"].ToString();
-                    }
-                    string Querydata = "select ISNULL(OrderItem.CustOfferCode,[Order].CustOfferCode) as cccode,(convert(varchar,[Order].CreatedOnUtc,106)+ ' '+ (CONVERT(varchar,[Order].CreatedOnUtc,108))) as OrderDate,ISNULL(OrderItem.RefferedOfferCode,[Order].RefferedOfferCode) as Refercode,(select top 1 Product.EndDate from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as enddatetime,(select top 1 Product.Id from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as productid,[Order].id as OrderId,(select top 1 Name from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as ProductName,(select  (DATENAME(dw,CAST(DATEPART(m, EndDate) AS VARCHAR)+ '/'+ CAST(DATEPART(d, EndDate) AS VARCHAR)  + '/' + CAST(DATEPART(yy, EndDate) AS VARCHAR))) +' '+convert(varchar(12),EndDate,106)+', '+convert(varchar(12),EndDate,108) as EndDate from  Product where Product.Id=OrderItem.ProductId and Product.EndDate is not null) as EndDate,[Order].OrderTotal from [Order] inner join OrderItem on OrderItem.OrderId=[Order].Id where [Order].CustomerId=" + CustomerId + "  order by [Order].id desc";
+                    
+                    string Querydata = "select ISNULL(OrderItem.CustOfferCode,[Order].CustOfferCode) as cccode,(convert(varchar,[Order].CreatedOnUtc,106)+ ' '+ (CONVERT(varchar,[Order].CreatedOnUtc,108))) as OrderDate, " +
+                                       " ISNULL(OrderItem.RefferedOfferCode,[Order].RefferedOfferCode) as Refercode, " +
+                                       " (select top 1 Product.EndDate from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as enddatetime, " + 
+                                       " (select top 1 Product.Id from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as productid, " + 
+                                       " [Order].id as OrderId,(select top 1 Name from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as ProductName, " + 
+                                       " (select  (DATENAME(dw,CAST(DATEPART(m, EndDate) AS VARCHAR)+ '/'+ CAST(DATEPART(d, EndDate) AS VARCHAR)  + '/' + CAST(DATEPART(yy, EndDate) AS VARCHAR))) +' '+convert(varchar(12),EndDate,106)+', '+convert(varchar(12),EndDate,108) as EndDate " + 
+                                       " from  Product where Product.Id=OrderItem.ProductId and Product.EndDate is not null) as EndDate, " + 
+                                       " [Order].OrderTotal, PA.Id AS AttributeId , PA.ProductImage " + 
+                                       " from [Order] " + 
+                                       " inner join OrderItem on OrderItem.OrderId=[Order].Id " +
+                                       " LEFT Join Product_ProductAttribute_Mapping PA ON PA.id = OrderItem.AttributeId " +
+                                       " where [Order].CustomerId=" + CustomerId + "  order by [Order].id desc";
 
                     DataTable dtproduct = dbCon.GetDataTable(Querydata);
 
@@ -1098,14 +1103,41 @@ namespace Test0555.Controllers.Order
                             string orderidd = dtproduct.Rows[i]["OrderId"].ToString();
                             string orddate = dtproduct.Rows[i]["OrderDate"].ToString();
                             string productname = dtproduct.Rows[i]["ProductName"].ToString();
-                            string imagename = "select ImageFileName from ProductImages where Productid=" + productidd + "";
-                            DataTable dtimage = dbCon.GetDataTable(imagename);
-                            string imgname = "";
-                            if (dtimage != null && dtimage.Rows.Count > 0)
+                            string prodImage = dtproduct.Rows[i]["ProductImage"].ToString();
+                            string imagename = string.Empty;
+
+
+                            string folder = "";
+                            string keyVal = "";
+                            if (!string.IsNullOrEmpty(prodImage))
                             {
-                                imagename = folder + dtimage.Rows[0]["ImageFileName"].ToString();
+                                keyVal = "ProductAttributeImageUrl";
+                            }
+                            else
+                            {
+                                keyVal = "ProductImageUrl";
+                            }
+                            string query = "SELECT [KeyValue] FROM [StringResources] where KeyName='"+ keyVal +"'";
+                            DataTable dtfolder = dbCon.GetDataTable(query);
+                            if (dtfolder.Rows.Count > 0)
+                            {
+                                folder = dtfolder.Rows[0]["KeyValue"].ToString();
                             }
 
+                            if (!string.IsNullOrEmpty(prodImage))
+                            {
+                                imagename = folder + prodImage;
+                            }
+                            else
+                            {
+                                imagename = "select ImageFileName from ProductImages where Productid=" + productidd + "";
+                                DataTable dtimage = dbCon.GetDataTable(imagename);
+                                string imgname = "";
+                                if (dtimage != null && dtimage.Rows.Count > 0)
+                                {
+                                    imagename = folder + dtimage.Rows[0]["ImageFileName"].ToString();
+                                }
+                            }
 
                             string flag = "0";
                             if (dtlive != null && dtlive.Rows.Count > 0)
@@ -1187,9 +1219,22 @@ namespace Test0555.Controllers.Order
         public OrderModels.orderdetailformultiple CustOrderDetailForMultipleProduct(String orderid)
         {
             OrderModels.orderdetailformultiple objorderdtil = new OrderModels.orderdetailformultiple();
+            objorderdtil.products = new List<OrderModels.ProductList>();
             try
             {
                 string OrderId = orderid;
+                objorderdtil.CustAddress = "";
+                objorderdtil.CustName = "";
+                objorderdtil.CustMob = "";
+                objorderdtil.OrderId = "0";
+                objorderdtil.Amount = "0";
+                objorderdtil.Response = "1";
+                objorderdtil.Message = "Successfully";
+                objorderdtil.OrderStatus = "";
+                objorderdtil.OrderStatusText = "";
+                objorderdtil.IsCancel = "";
+                objorderdtil.PaymentMode = "";
+                objorderdtil.OrderDate = "";
                 if (orderid != "")
                 {
                     string addressstr = "select FirstName as CustName,Address,(select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId)as CityName,CustomerAddress.pincode,(select StateMaster.StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as StateName,(select CountryMaster.CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId)as CountryName,CustomerAddress.MobileNo from CustomerAddress where Id=(select AddressId from [Order] where id=" + OrderId + ") ;";
@@ -1211,7 +1256,14 @@ namespace Test0555.Controllers.Order
                     DataTable dtorderdetails = dbCon.GetDataTable(OrderDetails);
 
                     //string imaagedetails = "select Product.ProductMrp,Product.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount,Product.id as pid,product.Name,isnull(Unit,'0') as unitweg,isnull((select UnitName from UnitMaster where UnitMaster.Id=Product.UnitId),'Gram')as Unit from Product where Product.Id IN (select ProductId from orderitem where orderid=" + OrderId + ")";
-                    string imaagedetails = "select Product.ProductMrp,Product.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount,Product.id as pid,OrderItem.Quantity,product.Name,isnull(Product.Unit,'0') as unitweg,isnull((select UnitName from UnitMaster where UnitMaster.Id=Product.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice from Product inner join OrderItem ON OrderItem.ProductId = Product.Id Where OrderItem.OrderId=" + OrderId;
+                    string imaagedetails = "select Product.ProductMrp,Product.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount, " + 
+                                           " Product.id as pid,OrderItem.Quantity,product.Name,isnull(Product.Unit,'0') as unitweg, " + 
+                                           " isnull((select UnitName from UnitMaster where UnitMaster.Id=Product.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice, " +
+                                           " PA.Id AS AttributeId , PA.ProductImage " +
+                                           " from Product " + 
+                                           " inner join OrderItem ON OrderItem.ProductId = Product.Id " +
+                                           " LEFT Join Product_ProductAttribute_Mapping PA ON PA.id = OrderItem.AttributeId " +
+                                           " Where OrderItem.OrderId=" + OrderId;
                     DataTable dtimgstr = dbCon.GetDataTable(imaagedetails);
 
                     if (dtorderdetails != null && dtorderdetails.Rows.Count > 0)
@@ -1348,18 +1400,44 @@ namespace Test0555.Controllers.Order
                                 string unt = dtimgstr.Rows[i]["unitweg"].ToString() + " " + dtimgstr.Rows[i]["unit"];
                                 //objorderdtil.Weight = unt;
 
-                                productidd = dtimgstr.Rows[i]["pid"].ToString();
-                                string imagename = "select imagefilename from productimages where productid=" + productidd + "";
-                                DataTable dtimage = dbCon.GetDataTable(imagename);
-                                string query = "select [keyvalue] from [stringresources] where keyname='productimageurl'";
-                                DataTable dtfolder = dbCon.GetDataTable(query);
+
+
                                 string folder = "";
+                                string keyVal = "";
+                                string prodImage = dtimgstr.Rows[i]["ProductImage"].ToString();
+                                string imgname = string.Empty;
+                                if (!string.IsNullOrEmpty(prodImage))
+                                {
+                                    keyVal = "ProductAttributeImageUrl";
+                                }
+                                else
+                                {
+                                    keyVal = "ProductImageUrl";
+                                }
+                                string query = "SELECT [KeyValue] FROM [StringResources] where KeyName='" + keyVal + "'";
+                                DataTable dtfolder = dbCon.GetDataTable(query);
                                 if (dtfolder.Rows.Count > 0)
                                 {
-                                    folder = dtfolder.Rows[0]["keyvalue"].ToString();
+                                    folder = dtfolder.Rows[0]["KeyValue"].ToString();
                                 }
-                                string imgname = folder + dtimage.Rows[0]["imagefilename"].ToString();
+                                if (!string.IsNullOrEmpty(prodImage))
+                                {
+                                    imgname = folder + prodImage;
+                                }
+                                else
+                                {
+                                    productidd = dtimgstr.Rows[i]["pid"].ToString();
+                                    string imagename = "select imagefilename from productimages where productid=" + productidd + "";
+                                    DataTable dtimage = dbCon.GetDataTable(imagename);
+                                    //string query = "select [keyvalue] from [stringresources] where keyname='productimageurl'";
+                                    //DataTable dtfolder = dbCon.GetDataTable(query);
 
+                                    //if (dtfolder.Rows.Count > 0)
+                                    //{
+                                    //    folder = dtfolder.Rows[0]["keyvalue"].ToString();
+                                    //}
+                                    imgname = folder + dtimage.Rows[0]["imagefilename"].ToString();
+                                }
 
                                 //objorderdtil.ProductImg = imgname;
 

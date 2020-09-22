@@ -1288,7 +1288,7 @@ namespace Test0555.Controllers.Order
                         }
                         else
                         {
-                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount);
+                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount,model.JurisdictionID);
                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder start : step 14");
                             if (chkalternat > 0 && !string.IsNullOrEmpty(model.totalAmount) && model.totalAmount != "0")
                             {
@@ -1446,7 +1446,7 @@ namespace Test0555.Controllers.Order
             }
             return objCODplaceorder;
         }
-        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "")
+        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "",string JurisdictionID = "")
         {
             var jsonstring = JsonConvert.SerializeObject(products);
             //ccode = products.Where(m => m.couponCode != string.Empty && m.couponCode != null && m.couponCode != "0").FirstOrDefault().couponCode;
@@ -1488,8 +1488,8 @@ namespace Test0555.Controllers.Order
                         string querystr = "";
 
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 4");
-                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE());Select SCOPE_IDENTITY()";
-                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, "0", totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0"  };
+                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24);Select SCOPE_IDENTITY()";
+                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, "0", totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID };
                         int Orderrslt = dbCon.ExecuteScalarQueryWithParams(insertquery, param1);
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 5 - " + Orderrslt.ToString());
 

@@ -30,6 +30,7 @@ namespace Test0555.Models.Order
     public class PlaceMultipleOrderNewModel
     {
         public string CustomerId { get; set; }
+        public string JurisdictionID { get; set; }
         public string AddressId { get; set; }
         public string discountamount { get; set; } = "";
         public string Redeemeamount { get; set; } = "";

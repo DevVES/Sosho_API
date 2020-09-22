@@ -295,9 +295,9 @@ namespace Test0555.Controllers
                         {
                             string walletId = dtmain.Rows[i]["wallet_id"].ToString();
                             string walletlinkId = dtmain.Rows[i]["wallet_link_id"].ToString();
-                            int walletAmt = Convert.ToInt32(dtmain.Rows[i]["wallet_amount"]);
-                            int perAmt = Convert.ToInt32(dtmain.Rows[i]["per_amount"]);
-                            int minOrdAmt = Convert.ToInt32(dtmain.Rows[i]["min_order_amount"]);
+                            decimal walletAmt = Convert.ToDecimal(dtmain.Rows[i]["wallet_amount"]);
+                            decimal perAmt = Convert.ToDecimal(dtmain.Rows[i]["per_amount"]);
+                            decimal minOrdAmt = Convert.ToDecimal(dtmain.Rows[i]["min_order_amount"]);
                             string crDate = dtmain.Rows[i]["CR_date"].ToString();
                             string crDescription = dtmain.Rows[i]["CR_description"].ToString();
                             string balance = dtmain.Rows[i]["balance"].ToString();
@@ -311,43 +311,43 @@ namespace Test0555.Controllers
                             objeWalletdt.CrDescription = crDescription;
                             objeWalletdt.balance = balance;
                             
-                            if (Convert.ToInt32(balance) >= Convert.ToInt32(RedeemeAmount))
+                            if (Convert.ToDecimal(balance) >= Convert.ToDecimal(RedeemeAmount))
                             {
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
                                 {
-                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "%")
                                 {
-                                    int redeemPerAmt = (walletAmt * perAmt) / 100;
-                                    if (Convert.ToInt32(RedeemeAmount) > redeemPerAmt)
+                                    decimal redeemPerAmt = (walletAmt * perAmt) / 100;
+                                    if (Convert.ToDecimal(RedeemeAmount) > redeemPerAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(RedeemeAmount) <= redeemPerAmt)
+                                    else if (Convert.ToDecimal(RedeemeAmount) <= redeemPerAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
                                 {
-                                    if (Convert.ToInt32(RedeemeAmount) > perAmt)
+                                    if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(RedeemeAmount) <= perAmt)
+                                    else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
-                                if (minOrdAmt > Convert.ToInt32(OrderAmount))
+                                if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                                 {
                                     objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
                                 }
@@ -381,7 +381,7 @@ namespace Test0555.Controllers
         }
 
         [HttpGet]
-        public WalletModel.RedeemePromoCodeFromOrder RedeemePromoCodeFromOrder(string CustomerId = "", string OrderAmount = "", string PromoCodeAmount = "", string PromoCode = "")
+        public WalletModel.RedeemePromoCodeFromOrder RedeemePromoCodeFromOrder(string CustomerId = "", string OrderAmount = "", string PromoCode = "")
         {
             WalletModel.RedeemePromoCodeFromOrder objeWalletdt = new WalletModel.RedeemePromoCodeFromOrder();
 
@@ -414,14 +414,23 @@ namespace Test0555.Controllers
                         {
                             string walletId = dtmain.Rows[i]["wallet_id"].ToString();
                             string walletlinkId = dtmain.Rows[i]["wallet_link_id"].ToString();
-                            int walletAmt = Convert.ToInt32(dtmain.Rows[i]["wallet_amount"]);
+                            decimal walletAmt = Convert.ToDecimal(dtmain.Rows[i]["wallet_amount"]);
                             string pertype = dtmain.Rows[i]["per_type"].ToString();
-                            int perAmt = Convert.ToInt32(dtmain.Rows[i]["per_amount"]);
-                            int minOrdAmt = Convert.ToInt32(dtmain.Rows[i]["min_order_amount"]);
+                            decimal perAmt = Convert.ToDecimal(dtmain.Rows[i]["per_amount"]);
+                            decimal minOrdAmt = Convert.ToDecimal(dtmain.Rows[i]["min_order_amount"]);
                             string crDate = dtmain.Rows[i]["CR_date"].ToString();
                             string crDescription = dtmain.Rows[i]["CR_description"].ToString();
                             //string crAmount = dtmain.Rows[i]["CR_amount"].ToString();
                             string balance = dtmain.Rows[i]["balance"].ToString();
+                            decimal calcAmt = 0;
+                            if (dtmain.Rows[i]["per_type"].ToString() == "Fixed" || dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                            {
+                                calcAmt = perAmt;
+                            }
+                            if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                            {
+                                calcAmt = (Convert.ToDecimal(OrderAmount) * perAmt) / 100;
+                            }
 
                             objeWalletdt.PromoCodeId = walletId;
                             objeWalletdt.PromoCodeLinkId = walletlinkId;
@@ -430,42 +439,42 @@ namespace Test0555.Controllers
                             objeWalletdt.PromoCodeCrDate = crDate;
                             objeWalletdt.PromoCodeCrDescription = crDescription;
                             objeWalletdt.PromoCodebalance = balance;
-
+                            objeWalletdt.PromoCodeCalcAmount = calcAmt.ToString();
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
                                 {
-                                    if (Convert.ToInt32(PromoCodeAmount) > perAmt)
+                                    if (calcAmt > perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(PromoCodeAmount) <= perAmt)
+                                    else if (calcAmt <= perAmt)
                                     {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + PromoCodeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "%")
                                 {
-                                    int redeemPerAmt = (walletAmt * perAmt) / 100;
-                                    if (Convert.ToInt32(PromoCodeAmount) > redeemPerAmt)
+                                    decimal redeemPerAmt = (Convert.ToDecimal(OrderAmount) * perAmt) / 100;
+                                    if (calcAmt > redeemPerAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(PromoCodeAmount) <= redeemPerAmt)
+                                    else if (calcAmt <= redeemPerAmt)
                                     {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + PromoCodeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
                                 {
-                                    if (Convert.ToInt32(PromoCodeAmount) > perAmt)
+                                    if (calcAmt > perAmt)
                                     {
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
-                                    else if (Convert.ToInt32(PromoCodeAmount) <= perAmt)
+                                    else if (calcAmt <= perAmt)
                                     {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + PromoCodeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
                                     }
                                 }
-                                if (minOrdAmt > Convert.ToInt32(OrderAmount))
+                                if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                                 {
                                     objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
                                 }
@@ -479,6 +488,14 @@ namespace Test0555.Controllers
                     }
                     else
                     {
+                        objeWalletdt.PromoCodeId = "0";
+                        objeWalletdt.PromoCodeLinkId = "0";
+                        objeWalletdt.PromoCodetype = "";
+                        objeWalletdt.PromoCodeCrAmount = "0";
+                        objeWalletdt.PromoCodeCrDate = "";
+                        objeWalletdt.PromoCodeCrDescription = "";
+                        objeWalletdt.PromoCodebalance = "0";
+                        objeWalletdt.PromoCodeCalcAmount = "0";
                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                         objeWalletdt.message = CommonString.DataNotFoundMessage;
                         objeWalletdt.ValidationMessage = "";

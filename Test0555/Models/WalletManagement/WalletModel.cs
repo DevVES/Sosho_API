@@ -86,6 +86,7 @@ namespace Test0555.Models.WalletManagement
             public string PromoCodeId;
             public string PromoCodeLinkId;
             public string PromoCodetype;
+            public string PromoCodeCalcAmount;
             public string PromoCodeCrAmount;
             public string PromoCodeCrDate;
             public string PromoCodeCrDescription;

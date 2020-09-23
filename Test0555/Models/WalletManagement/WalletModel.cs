@@ -93,5 +93,26 @@ namespace Test0555.Models.WalletManagement
             public string PromoCodebalance;
             public string ValidationMessage;
         }
+
+        public class getWalletHistory
+        {
+            public string response;
+            public string message;
+            public string WalletBalance;
+            public List<WalletHistoryList> WalletHistoryList { get; set; }
+
+        }
+
+        public class WalletHistoryList
+        {
+            
+            public string Date;
+            public string Summary;
+            public string type;
+            public string CrDrAmount;
+            public string Balance;
+
+        }
+
     }
 }

@@ -145,9 +145,9 @@ namespace Test0555.Controllers
                                         " AND (0 < (select isnull(H.balance,0) " +
                                         " from[tblWalletCustomerHistory] H " +
                                         " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) " +
-                            	        " or (select count(*) from[tblWalletCustomerHistory] H " +
+                                        " or (select count(*) from[tblWalletCustomerHistory] H " +
                                         " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) = 0 " +
-	                                    " ) " +
+                                        " ) " +
                                         " Union " +
                                         " SELECT w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
                                         " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date, 0 AS Balance " +
@@ -310,17 +310,21 @@ namespace Test0555.Controllers
                             objeWalletdt.CrDate = crDate;
                             objeWalletdt.CrDescription = crDescription;
                             objeWalletdt.balance = balance;
-                            
+
                             if (Convert.ToDecimal(balance) >= Convert.ToDecimal(RedeemeAmount))
                             {
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
                                 {
                                     if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
+                                        objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                        objeWalletdt.message = CommonString.DataNotFoundMessage;
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
+                                        objeWalletdt.response = CommonString.successresponse;
+                                        objeWalletdt.message = CommonString.successmessage;
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
@@ -329,10 +333,14 @@ namespace Test0555.Controllers
                                     decimal redeemPerAmt = (walletAmt * perAmt) / 100;
                                     if (Convert.ToDecimal(RedeemeAmount) > redeemPerAmt)
                                     {
+                                        objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                        objeWalletdt.message = CommonString.DataNotFoundMessage;
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= redeemPerAmt)
                                     {
+                                        objeWalletdt.response = CommonString.successresponse;
+                                        objeWalletdt.message = CommonString.successmessage;
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
@@ -340,28 +348,35 @@ namespace Test0555.Controllers
                                 {
                                     if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
+                                        objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                        objeWalletdt.message = CommonString.DataNotFoundMessage;
                                         objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
+                                        objeWalletdt.response = CommonString.successresponse;
+                                        objeWalletdt.message = CommonString.successmessage;
                                         objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                                 {
+                                    objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                    objeWalletdt.message = CommonString.DataNotFoundMessage;
                                     objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
                                 }
 
                             }
                             else
                             {
+                                objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                objeWalletdt.message = CommonString.DataNotFoundMessage;
                                 objeWalletdt.ValidationMessage = "Your Wallet money is ₹ " + balance;
                             }
 
-                            
+
                         }
-                        objeWalletdt.response = CommonString.successresponse;
-                        objeWalletdt.message = CommonString.successmessage;
+
                     }
                     else
                     {
@@ -403,7 +418,7 @@ namespace Test0555.Controllers
                                        where +
                                        " AND W.offer_id = 3 " +
                                        " AND W.is_active = 1 " +
-                                       " AND ISNULL(WC.is_used,0) = 0 " + 
+                                       " AND ISNULL(WC.is_used,0) = 0 " +
                                        " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
                                        " AND W.coupon_code = '" + PromoCode + "'" +
                                        " order by WC.created_date  asc ";
@@ -440,51 +455,59 @@ namespace Test0555.Controllers
                             objeWalletdt.PromoCodeCrDescription = crDescription;
                             objeWalletdt.PromoCodebalance = balance;
                             objeWalletdt.PromoCodeCalcAmount = calcAmt.ToString();
-                                if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
+                            if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
+                            {
+                                if (calcAmt > perAmt)
                                 {
-                                    if (calcAmt > perAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
-                                    }
-                                    else if (calcAmt <= perAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
-                                    }
+                                    objeWalletdt.response = CommonString.successresponse;
+                                    objeWalletdt.message = CommonString.successmessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                 }
-                                if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                                else if (calcAmt <= perAmt)
                                 {
-                                    decimal redeemPerAmt = (Convert.ToDecimal(OrderAmount) * perAmt) / 100;
-                                    if (calcAmt > redeemPerAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
-                                    }
-                                    else if (calcAmt <= redeemPerAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
-                                    }
+                                    objeWalletdt.response = CommonString.successresponse;
+                                    objeWalletdt.message = CommonString.successmessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
                                 }
-                                if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                            }
+                            if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                            {
+                                decimal redeemPerAmt = (Convert.ToDecimal(OrderAmount) * perAmt) / 100;
+                                if (calcAmt > redeemPerAmt)
                                 {
-                                    if (calcAmt > perAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
-                                    }
-                                    else if (calcAmt <= perAmt)
-                                    {
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
-                                    }
+                                    objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                    objeWalletdt.message = CommonString.DataNotFoundMessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                 }
-                                if (minOrdAmt > Convert.ToDecimal(OrderAmount))
+                                else if (calcAmt <= redeemPerAmt)
                                 {
-                                    objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
+                                    objeWalletdt.response = CommonString.successresponse;
+                                    objeWalletdt.message = CommonString.successmessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
                                 }
-
-                           
-
-
+                            }
+                            if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                            {
+                                if (calcAmt > perAmt)
+                                {
+                                    objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                    objeWalletdt.message = CommonString.DataNotFoundMessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                }
+                                else if (calcAmt <= perAmt)
+                                {
+                                    objeWalletdt.response = CommonString.successresponse;
+                                    objeWalletdt.message = CommonString.successmessage;
+                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
+                                }
+                            }
+                            if (minOrdAmt > Convert.ToDecimal(OrderAmount))
+                            {
+                                objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                objeWalletdt.message = CommonString.DataNotFoundMessage;
+                                objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
+                            }
                         }
-                        objeWalletdt.response = CommonString.successresponse;
-                        objeWalletdt.message = CommonString.successmessage;
                     }
                     else
                     {
@@ -499,6 +522,86 @@ namespace Test0555.Controllers
                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                         objeWalletdt.message = CommonString.DataNotFoundMessage;
                         objeWalletdt.ValidationMessage = "";
+                    }
+                }
+                return objeWalletdt;
+            }
+            catch (Exception ex)
+            {
+                objeWalletdt.response = CommonString.Errorresponse;
+                objeWalletdt.message = ex.StackTrace + " " + ex.Message;
+                return objeWalletdt;
+            }
+        }
+
+        [HttpGet]
+        public WalletModel.getWalletHistory GetWalletHistory(string CustomerId = "")
+        {
+            WalletModel.getWalletHistory objeWalletdt = new WalletModel.getWalletHistory();
+
+            try
+            {
+                objeWalletdt.response = "1";
+                objeWalletdt.message = "Successfully";
+                objeWalletdt.WalletHistoryList = new List<WalletModel.WalletHistoryList>();
+                string where = "";
+                if (CustomerId != "" && CustomerId != null)
+                {
+
+                    where = "AND [O].CustomerId=" + CustomerId;
+
+                    string balHistory = " SELECT top 1 id,balance FROm tblWalletCustomerHistory " +
+                                        " WHERE customer_id=" + CustomerId +
+                                        " order by 1 desc";
+                    DataTable dtmainBal = dbc.GetDataTable(balHistory);
+                    if (dtmainBal != null && dtmainBal.Rows.Count > 0)
+                    {
+                        string walletBalance = dtmainBal.Rows[0]["balance"].ToString();
+                        objeWalletdt.WalletBalance = walletBalance;
+
+                    }
+
+                    string querymain = "SELECT H.created_date AS [Date], O.Id AS OrderId, H.Cr_amount, " +
+                                   " H.Dr_amount,H.balance " +
+                                   " FROM[Order] O " +
+                                   " INNER JOIN tblWalletCustomerHistory H ON H.customer_id = O.CustomerId " +
+                                   where +
+                                   " ORDER BY H.created_date desc ";
+                    DataTable dtmain = dbc.GetDataTable(querymain);
+                    if (dtmain != null && dtmain.Rows.Count > 0)
+                    {
+                        for (int i = 0; i < dtmain.Rows.Count; i++)
+                        {
+
+                            WalletModel.WalletHistoryList objHistory = new WalletModel.WalletHistoryList();
+                            string date = dtmain.Rows[i]["Date"].ToString();
+                            string orderId = dtmain.Rows[i]["OrderId"].ToString();
+                            string CrAmt = dtmain.Rows[i]["Cr_amount"].ToString();
+                            string DrAmt = dtmain.Rows[i]["Dr_amount"].ToString();
+                            string balance = dtmain.Rows[i]["balance"].ToString();
+
+                            objHistory.Date = date;
+                            objHistory.Summary = "Order Id " + orderId;
+                            if (DrAmt != "0")
+                            {
+                                objHistory.CrDrAmount = DrAmt;
+                                objHistory.type = "Debit";
+                            }
+                            else
+                            {
+                                objHistory.CrDrAmount = CrAmt;
+                                objHistory.type = "Credit";
+                            }
+                            objHistory.Balance = balance;
+                            objeWalletdt.WalletHistoryList.Add(objHistory);
+                        }
+                        objeWalletdt.response = CommonString.successresponse;
+                        objeWalletdt.message = CommonString.successmessage;
+                    }
+                    else
+                    {
+                        objeWalletdt.response = CommonString.DataNotFoundResponse;
+                        objeWalletdt.message = CommonString.DataNotFoundMessage;
                     }
                 }
                 return objeWalletdt;

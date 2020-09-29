@@ -100,28 +100,37 @@ namespace Test0555.Controllers
                 string where = "";
                 if (CustomerId != "" && CustomerId != null)
                 {
-                    where = "AND [WC].customer_id=" + CustomerId;
+                    where = "WHERE [WC].customer_id=" + CustomerId;
                     //For Wallet
-                    string querymain = "Select sum(BalanceAmount) AS BalanceAmount From " +
-                                       " ( " +
-                                       " Select Sum(H.balance) as BalanceAmount " +
-                                       " FROM[tblWalletCustomerLink] WC " +
-                                       " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
-                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                    //string querymain = "Select sum(BalanceAmount) AS BalanceAmount From " +
+                    //                   " ( " +
+                    //                   " Select Sum(H.balance) as BalanceAmount " +
+                    //                   " FROM[tblWalletCustomerLink] WC " +
+                    //                   " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
+                    //                   " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                    //                    where +
+                    //                    " AND H.balance > 0 " +
+                    //                    " AND W.offer_id = 1 " +
+                    //                    " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id) " +
+                    //                    " Group by H.id , WC.wallet_id " +
+                    //                    " Union " +
+                    //                    " SELECT Sum(W.wallet_amount) as BalanceAmount " +
+                    //                    " FROM[WalletMaster] W " +
+                    //                    " LEFT OUTER JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
+                    //                    " WHERE WC.customer_id = -1 " +
+                    //                    " AND W.offer_id = 1 " +
+                    //                    " AND(select count(*) From tblWalletCustomerHistory wch " +
+                    //                    "  where wch.wallet_id = W.wallet_ID and wch.customer_id = " + CustomerId + ") = 0 " +
+                    //                    " ) t ";
+                    String querymain = " Select Top 1 H.balance as BalanceAmount, h.Id " +
+                                      " FROM[tblWalletCustomerLink] WC " +
+                                      " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
+                                      " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                         where +
                                         " AND H.balance > 0 " +
                                         " AND W.offer_id = 1 " +
                                         " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id) " +
-                                        " Group by H.id , WC.wallet_id " +
-                                        " Union " +
-                                        " SELECT Sum(W.wallet_amount) as BalanceAmount " +
-                                        " FROM[WalletMaster] W " +
-                                        " LEFT OUTER JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
-                                        " WHERE WC.customer_id = -1 " +
-                                        " AND W.offer_id = 1 " +
-                                        " AND(select count(*) From tblWalletCustomerHistory wch " +
-                                        "  where wch.wallet_id = W.wallet_ID and wch.customer_id = " + CustomerId + ") = 0 " +
-                                        " ) t ";
+                                        " order by 2 desc";
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
@@ -538,19 +547,81 @@ namespace Test0555.Controllers
         public WalletModel.getWalletHistory GetWalletHistory(string CustomerId = "")
         {
             WalletModel.getWalletHistory objeWalletdt = new WalletModel.getWalletHistory();
-
+            DateTime dtCreatedon = DateTime.Now;
             try
             {
                 objeWalletdt.response = "1";
                 objeWalletdt.message = "Successfully";
                 objeWalletdt.WalletHistoryList = new List<WalletModel.WalletHistoryList>();
+
+                string WalletMasterQry = " SELECT wallet_id, wallet_amount, campaign_name, offer_id from WalletMaster " +
+                                         " WHERE ISNULL(is_apply_all_customer,0) = 1 " +
+                                         " AND ISNULL(is_active,0) = 1 " +
+                                         " AND GETDATE() >=  start_date and GETDATE() <= end_date ";
+                DataTable dtWalletMasterQry = dbc.GetDataTable(WalletMasterQry);
+                if (dtWalletMasterQry != null && dtWalletMasterQry.Rows.Count > 0)
+                {
+                    for (int iCtr = 0; iCtr < dtWalletMasterQry.Rows.Count; iCtr++)
+                    {
+                        string walletId = dtWalletMasterQry.Rows[iCtr]["wallet_id"].ToString();
+                        string walletAmt = dtWalletMasterQry.Rows[iCtr]["wallet_amount"].ToString();
+                        string campName = dtWalletMasterQry.Rows[iCtr]["campaign_name"].ToString();
+                        string offerId = dtWalletMasterQry.Rows[iCtr]["offer_id"].ToString().TrimEnd();
+                        string chkHistoryRecord = " SELECT * FROM tblWalletCustomerHistory " +
+                                                  " WHERE customer_id = " + CustomerId +
+                                                  " AND wallet_id = " + walletId;
+                        DataTable dtHistoryRecord = dbc.GetDataTable(chkHistoryRecord);
+                        int linkVAL = 0;
+                        if (dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0)
+                        {
+                            string balHistory = " SELECT top 1 id,balance From tblWalletCustomerHistory " +
+                                       " WHERE customer_id=" + CustomerId +
+                                       "AND wallet_id not in("+walletId+")"+
+                                       " order by 1 desc";
+                            DataTable dtmainBal = dbc.GetDataTable(balHistory);
+                            Decimal balAmt = 0;
+                            Decimal walletBalance = 0;
+                            if (dtmainBal != null && dtmainBal.Rows.Count > 0)
+                            {
+                                walletBalance = Convert.ToDecimal(dtmainBal.Rows[0]["balance"]);
+                                
+                            }
+                            balAmt = Convert.ToDecimal(walletAmt) + walletBalance;
+                            if (dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0)
+                            {
+                                string[] para2 = { walletId, CustomerId, "1", dtCreatedon.ToString(), CustomerId };
+                                string customerlinkinsertquery = "INSERT INTO [dbo].[tblWalletCustomerLink] ([wallet_id],[customer_id],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5) SELECT SCOPE_IDENTITY();";
+                                linkVAL = dbc.ExecuteQueryWithParamsId(customerlinkinsertquery, para2);
+                            }
+                            if (offerId == "1")
+                            {
+                                if (dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0)
+                                {
+                                    string[] para3 = { walletId, CustomerId, linkVAL.ToString(), dtCreatedon.ToString(), campName, walletAmt.ToString(), "", "", "0", balAmt.ToString(), "1", dtCreatedon.ToString(), CustomerId };
+                                    string customerwallethistoryQuery = "INSERT INTO [dbo].[tblWalletCustomerHistory] ([wallet_id],[customer_id],[wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description],[Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13);";
+                                    dbc.ExecuteQueryWithParamsId(customerwallethistoryQuery, para3);
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }
+                        
+                    }
+
+                    //objeWalletdt.WalletBalance = walletBalance;
+
+                }
+
                 string where = "";
                 if (CustomerId != "" && CustomerId != null)
                 {
 
                     where = "AND [O].CustomerId=" + CustomerId;
 
-                    string balHistory = " SELECT top 1 id,balance FROm tblWalletCustomerHistory " +
+                    
+                    string balHistory = " SELECT top 1 id,balance From tblWalletCustomerHistory " +
                                         " WHERE customer_id=" + CustomerId +
                                         " order by 1 desc";
                     DataTable dtmainBal = dbc.GetDataTable(balHistory);
@@ -560,13 +631,33 @@ namespace Test0555.Controllers
                         objeWalletdt.WalletBalance = walletBalance;
 
                     }
-
-                    string querymain = "SELECT H.created_date AS [Date], O.Id AS OrderId, H.Cr_amount, " +
-                                   " H.Dr_amount,H.balance " +
-                                   " FROM[Order] O " +
-                                   " INNER JOIN tblWalletCustomerHistory H ON H.customer_id = O.CustomerId " +
-                                   where +
-                                   " ORDER BY H.created_date desc ";
+                    string querymain = "  SELECT [H].customer_id, H.Cr_date AS[Date], " +
+                                       " (case isnull(H.order_id, 0) when 0 then isnull(H.Cr_description, '') else 'Order Id ' + CAST(O.Id AS varchar) end) AS OrderId, " +
+                                       " H.Cr_amount, H.Dr_amount, H.balance " +
+                                       " FROM tblWalletCustomerHistory H " +
+                                       " LEFT OUTER JOIN[Order] O ON H.customer_id = O.CustomerId  AND O.Id = H.order_id " +
+                                       " WHERE H.customer_id = " + CustomerId +
+                                       " order by H.Id desc";
+                    //string querymain = " SELECT x.CustomerId, x.Date, X.OrderId, x.Cr_amount, x.Dr_amount, x.balance FROM " +
+                    //                    " ( " +
+                    //                    " SELECT [O].CustomerId, H.created_date AS[Date], 'Order Id ' + CAST(O.Id AS varchar) AS OrderId, " +
+                    //                    " H.Cr_amount, H.Dr_amount, H.balance " +
+                    //                    " FROM[Order] O " +
+                    //                    " INNER JOIN tblWalletCustomerHistory H ON H.customer_id = O.CustomerId " +
+                    //                    " UNION ALL " +
+                    //                    " SELECT H.customer_id, H.created_date AS[Date], W.campaign_name AS OrderId, " +
+                    //                    " H.Cr_amount, H.Dr_amount, H.balance " +
+                    //                    " FROM tblWalletCustomerHistory H " +
+                    //                    " LEFT JOIN WalletMaster W ON W.wallet_id = H.wallet_id " +
+                    //                    " ) x " +
+                    //                    " WHERE X.CustomerId = " + CustomerId +
+                    //                     " ORDER BY x.Date desc ";
+                    //string querymain = "SELECT H.created_date AS [Date], O.Id AS OrderId, H.Cr_amount, " +
+                    //               " H.Dr_amount,H.balance " +
+                    //               " FROM[Order] O " +
+                    //               " INNER JOIN tblWalletCustomerHistory H ON H.customer_id = O.CustomerId " +
+                    //               where +
+                    //               " ORDER BY H.created_date desc ";
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
@@ -581,7 +672,7 @@ namespace Test0555.Controllers
                             string balance = dtmain.Rows[i]["balance"].ToString();
 
                             objHistory.Date = date;
-                            objHistory.Summary = "Order Id " + orderId;
+                            objHistory.Summary = orderId;
                             if (DrAmt != "0")
                             {
                                 objHistory.CrDrAmount = DrAmt;

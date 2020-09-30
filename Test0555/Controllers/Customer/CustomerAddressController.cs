@@ -56,7 +56,7 @@ namespace Test0555.Controllers
 
         #region AddNewAddressV4
         [HttpGet]
-        public DeliveryAddressModel.CustAddress AddAddressV4(string custid, string fname1, string lname, string tagid1, string Countryid1, string sid, string cid, string addr1, string pinid1, string mobile1, string Email, string locationid, string location, string areaid, string area)
+        public DeliveryAddressModel.CustAddress AddAddressV4(string custid, string name, string tagId, string countryId, string sid, string cid, string pincode, string mobile, string Email, string areaid, string area, string buildingid, string building, string buildingNo, string landmark, string others)
         {
             DeliveryAddressModel.CustAddress objadd = new DeliveryAddressModel.CustAddress();
             try
@@ -75,28 +75,34 @@ namespace Test0555.Controllers
                 {
                     CityName = dtCity.Rows[0]["CityName"].ToString();
                 }
-                if (locationid == "-1")
-                {
-                    string[] para1 = { location,pinid1,StateName,CityName,"0","1",dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss")};
-                    string locationdata = "Insert into ZipCode ([Location] ,[zipcode] ,[State] ,[District] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
-                    int Val = dbc.ExecuteQueryWithParamsId(locationdata, para1);
-                    locationid = Val.ToString();
-                }
                 if (areaid == "-1")
                 {
+                    string[] para1 = { area, pincode, StateName,CityName,"0","1",dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss")};
+                    string areadata = "Insert into ZipCode ([Area] ,[zipcode] ,[State] ,[District] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
+                    int Val = dbc.ExecuteQueryWithParamsId(areadata, para1);
+                    areaid = Val.ToString();
+                }
+                if (buildingid == "-1")
+                {
                     string zipcodeid = "";
-                    string getZipCodeId = "SELECT Id FROM [dbo].[ZipCode] WHERE ZipCode = '" + pinid1 + "' AND location=" + "'" + location + "'";
+                    string getZipCodeId = "SELECT Id FROM [dbo].[ZipCode] WHERE ZipCode = '" + pincode + "' AND Area=" + "'" + area + "'";
                     DataTable dtZipCodeId = dbc.GetDataTable(getZipCodeId);
                     if (dtZipCodeId.Rows.Count > 0)
                     {
                         zipcodeid = dtZipCodeId.Rows[0]["Id"].ToString();
-                        string[] para2 = { area, pinid1, location, zipcodeid, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
-                        string areadata = "Insert into tblArea ([Area] ,[zipcode] ,[Location] ,[ZipCodeId] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
+                        string[] para2 = { building, pincode, area, zipcodeid, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
+                        string areadata = "Insert into tblBuilding ([Building] ,[zipcode] ,[Area] ,[ZipCodeId] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
                         int Val = dbc.ExecuteQueryWithParamsId(areadata, para2);
-                        areaid = Val.ToString();
+                        buildingid = Val.ToString();
                     }
                 }
-                string Insertdata = "Insert into CustomerAddress ([CustomerId] ,[FirstName] ,[LastName] ,[TagId] ,[CountryId] ,[StateId] ,[CityId] ,[Address] ,[MobileNo] ,[PinCode] ,[DOC] ,[DOM] ,[IsDeleted] ,[IsActive],[Email],[LocationId],[AreaId]) Values ('" + custid + "','" + fname1 + "','" + lname + "','" + tagid1 + "','" + Countryid1 + "','" + sid + "','" + cid + "','" + addr1 + "','" + mobile1 + "','" + pinid1 + "','" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','0','1','" + Email + "'," + locationid+ "," + areaid + ")select SCOPE_IDENTITY();";
+                string Insertdata = "Insert into CustomerAddress ([CustomerId] ,[FirstName],[TagId] ,[CountryId] ,[StateId] ,[CityId] ,[MobileNo] ,[PinCode] ," +
+                                    " [DOC] ,[DOM] ,[IsDeleted] ,[IsActive],[Email],[AreaId],[BuildingId],[BuildingNo],[LandMark],[OtherDetail]) " + 
+                                    " Values ('" + custid + "','" + name + "','" + tagId + "','" + countryId + "','" + sid + "','" +
+                                    cid + "','" + mobile + "','" + pincode + "','" + 
+                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','" + 
+                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','0','1','" + Email + "'," + 
+                                    areaid+ "," + buildingid + ",'" + buildingNo +"','" + landmark + "','" + others + "')select SCOPE_IDENTITY();";
 
                 string dtdata = dbc.ExecuteSQLScaler(Insertdata).ToString();
                 int idlast = 0;
@@ -267,8 +273,8 @@ namespace Test0555.Controllers
 
                 string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " + 
                                     " isnull((Select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId),'') as statename, " +
-                                    " isnull((Select Location from ZipCode where ZipCode.Id=CustomerAddress.LocationId),'') as Location, " +
-                                    " isnull((Select Area from tblArea where tblArea.Id=CustomerAddress.AreaId),'') as Area, " +
+                                    " isnull((Select Area from ZipCode where ZipCode.Id=CustomerAddress.AreaId),'') as Area, " +
+                                    " isnull((Select Building from tblBuilding where tblBuilding.Id=CustomerAddress.BuildingId),'') as Building, " +
                                     " isnull((Select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId),'') as CountryName, " + 
                                     " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" + 
                                     " from CustomerAddress where IsActive=1 and IsDeleted=0 and CustomerAddress.CustomerId=" + custid; 
@@ -293,11 +299,15 @@ namespace Test0555.Controllers
                         string city1 = (dtdata.Rows[i]["CityName"] != null ? dtdata.Rows[i]["CityName"].ToString() : "");
                         string addr1 = (dtdata.Rows[i]["Address"] != null ? dtdata.Rows[i]["Address"].ToString() : "");
                         string mob1 = (dtdata.Rows[i]["MobileNo"] != null ? dtdata.Rows[i]["MobileNo"].ToString() : "");
+                        string email = (dtdata.Rows[i]["Email"] != null ? dtdata.Rows[i]["Email"].ToString() : "");
                         string pin1 = (dtdata.Rows[i]["PinCode"] != null ? dtdata.Rows[i]["PinCode"].ToString() : "");
-                        string locationId = (dtdata.Rows[i]["LocationId"] != null ? dtdata.Rows[i]["LocationId"].ToString() : "");
-                        string location = (dtdata.Rows[i]["Location"] != null ? dtdata.Rows[i]["Location"].ToString() : "");
+                        string buildingId = (dtdata.Rows[i]["BuildingId"] != null ? dtdata.Rows[i]["BuildingId"].ToString() : "");
+                        string building = (dtdata.Rows[i]["Building"] != null ? dtdata.Rows[i]["Building"].ToString() : "");
                         string AreaId = (dtdata.Rows[i]["AreaId"] != null ? dtdata.Rows[i]["AreaId"].ToString() : "");
                         string Area = (dtdata.Rows[i]["Area"] != null ? dtdata.Rows[i]["Area"].ToString() : "");
+                        string buildingNo = (dtdata.Rows[i]["BuildingNo"] != null ? dtdata.Rows[i]["BuildingNo"].ToString() : "");
+                        string landmark = (dtdata.Rows[i]["LandMark"] != null ? dtdata.Rows[i]["LandMark"].ToString() : "");
+                        string otherdetail = (dtdata.Rows[i]["OtherDetail"] != null ? dtdata.Rows[i]["OtherDetail"].ToString() : "");
                         ;
 
                         
@@ -313,12 +323,17 @@ namespace Test0555.Controllers
                             statename = state1,
                             cityname = city1,
                             addr = addr1,
+                            email = email,
                             mob = mob1,
                             pcode = pin1,
-                            LocationId = locationId,
-                            Location = location,
                             AreaId = AreaId,
-                            Area = Area
+                            Area = Area,
+                            BuildingId = buildingId,
+                            Building = building,
+                            BuildingNo = buildingNo,
+                            LandMark = landmark,
+                            OtherDetail = otherdetail
+
                         });
                     }
 
@@ -450,49 +465,54 @@ namespace Test0555.Controllers
         }
 
         [HttpGet]
-        public DeliveryAddressModel.CustEditAddress EditAddressV4(string custid2, string addrid2, string fname2, string lname2, string tagid2, string Countryid2, string sid2, string cid2, string addr2, string pinid2, string mobile2, string Emailid, string locationid, string location, string areaid, string area)
+        //public DeliveryAddressModel.CustAddress AddAddressV4(string custid, string name, string tagId, string countryId, string sid, string cid, string pincode, string mobile, string Email, string areaid, string area, string buildingid, string building, string buildingNo, string landmark, string others)
+        public DeliveryAddressModel.CustEditAddress EditAddressV4(string custid, string addrid2, string name, string tagId, string countryId, string sid, string cid, string pincode, string mobile, string Email, string areaid, string area, string buildingid, string building, string buildingNo, string landmark, string others)
         {
             DeliveryAddressModel.CustEditAddress Objeditaddr = new DeliveryAddressModel.CustEditAddress();
             try
             {
                 string StateName = "";
-                string getState = "SELECT StateName FROM [dbo].[StateMaster] WHERE Id = " + sid2;
+                string getState = "SELECT StateName FROM [dbo].[StateMaster] WHERE Id = " + sid;
                 DataTable dtState = dbc.GetDataTable(getState);
                 if (dtState.Rows.Count > 0)
                 {
                     StateName = dtState.Rows[0]["StateName"].ToString();
                 }
                 string CityName = "";
-                string getCity = "SELECT CityName FROM [dbo].[CityMaster] WHERE Id = " + cid2;
+                string getCity = "SELECT CityName FROM [dbo].[CityMaster] WHERE Id = " + cid;
                 DataTable dtCity = dbc.GetDataTable(getCity);
                 if (dtState.Rows.Count > 0)
                 {
                     CityName = dtCity.Rows[0]["CityName"].ToString();
                 }
-                if (locationid == "-1")
-                {
-                    string[] para1 = { location, pinid2, StateName, CityName, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
-                    string locationdata = "Insert into ZipCode ([Location] ,[zipcode] ,[State] ,[District] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
-                    int Val = dbc.ExecuteQueryWithParamsId(locationdata, para1);
-                    locationid = Val.ToString();
-                }
                 if (areaid == "-1")
                 {
+                    string[] para1 = { area, pincode, StateName, CityName, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
+                    string areadata = "Insert into ZipCode ([Area] ,[zipcode] ,[State] ,[District] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
+                    int Val = dbc.ExecuteQueryWithParamsId(areadata, para1);
+                    areaid = Val.ToString();
+                }
+                if (buildingid == "-1")
+                {
                     string zipcodeid = "";
-                    string getZipCodeId = "SELECT Id FROM [dbo].[ZipCode] WHERE ZipCode = '" + pinid2 + "' AND location=" + "'" + location + "'";
+                    string getZipCodeId = "SELECT Id FROM [dbo].[ZipCode] WHERE ZipCode = '" + pincode + "' AND Area=" + "'" + area + "'";
                     DataTable dtZipCodeId = dbc.GetDataTable(getZipCodeId);
                     if (dtZipCodeId.Rows.Count > 0)
                     {
                         zipcodeid = dtZipCodeId.Rows[0]["Id"].ToString();
-                        string[] para2 = { area, pinid2, location, zipcodeid, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
-                        string areadata = "Insert into tblArea ([Area] ,[zipcode] ,[Location] ,[ZipCodeId] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
+                        string[] para2 = { building, pincode, area, zipcodeid, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
+                        string areadata = "Insert into tblBuilding ([Building] ,[zipcode] ,[Area] ,[ZipCodeId] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
                         int Val = dbc.ExecuteQueryWithParamsId(areadata, para2);
-                        areaid = Val.ToString();
+                        buildingid = Val.ToString();
                     }
                 }
 
-                string Insertdata = "Update CustomerAddress set Email='" + Emailid + "',FirstName='" + fname2 + "',LastName='" + lname2 + "',TagId='" + tagid2 + "',CountryId='" + Countryid2 + "',StateId='" + sid2 + "',CityId='" + cid2 + "',Address='" + addr2 + "',MobileNo='" + mobile2 + "',PinCode='" + pinid2 + "',DOM='" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "',LocationId = "+locationid+", AreaId = "+ areaid + " where CustomerId='" + custid2 + "' and Id='" + addrid2 + "'";
-
+                string Insertdata = "Update CustomerAddress set Email='" + Email + "',FirstName='" + name + "',TagId='" + tagId +
+                                    "',CountryId='" + countryId + "',StateId='" + sid + "',CityId='" + cid + "',MobileNo='" + mobile + 
+                                    "',PinCode='" + pincode + "',DOM='" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + 
+                                    "',BuildingId = "+buildingid+", AreaId = "+ areaid + ",BuildingNo = '" + buildingNo + 
+                                    "',LandMark = '" + landmark + "',OtherDetail = '" + others + 
+                                    "' where CustomerId='" + custid + "' and Id='" + addrid2 + "'";
                 int dtdata = dbc.ExecuteQuery(Insertdata);
                 
                 if (dtdata > 0)

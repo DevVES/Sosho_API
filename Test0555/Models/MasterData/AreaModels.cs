@@ -7,20 +7,22 @@ namespace Test0555.Models.MasterData
 {
     public class AreaModels
     {
-        public class ZipCodeLocationList
+        public class AreaBuildingList
         {
             public string Response;
             public string Message;
 
-            public List<LocationDatalist> Locationlist { get; set; }
+            public List<BuildingDatalist> Buildinglist { get; set; }
         }
-        public class LocationDatalist
+        public class BuildingDatalist
         {
-            public string LocationId;
-            public string LocationName;
+            public string AreaId;
+            public string AreaName;
+            public string BuildingId;
+            public string BuildingName;
         }
 
-        public class LocationAreaList
+        public class ZipCodeAreaList
         {
             public string Response;
             public string Message;
@@ -29,8 +31,8 @@ namespace Test0555.Models.MasterData
         }
         public class AreaDatalist
         {
-            public string LocationId;
-            public string Location;
+            //public string LocationId;
+            //public string Location;
             public string AreaId;
             public string AreaName;
         }

@@ -10,5 +10,6 @@ namespace Test0555.Models.CheckPincode
         public String resultflag = "";
         public String Message = "";
         public string JurisdictionID = "";
+        public string CountryID = "";
     }
 }

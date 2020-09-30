@@ -38,6 +38,7 @@ namespace Test0555.Controllers
                             objchkpincode.resultflag = "0";
                             objchkpincode.Message = "Delivery is not available in this area.";
                             objchkpincode.JurisdictionID = "0";
+                            
                         }
                         else
                         {
@@ -55,6 +56,7 @@ namespace Test0555.Controllers
                                 objchkpincode.JurisdictionID = "0";
                             }
                         }
+                        objchkpincode.CountryID = "1";
                     }
                 }
                 else

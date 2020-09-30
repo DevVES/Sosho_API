@@ -31,10 +31,13 @@ namespace Test0555.Models.DeliveryAddress
             public string pcode;
             public string mob;
             public string CustomerAddressId;
-            public string LocationId;
-            public string Location;
             public string AreaId;
             public string Area;
+            public string BuildingId;
+            public string Building;
+            public string BuildingNo;
+            public string LandMark;
+            public string OtherDetail;
 
 
         }

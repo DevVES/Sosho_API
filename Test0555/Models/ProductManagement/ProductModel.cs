@@ -29,7 +29,7 @@ namespace Test0555.Models.ProductManagement
             public string message;
             public string WhatsAppNo;
             public string BannerPosition;
-            public List<HomePageBannerImage> HomePageBannerImages { get; set; }
+            //public List<HomePageBannerImage> HomePageBannerImages { get; set; }
             public List<NewProductDataList> ProductList { get; set; }
 
         }
@@ -52,10 +52,10 @@ namespace Test0555.Models.ProductManagement
         {
             public NewProductDataList()
             {
-                ProductImageList = new List<ProductDataImagelist>();
+                //ProductImageList = new List<ProductDataImagelist>();
                 ProductAttributesList = new List<ProductAttributelist>();
             }
-            public List<ProductDataImagelist> ProductImageList { get; set; }
+            //public List<ProductDataImagelist> ProductImageList { get; set; }
             public List<ProductAttributelist> ProductAttributesList { get; set; }
 
             public string CategoryId;
@@ -86,9 +86,9 @@ namespace Test0555.Models.ProductManagement
             //public string IsQtyFreeze;
             //public string MaxQty;
             //public string MinQty;
-            public string isFreeShipping;
-            public string isFixedShipping;
-            public string FixedShipRate;
+            public bool isFreeShipping;
+            public bool isFixedShipping;
+            public double FixedShipRate;
 
             public string Title;
             public string bannerURL;

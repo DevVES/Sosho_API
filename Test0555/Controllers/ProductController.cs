@@ -12,9 +12,17 @@ namespace Test0555.Controllers
         dbConnection dbc = new dbConnection();
         CommonString cms = new CommonString();
 
+        public enum FilterRate
+        {
+            LowToHigh = 1,
+            HighToLow = 2,
+            Discount = 3,
+            SoshoRecommended = 4
+        }
+
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, string CategoryId = "", string ProductId = "", string StartNo = "", string EndNo = "")
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, string CategoryId = "", string ProductId = "", string StartNo = "", string EndNo = "", string Filter = "")
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -24,8 +32,13 @@ namespace Test0555.Controllers
                 string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
                 string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
 
-                objeprodt.HomePageBannerImages = new List<ProductModel.HomePageBannerImage>();
+                //objeprodt.HomePageBannerImages = new List<ProductModel.HomePageBannerImage>();
+                objeprodt.BannerPosition = iBannerPosition.ToString();
+                objeprodt.ProductList = new List<ProductModel.NewProductDataList>();
                 ProductModel.ProductAttributelist attributeHomePagelist = new ProductModel.ProductAttributelist();
+
+                ProductModel.NewProductDataList objHomepageBanner = new ProductModel.NewProductDataList();
+
                 string condstr = "";
                 if (JurisdictionID != "" && JurisdictionID != null)
                 {
@@ -56,7 +69,7 @@ namespace Test0555.Controllers
                 string bMaxQty = "", bMinQty = "", sAttributeId = "";
                 int sActionId = 0, bProductId = 0;
                 bool sIsQtyFreeze = false;
-                if (ProductId == "0")
+                if (ProductId == "0" || ProductId == "")
                 {
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
@@ -132,18 +145,49 @@ namespace Test0555.Controllers
                                     sAttributeId = dtmain.Rows[n]["AttributeId"].ToString();
                                 }
 
-                                ProductModel.HomePageBannerImage objHomePagebaner = new ProductModel.HomePageBannerImage();
+
+                                //ProductModel.HomePageBannerImage objHomePagebaner = new ProductModel.HomePageBannerImage();
+                                //objHomePagebaner.Title = sTitle;
+                                //objHomePagebaner.bannerURL = urlpath + ImageName1;
+                                //objHomePagebaner.bannerId = Id;
+                                //objHomePagebaner.ActionId = sActionId;
+                                //objHomePagebaner.action = "";
+                                //objHomePagebaner.categoryId = bCategoryId;
+                                //objHomePagebaner.categoryName = sCategoryName;
+                                //objHomePagebaner.openUrlLink = sopenUrlLink;
+                                //objHomePagebaner.ProductId = bProductId;
+                                //objHomePagebaner.ProductName = sProductName;
+                                //objHomepageBanner.Add(objHomePagebaner);
+
+                                ProductModel.NewProductDataList objHomePagebaner = new ProductModel.NewProductDataList();
+                                objHomePagebaner.ItemType = "2";
                                 objHomePagebaner.Title = sTitle;
-                                objHomePagebaner.bannerURL = urlpath + ImageName1;
                                 objHomePagebaner.bannerId = Id;
+                                objHomePagebaner.bannerURL = urlpath + ImageName1;
                                 objHomePagebaner.ActionId = sActionId;
-                                objHomePagebaner.action = "";
-                                objHomePagebaner.categoryId = bCategoryId;
-                                objHomePagebaner.categoryName = sCategoryName;
+                                objHomePagebaner.action = sAction;
+                                objHomePagebaner.CategoryId = bCategoryId;
+                                objHomePagebaner.CategoryName = sCategoryName;
                                 objHomePagebaner.openUrlLink = sopenUrlLink;
-                                objHomePagebaner.ProductId = bProductId;
+                                objHomePagebaner.ProductId = bProductId.ToString();
                                 objHomePagebaner.ProductName = sProductName;
-                                objeprodt.HomePageBannerImages.Add(objHomePagebaner);
+                                objHomePagebaner.OfferEndDate = "";
+                                objHomePagebaner.SoldCount = "";
+                                objHomePagebaner.SpecialMessage = "";
+                                objHomePagebaner.DisplayOrder = 0;
+                                objHomePagebaner.SoshoRecommended = "";
+                                objHomePagebaner.IsSoshoRecommended = false;
+                                objHomePagebaner.IsSpecialMessage = false;
+                                objHomePagebaner.IsProductDescription = false;
+                                objHomePagebaner.ProductDescription = "";
+                                objHomePagebaner.ProductNotes = "";
+                                objHomePagebaner.ProductKeyFeatures = "";
+                                objHomePagebaner.isFreeShipping = false;
+                                objHomePagebaner.isFixedShipping = false;
+                                objHomePagebaner.FixedShipRate = 0;
+
+                                objeprodt.ProductList.Add(objHomePagebaner);
+
 
                                 string Attribuepathimg = "";
                                 string Attributedata = "select KeyValue from StringResources where KeyName='ProductAttributeImageUrl'";
@@ -259,6 +303,23 @@ namespace Test0555.Controllers
                 {
                     querymain += " and Product.Id >" + ProductId;
                 }
+                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.SoshoRecommended.ToString())
+                {
+                    querymain += " and ISNULL(Recommended,'') != '' ";
+                }
+                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.Discount.ToString())
+                {
+                    querymain += " and ISNULL(Discount,0) > 0 ";
+                }
+                if (!string.IsNullOrEmpty(Filter) && Filter== FilterRate.LowToHigh.ToString())
+                {
+                    querymain += " Order by Product.SoshoPrice ";
+                }
+                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.HighToLow.ToString())
+                {
+                    querymain += " Order by Product.SoshoPrice DESC ";
+                }
+               
                 querymain += " ) select * From pte where RowNumber between " + StartNo + " and " + EndNo;
                 DataTable dtproduct = dbc.GetDataTable(querymain);
 
@@ -288,8 +349,7 @@ namespace Test0555.Controllers
                     objeprodt.response = "1";
                     objeprodt.message = "Successfully";
                     objeprodt.WhatsAppNo = sWhatappNo;
-                    objeprodt.BannerPosition = iBannerPosition.ToString();
-                    objeprodt.ProductList = new List<ProductModel.NewProductDataList>();
+                    
 
                     string sProductId = "", sMrp = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSoshoPrice = "", sSold = "", sProductBanner = "";
                     string sDUnit = "", sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sProductvariant = "", sIsSoshoRecommended = "";
@@ -308,26 +368,26 @@ namespace Test0555.Controllers
                         ProductModel.ProductDataImagelist dataImagelist = new ProductModel.ProductDataImagelist();
                         ProductModel.ProductAttributelist attributelist = new ProductModel.ProductAttributelist();
 
-                        if (urlpathimg != "")
-                        {
+                        //if (urlpathimg != "")
+                        //{
 
-                            string ImageDetails = "SELECT top 1  [Id] ,[ImageFileName] ,Productid,DisplayOrder  FROM ProductImages where productid=" + sProductId;
-                            DataTable dtdetails = dbc.GetDataTable(ImageDetails);
+                        //    string ImageDetails = "SELECT top 1  [Id] ,[ImageFileName] ,Productid,DisplayOrder  FROM ProductImages where productid=" + sProductId;
+                        //    DataTable dtdetails = dbc.GetDataTable(ImageDetails);
 
-                            if (dtdetails != null && dtdetails.Rows.Count > 0)
-                            {
-                                string productid3 = sProductId;
-                                string proimgid = dtdetails.Rows[0]["id"].ToString();
-                                string Imagename = dtdetails.Rows[0]["ImageFileName"].ToString();
-                                string pdisorder = dtdetails.Rows[0]["DisplayOrder"].ToString();
+                        //    if (dtdetails != null && dtdetails.Rows.Count > 0)
+                        //    {
+                        //        string productid3 = sProductId;
+                        //        string proimgid = dtdetails.Rows[0]["id"].ToString();
+                        //        string Imagename = dtdetails.Rows[0]["ImageFileName"].ToString();
+                        //        string pdisorder = dtdetails.Rows[0]["DisplayOrder"].ToString();
 
-                                dataImagelist.proimagid = proimgid;
-                                dataImagelist.PImgname = urlpathimg + Imagename;
-                                dataImagelist.prodid = sProductId;
-                                dataImagelist.PDisOrder = pdisorder;
-                                objProduct.ProductImageList.Add(dataImagelist);
-                            }
-                        }
+                        //        dataImagelist.proimagid = proimgid;
+                        //        dataImagelist.PImgname = urlpathimg + Imagename;
+                        //        dataImagelist.prodid = sProductId;
+                        //        dataImagelist.PDisOrder = pdisorder;
+                        //        objProduct.ProductImageList.Add(dataImagelist);
+                        //    }
+                        //}
                         if (Attribuepathimg != "")
                         {
                             string AttImageDetails = "SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails,Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
@@ -430,7 +490,7 @@ namespace Test0555.Controllers
                         sisFixedShipping = dtproduct.Rows[i]["IsFixedShipping"].ToString();
                         sFixedShipRate = dtproduct.Rows[i]["FixedShipRate"].ToString();
 
-                        objProduct.ItemType = "PRODUCT";
+                        objProduct.ItemType = "1";
                         objProduct.CategoryId = sCategoryId;
                         objProduct.CategoryName = sCategory;
                         objProduct.OfferEndDate = sEdate;
@@ -445,9 +505,9 @@ namespace Test0555.Controllers
                         objProduct.ProductNotes = sProductNotes;
                         objProduct.ProductKeyFeatures = sProductKeyFeatures;
                         objProduct.ProductId = sProductId;
-                        objProduct.isFreeShipping = sisFreeShipping;
-                        objProduct.isFixedShipping = sisFixedShipping;
-                        objProduct.FixedShipRate = sFixedShipRate;
+                        objProduct.isFreeShipping = Convert.ToBoolean(sisFreeShipping);
+                        objProduct.isFixedShipping = Convert.ToBoolean(sisFixedShipping);
+                        objProduct.FixedShipRate = Convert.ToDouble(sFixedShipRate);
                         objProduct.ProductName = "";
                         objProduct.Title = "";
                         objProduct.bannerId = "0";
@@ -457,10 +517,6 @@ namespace Test0555.Controllers
                         objProduct.openUrlLink = "";
                         objeprodt.ProductList.Add(objProduct);
 
-                        //if (nPosCtr == iBannerPosition)
-                        //{
-                            
-                        //}
                     }
 
                     string cond = string.Empty;
@@ -542,7 +598,7 @@ namespace Test0555.Controllers
                                 urlpath = dtpath.Rows[0]["KeyValue"].ToString();
                             }
                             ProductModel.NewProductDataList objIntermediateBanner = new ProductModel.NewProductDataList();
-                            objIntermediateBanner.ItemType = "BANNER";
+                            objIntermediateBanner.ItemType = "3";
                             objIntermediateBanner.Title = sTitle;
                             objIntermediateBanner.bannerId = Id;
                             objIntermediateBanner.bannerURL = urlpath + ImageName1;
@@ -564,10 +620,9 @@ namespace Test0555.Controllers
                             objIntermediateBanner.ProductDescription = "";
                             objIntermediateBanner.ProductNotes = "";
                             objIntermediateBanner.ProductKeyFeatures = "";
-                            objIntermediateBanner.ProductId = "0";
-                            objIntermediateBanner.isFreeShipping = "";
-                            objIntermediateBanner.isFixedShipping = "";
-                            objIntermediateBanner.FixedShipRate = "0";
+                            objIntermediateBanner.isFreeShipping = false;
+                            objIntermediateBanner.isFixedShipping = false;
+                            objIntermediateBanner.FixedShipRate = 0;
 
                             objeprodt.ProductList.Add(objIntermediateBanner);
 

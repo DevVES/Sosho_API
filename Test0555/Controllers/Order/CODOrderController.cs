@@ -1325,23 +1325,22 @@ namespace Test0555.Controllers.Order
                                         if(model.PromoCodeamount.ToString() != "0" && model.PromoCodeId != "0")
                                         {
                                             decimal promocodeAmt = 0;
-                                            if (model.PromoCodetype == "%")
-                                            {
-                                                promocodeAmt = Convert.ToDecimal(Convert.ToDecimal(model.totalAmount) * (Convert.ToDecimal(model.PromoCodeCrAmount) / 100));
-                                                balanceAmt = 0;
-                                            }
-                                            else
-                                            {
+                                            //if (model.PromoCodetype == "%")
+                                            //{
+                                            //    promocodeAmt = Convert.ToDecimal(Convert.ToDecimal(model.totalAmount) * (Convert.ToDecimal(model.PromoCodeCrAmount) / 100));
+                                            //    balanceAmt = 0;
+                                            //}
+                                            //else
+                                            //{
                                                 promocodeAmt = Convert.ToDecimal(model.PromoCodebalance);
-                                                balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) - Convert.ToInt32(Convert.ToDecimal(model.PromoCodeamount)));
-                                            }
-                                            string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, model.PromoCodeCrDate,model.PromoCodeCrDescription,promocodeAmt.ToString(),
-                                                               dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.PromoCodeCrDescription,
+                                            //    balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) - Convert.ToInt32(Convert.ToDecimal(model.PromoCodeamount)));
+                                            //}
+                                            string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"),model.PromoCodeCrDescription,model.PromoCodeamount.ToString(),model.PromoCodeCrDescription,
                                                                "0",promocodeAmt.ToString(),"1",
                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
                                                 string insertCouponCodeAmt = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
                                                                           " [wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description], " +
-                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
+                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,null,@9,@10,@11,@12,@13,@14);";
                                                 int historyid = dbCon.ExecuteScalarQueryWithParams(insertCouponCodeAmt, parm2);
 
                                             string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +

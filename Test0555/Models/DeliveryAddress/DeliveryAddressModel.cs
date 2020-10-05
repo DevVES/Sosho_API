@@ -23,8 +23,11 @@ namespace Test0555.Models.DeliveryAddress
             public string fname;
             public string lname;
             public string tagname;
+            public string countryId;
             public string countryName;
+            public string stateId;
             public string statename;
+            public string cityId;
             public string cityname;
             public string addr;
             public string email;

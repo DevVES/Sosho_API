@@ -25,13 +25,28 @@ namespace Test0555.Models.ProductManagement
         //20-08-2020 Developed By :- Hiren
         public class getNewproduct
         {
-            //public List<TopBannerImage> TopBannerImages { get; set; }
-            //public List<SecondBannerImage> SecondBannerImages { get; set; }
-
             public string response;
             public string message;
             public string WhatsAppNo;
+            public string BannerPosition;
+            public List<HomePageBannerImage> HomePageBannerImages { get; set; }
             public List<NewProductDataList> ProductList { get; set; }
+
+        }
+
+        public class HomePageBannerImage
+        {
+            public string Title;
+            public string bannerURL;
+            public string bannerId;
+            public int ActionId;
+            public string action;
+            public string categoryId;
+            public string categoryName;
+            public int ProductId;
+            public string ProductName;
+            public string openUrlLink;
+            public List<ProductAttributelist> ProductAttributesList { get; set; }
         }
         public class NewProductDataList
         {
@@ -45,31 +60,42 @@ namespace Test0555.Models.ProductManagement
 
             public string CategoryId;
             public string CategoryName;
-            public string MRP;
-            public string Discount;
-            public string Name;
+            public string ProductId;
+            public string ProductName;
             public string OfferEndDate;
-            public string SellingPrice;
             public string SoldCount;
-            public string SpecialMessage;
-            public string Weight;
-            public string DisplayOrder;
-            //public string IsProductDetails;
-            public string IsProductVariant;
-            public string IsQtyFreeze;
+            public int DisplayOrder;
             public string SoshoRecommended;
-            public string IsSoshoRecommended;
-            public string IsSpecialMessage;
-            public string MaxQty;
-            public string MinQty;
-            public string isFreeShipping;
-            public string isFixedShipping;
-            public string FixedShipRate;
-            public string IsProductDescription;
+            public bool IsSoshoRecommended;
+            public string SpecialMessage;
+            public bool IsSpecialMessage;
+            public bool IsProductDescription;
             public string ProductDescription;
             public string ProductNotes;
             public string ProductKeyFeatures;
-            public string ProductId;
+            public string ItemType;
+
+            //public string SubCategoryId;
+            //public string SubCategoryName;
+            //public string MRP;
+            //public string Discount;
+            //public string Name;
+            //public string SellingPrice;
+            //public string Weight;
+            //public string IsProductVariant;
+            //public string IsQtyFreeze;
+            //public string MaxQty;
+            //public string MinQty;
+            public string isFreeShipping;
+            public string isFixedShipping;
+            public string FixedShipRate;
+
+            public string Title;
+            public string bannerURL;
+            public string bannerId;
+            public int ActionId;
+            public string action;
+            public string openUrlLink;
 
         }
         public class ProductDataList
@@ -148,17 +174,17 @@ namespace Test0555.Models.ProductManagement
         }
         public class ProductAttributelist
         {
-            public string Mrp;
+            public double Mrp;
             public string Discount;
             public string PackingType;
-            public string soshoPrice;
+            public double soshoPrice;
             public string weight;
-            public string isOutOfStock;
-            public string isSelected;
-            public string isQtyFreeze;
-            public string isBestBuy;
-            public string MinQty;
-            public string MaxQty;
+            public bool isOutOfStock;
+            public bool isSelected;
+            public bool isQtyFreeze;
+            public bool isBestBuy;
+            public int MinQty;
+            public int MaxQty;
             public string AttributeId;
             public string AImageName;
         }

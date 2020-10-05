@@ -423,7 +423,7 @@ namespace Test0555.Controllers
             try
             {
                 objBuilding.Buildinglist = new List<AreaModels.BuildingDatalist>();
-                string Querydata = "SELECT Id, Area, Building from tblBuilding where IsActive=1 AND Id = " + areaId;
+                string Querydata = "SELECT Id, Area, Building from tblBuilding where IsActive=1 AND ZipcodeId = " + areaId;
                 DataTable dtArea = dbc.GetDataTable(Querydata);
                 if (dtArea != null && dtArea.Rows.Count > 0)
                 {

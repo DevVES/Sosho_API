@@ -19,10 +19,16 @@ namespace Test0555.Controllers
             Discount = 3,
             SoshoRecommended = 4
         }
-
+        public enum BannerActionType
+        {
+            OpenUrl = 1,
+            NavigateToCategory = 2,
+            AddToCart = 3,
+            None = -1
+        }
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, string CategoryId = "", string ProductId = "", string StartNo = "", string EndNo = "", string Filter = "")
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, string CategoryId = "", string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1)
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -144,20 +150,23 @@ namespace Test0555.Controllers
                                 {
                                     sAttributeId = dtmain.Rows[n]["AttributeId"].ToString();
                                 }
+                                if(sActionId == BannerActionType.OpenUrl.GetHashCode())
+                                {
+                                    sAction = BannerActionType.OpenUrl.ToString();
+                                }
+                                if (sActionId == BannerActionType.NavigateToCategory.GetHashCode())
+                                {
+                                    sAction = BannerActionType.NavigateToCategory.ToString();
+                                }
+                                if (sActionId == BannerActionType.AddToCart.GetHashCode())
+                                {
+                                    sAction = BannerActionType.AddToCart.ToString();
+                                }
+                                if (sActionId == BannerActionType.None.GetHashCode())
+                                {
+                                    sAction = BannerActionType.None.ToString();
+                                }
 
-
-                                //ProductModel.HomePageBannerImage objHomePagebaner = new ProductModel.HomePageBannerImage();
-                                //objHomePagebaner.Title = sTitle;
-                                //objHomePagebaner.bannerURL = urlpath + ImageName1;
-                                //objHomePagebaner.bannerId = Id;
-                                //objHomePagebaner.ActionId = sActionId;
-                                //objHomePagebaner.action = "";
-                                //objHomePagebaner.categoryId = bCategoryId;
-                                //objHomePagebaner.categoryName = sCategoryName;
-                                //objHomePagebaner.openUrlLink = sopenUrlLink;
-                                //objHomePagebaner.ProductId = bProductId;
-                                //objHomePagebaner.ProductName = sProductName;
-                                //objHomepageBanner.Add(objHomePagebaner);
 
                                 ProductModel.NewProductDataList objHomePagebaner = new ProductModel.NewProductDataList();
                                 objHomePagebaner.ItemType = "2";
@@ -303,19 +312,19 @@ namespace Test0555.Controllers
                 {
                     querymain += " and Product.Id >" + ProductId;
                 }
-                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.SoshoRecommended.ToString())
+                if (Filter == FilterRate.SoshoRecommended.GetHashCode())
                 {
                     querymain += " and ISNULL(Recommended,'') != '' ";
                 }
-                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.Discount.ToString())
+                if (Filter == FilterRate.Discount.GetHashCode())
                 {
                     querymain += " and ISNULL(Discount,0) > 0 ";
                 }
-                if (!string.IsNullOrEmpty(Filter) && Filter== FilterRate.LowToHigh.ToString())
+                if (Filter== FilterRate.LowToHigh.GetHashCode())
                 {
                     querymain += " Order by Product.SoshoPrice ";
                 }
-                if (!string.IsNullOrEmpty(Filter) && Filter == FilterRate.HighToLow.ToString())
+                if (Filter == FilterRate.HighToLow.GetHashCode())
                 {
                     querymain += " Order by Product.SoshoPrice DESC ";
                 }

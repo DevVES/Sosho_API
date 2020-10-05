@@ -127,9 +127,9 @@ namespace Test0555.Controllers
                                       " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                         where +
-                                        " AND H.balance > 0 " +
+                                        //" AND H.balance > 0 " +
                                         " AND W.offer_id = 1 " +
-                                        " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id) " +
+                                        " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id and Hi.customer_id =  WC.customer_id) " +
                                         " order by 2 desc";
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
@@ -468,8 +468,8 @@ namespace Test0555.Controllers
                             {
                                 if (calcAmt > perAmt)
                                 {
-                                    objeWalletdt.response = CommonString.successresponse;
-                                    objeWalletdt.message = CommonString.successmessage;
+                                    objeWalletdt.response = CommonString.DataNotFoundResponse;
+                                    objeWalletdt.message = CommonString.DataNotFoundMessage;
                                     objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                 }
                                 else if (calcAmt <= perAmt)

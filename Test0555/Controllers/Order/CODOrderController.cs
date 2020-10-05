@@ -1322,7 +1322,7 @@ namespace Test0555.Controllers.Order
                                                                           " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
                                             dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
                                         }
-                                        if(model.PromoCodeamount.ToString() != "0" && model.WalletId != "0")
+                                        if(model.PromoCodeamount.ToString() != "0" && model.PromoCodeId != "0")
                                         {
                                             decimal promocodeAmt = 0;
                                             if (model.PromoCodetype == "%")
@@ -1333,7 +1333,7 @@ namespace Test0555.Controllers.Order
                                             else
                                             {
                                                 promocodeAmt = Convert.ToDecimal(model.PromoCodebalance);
-                                                balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) - Convert.ToInt32(model.PromoCodeamount));
+                                                balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) - Convert.ToInt32(Convert.ToDecimal(model.PromoCodeamount)));
                                             }
                                             string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, model.PromoCodeCrDate,model.PromoCodeCrDescription,promocodeAmt.ToString(),
                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.PromoCodeCrDescription,

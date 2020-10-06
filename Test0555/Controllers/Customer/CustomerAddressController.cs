@@ -308,6 +308,9 @@ namespace Test0555.Controllers
                         string buildingNo = (dtdata.Rows[i]["BuildingNo"] != null ? dtdata.Rows[i]["BuildingNo"].ToString() : "");
                         string landmark = (dtdata.Rows[i]["LandMark"] != null ? dtdata.Rows[i]["LandMark"].ToString() : "");
                         string otherdetail = (dtdata.Rows[i]["OtherDetail"] != null ? dtdata.Rows[i]["OtherDetail"].ToString() : "");
+                        string stateId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["StateId"].ToString() : "");
+                        string cityId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["CityId"].ToString() : "");
+                        string countryId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["CountryId"].ToString() : "");
                         ;
 
                         
@@ -319,8 +322,11 @@ namespace Test0555.Controllers
                             fname = fnaem1,
                             lname = lname1,
                             tagname = tagname1,
+                            countryId = countryId,
                             countryName = country1,
+                            stateId = stateId,
                             statename = state1,
+                            cityId = cityId,
                             cityname = city1,
                             addr = addr1,
                             email = email,

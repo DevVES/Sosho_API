@@ -97,7 +97,6 @@ namespace Test0555.Controllers
                 {
                     condstr = " and JB.JurisdictionId = " + JurisdictionId + " AND JB.BannerType = 'HomePage' ";
                 }
-                //string querystr = "select * from HomepageBanner where IsActive=1 and IsDeleted=0 and Doc>='" + startdate + "' and Doc<='" + startend + "' order by Id desc";
                 string querystr = "Select  ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," +
                                      " ISNULL(PC.CategoryName,'') AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
                                      " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
@@ -135,31 +134,6 @@ namespace Test0555.Controllers
 
                         string urlpath = dtpath.Rows[0]["KeyValue"].ToString();
                         objbaner.BannerImageList = new List<BannerModel.IntermediateBannerImage>();
-                        //for (int i = 0; i < dtmain.Rows.Count; i++)
-                        //{
-                        //    ImageName1 = dtmain.Rows[i]["ImageName"].ToString();
-                        //    Id = dtmain.Rows[i]["Id"].ToString();
-                        //    string title = dtmain.Rows[i]["Title"].ToString();
-                        //    objbaner.BannerImageList.Add(new BannerModel.IntermediateBannerImage
-                        //    {
-                        //        Title = title,
-                        //        bannerURL = urlpath + ImageName1,
-                        //        bannerId = Id,
-                        //        action = "",
-                        //        categoryId = "",
-                        //        categoryName = "",
-                        //        openUrlLink = "",
-                        //        ProductName = ""
-                        //        //MaxQty = "",
-                        //        //MinQty = "",
-                        //        //IsQtyFreeze = false,
-                        //        //MRP = "",
-                        //        //Discount = "",
-                        //        //SellingPrice = "",
-                        //        //Weight = ""
-
-                        //    });
-                        //}
                         for (int n = 0; n < dtmain.Rows.Count; n++)
                         {
                             Id = dtmain.Rows[n]["Id"].ToString();

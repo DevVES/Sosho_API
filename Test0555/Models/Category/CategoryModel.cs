@@ -11,6 +11,7 @@ namespace Test0555.Models.Category
         public class getCategory
         {
             public List<CategoryDataList> CategoryList { get; set; }
+            //public List<SubCategoryDataList> SubCategoryList { get; set; }
             public string response;
             public string message;
         }
@@ -21,6 +22,15 @@ namespace Test0555.Models.Category
             public string CategoryName { get; set; }
             public string CategoryDescription { get; set; }
             public string CategoryImage { get; set; }
+            public List<SubCategoryDataList> SubCategoryList { get; set; }
+        }
+
+        public class SubCategoryDataList
+        {
+            public string CategoryId { get; set; }
+            public string SubCategoryId { get; set; }
+            public string SubCategoryName { get; set; }
+            public string SubCategoryDescription { get; set; }
         }
     }
 }

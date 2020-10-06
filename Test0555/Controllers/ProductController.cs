@@ -26,9 +26,10 @@ namespace Test0555.Controllers
             AddToCart = 3,
             None = -1
         }
+
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, string CategoryId = "", string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1)
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1)
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -58,7 +59,8 @@ namespace Test0555.Controllers
                                      " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
                                      " ISNULL(PA.AttributeId,0) AS AttributeId" +
                                      " From HomepageBanner Im " +
-                                     " Left join category cg on  cg.categoryId = Im.categoryId " +
+                                     " INNER join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
+                                     " Left join category cg on  cg.categoryId = CL.categoryId " +
                                      " Left join Product P on  P.Id = Im.ProductId " +
                                      " Left join category PC on PC.CategoryID = P.CategoryID " +
                                      " Left join UnitMaster U on U.Id = P.UnitId " +
@@ -66,8 +68,12 @@ namespace Test0555.Controllers
                                      " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
                                      " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate +
                                      "' and Im.StartDate<='" + startend + "'" +
-                                     condstr +
-                                     "  order by Im.Id desc";
+                                     condstr;
+                if (CategoryId > 0)
+                {
+                    querystr += " and CL.CategoryID =" + CategoryId;
+                }
+                querystr += "  order by Im.Id desc";
                 DataTable dtmain = dbc.GetDataTable(querystr);
                 string Id = "", ImageName1 = "", sAction = "", bCategoryId = "", sCategoryName = "", sopenUrlLink = "";
                 string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", bDiscount = "";
@@ -150,7 +156,7 @@ namespace Test0555.Controllers
                                 {
                                     sAttributeId = dtmain.Rows[n]["AttributeId"].ToString();
                                 }
-                                if(sActionId == BannerActionType.OpenUrl.GetHashCode())
+                                if (sActionId == BannerActionType.OpenUrl.GetHashCode())
                                 {
                                     sAction = BannerActionType.OpenUrl.ToString();
                                 }
@@ -304,9 +310,13 @@ namespace Test0555.Controllers
                 querymain += " inner join tblSubCategory Scat on Scat.Id = Product.SubCategoryID ";
                 querymain += " Where StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and EndDate>='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "'";
                 querymain += "and Product.IsActive = 1 and Product.IsDeleted = 0 and Isnull(Product.IsApproved,'') = 1 and Product.JurisdictionID =" + JurisdictionID;
-                if (!string.IsNullOrEmpty(CategoryId))
+                if (CategoryId > 0)
                 {
                     querymain += " and Product.CategoryID =" + CategoryId;
+                }
+                if (SubCategoryId > 0)
+                {
+                    querymain += " and Product.SubCategoryID =" + SubCategoryId;
                 }
                 if (!string.IsNullOrEmpty(ProductId))
                 {
@@ -320,7 +330,7 @@ namespace Test0555.Controllers
                 {
                     querymain += " and ISNULL(Discount,0) > 0 ";
                 }
-                if (Filter== FilterRate.LowToHigh.GetHashCode())
+                if (Filter == FilterRate.LowToHigh.GetHashCode())
                 {
                     querymain += " Order by Product.SoshoPrice ";
                 }
@@ -328,14 +338,14 @@ namespace Test0555.Controllers
                 {
                     querymain += " Order by Product.SoshoPrice DESC ";
                 }
-               
+
                 querymain += " ) select * From pte where RowNumber between " + StartNo + " and " + EndNo;
                 DataTable dtproduct = dbc.GetDataTable(querymain);
 
                 int nPosCtr = 0;
                 if (dtproduct != null && dtproduct.Rows.Count > 0)
                 {
-                    
+
                     string querydata = "select KeyValue from StringResources where KeyName='ProductImageUrl'";
                     DataTable dtpathimg = dbc.GetDataTable(querydata);
                     string urlpathimg = "", Attribuepathimg = "";
@@ -358,7 +368,7 @@ namespace Test0555.Controllers
                     objeprodt.response = "1";
                     objeprodt.message = "Successfully";
                     objeprodt.WhatsAppNo = sWhatappNo;
-                    
+
 
                     string sProductId = "", sMrp = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSoshoPrice = "", sSold = "", sProductBanner = "";
                     string sDUnit = "", sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sProductvariant = "", sIsSoshoRecommended = "";
@@ -367,7 +377,7 @@ namespace Test0555.Controllers
                     decimal dDiscount = 0;
                     Boolean bIsQtyFreeze = false;
                     int prodrowCount = dtproduct.Rows.Count;
-                    
+
                     for (int i = 0; i < dtproduct.Rows.Count; i++)
                     {
                         nPosCtr++;
@@ -399,11 +409,15 @@ namespace Test0555.Controllers
                         //}
                         if (Attribuepathimg != "")
                         {
-                            string AttImageDetails = "SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails,Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
-                                                     " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice,pam.PackingType,pam.ProductImage, " +
-                                                     " pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy,pam.isOutOfStock,case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, " +
+                            string AttImageDetails = " SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails, " +
+                                                     " Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
+                                                     " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice, " +
+                                                     " pam.PackingType,pam.ProductImage, pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy," +
+                                                     " pam.isOutOfStock,case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, " +
                                                      " pam.MaxQty, pam.MinQty,case when isnull(IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze " +
-                                                     " FROM Product_ProductAttribute_Mapping pam inner join Unitmaster um on um.id=pam.UnitId where pam.productid=" + sProductId + " and pam.IsActive=1 and pam.IsDeleted = 0";
+                                                     " FROM Product_ProductAttribute_Mapping pam " +
+                                                     " inner join Unitmaster um on um.id=pam.UnitId " +
+                                                     " where pam.productid=" + sProductId + " and pam.IsActive=1 and pam.IsDeleted = 0";
                             DataTable dtAttdetails = dbc.GetDataTable(AttImageDetails);
 
                             if (dtAttdetails != null && dtAttdetails.Rows.Count > 0)
@@ -542,7 +556,8 @@ namespace Test0555.Controllers
                              " ISNULL(PA.AttributeId,0) AS AttributeId, " +
                              " ISNULL(P.SubCategoryId,0) AS SubCategoryId,ISNULL(SC.SubCategory,'') AS SubCategoryName " +
                              " From IntermediateBanners Im " +
-                             " Left join category cg on  cg.categoryId = Im.categoryId " +
+                             " INNER join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
+                             " Left join category cg on  cg.categoryId = CL.categoryId " +
                              " Left join Product P on  P.Id = Im.ProductId " +
                              " Left join category PC on PC.CategoryID = P.CategoryID " +
                              " Left join tblSubCategory SC on SC.Id = P.SubCategoryId  " +
@@ -551,10 +566,14 @@ namespace Test0555.Controllers
                              " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
                              " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate +
                              "' and Im.StartDate<='" + startend + "'" +
-                             cond +
-                             "  order by Im.Id desc";
+                             cond;
+                    if (CategoryId > 0)
+                    {
+                        qry += " and CL.CategoryID =" + CategoryId;
+                    }
+                    qry += "  order by Im.Id desc";
                     DataTable dtInterBanner = dbc.GetDataTable(qry);
-                    ProductModel.NewProductDataList  objBannerProduct = new ProductModel.NewProductDataList();
+                    ProductModel.NewProductDataList objBannerProduct = new ProductModel.NewProductDataList();
                     if (dtInterBanner != null && dtInterBanner.Rows.Count > 0)
                     {
                         nPosCtr = 0;

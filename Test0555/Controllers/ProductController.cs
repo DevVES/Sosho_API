@@ -39,12 +39,9 @@ namespace Test0555.Controllers
                 string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
                 string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
 
-                //objeprodt.HomePageBannerImages = new List<ProductModel.HomePageBannerImage>();
                 objeprodt.BannerPosition = iBannerPosition.ToString();
                 objeprodt.ProductList = new List<ProductModel.NewProductDataList>();
                 ProductModel.ProductAttributelist attributeHomePagelist = new ProductModel.ProductAttributelist();
-
-                ProductModel.NewProductDataList objHomepageBanner = new ProductModel.NewProductDataList();
 
                 string condstr = "";
                 if (JurisdictionID != "" && JurisdictionID != null)
@@ -59,7 +56,7 @@ namespace Test0555.Controllers
                                      " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
                                      " ISNULL(PA.AttributeId,0) AS AttributeId" +
                                      " From HomepageBanner Im " +
-                                     " INNER join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
+                                     " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                                      " Left join category cg on  cg.categoryId = CL.categoryId " +
                                      " Left join Product P on  P.Id = Im.ProductId " +
                                      " Left join category PC on PC.CategoryID = P.CategoryID " +
@@ -305,6 +302,7 @@ namespace Test0555.Controllers
                 querymain += " ,case when isnull(IsFreeShipping,'') = '' then 'false' else 'true' end as IsFreeShipping ,Product.SubCategoryID  ";
                 querymain += " ,case when isnull(IsFixedShipping,'') = '' then 'false' else 'true' end as IsFixedShipping, FixedShipRate,isnull(Scat.SubCategory, '') as SubCategoryName ";
                 querymain += " from Product ";
+                querymain += " LEFT join tblCategoryProductLink PL on PL.ProductId = Product.Id ";
                 querymain += " inner join Unitmaster on Unitmaster.id=Product.UnitId ";
                 querymain += " inner join Category cat on cat.CategoryID = Product.CategoryID ";
                 querymain += " inner join tblSubCategory Scat on Scat.Id = Product.SubCategoryID ";
@@ -312,11 +310,11 @@ namespace Test0555.Controllers
                 querymain += "and Product.IsActive = 1 and Product.IsDeleted = 0 and Isnull(Product.IsApproved,'') = 1 and Product.JurisdictionID =" + JurisdictionID;
                 if (CategoryId > 0)
                 {
-                    querymain += " and Product.CategoryID =" + CategoryId;
+                    querymain += " and PL.CategoryID =" + CategoryId;
                 }
                 if (SubCategoryId > 0)
                 {
-                    querymain += " and Product.SubCategoryID =" + SubCategoryId;
+                    querymain += " and PL.SubCategoryID =" + SubCategoryId;
                 }
                 if (!string.IsNullOrEmpty(ProductId))
                 {
@@ -349,11 +347,9 @@ namespace Test0555.Controllers
                     string querydata = "select KeyValue from StringResources where KeyName='ProductImageUrl'";
                     DataTable dtpathimg = dbc.GetDataTable(querydata);
                     string urlpathimg = "", Attribuepathimg = "";
-                    //string urlpathvid = "";
                     if (dtpathimg != null && dtpathimg.Rows.Count > 0)
                     {
                         //Image Path
-
                         urlpathimg = dtpathimg.Rows[0]["KeyValue"].ToString();
                     }
                     string Attributedata = "select KeyValue from StringResources where KeyName='ProductAttributeImageUrl'";
@@ -361,7 +357,6 @@ namespace Test0555.Controllers
                     if (dtAttrpathimg != null && dtAttrpathimg.Rows.Count > 0)
                     {
                         //Image Path
-
                         Attribuepathimg = dtAttrpathimg.Rows[0]["KeyValue"].ToString();
                     }
 
@@ -370,12 +365,11 @@ namespace Test0555.Controllers
                     objeprodt.WhatsAppNo = sWhatappNo;
 
 
-                    string sProductId = "", sMrp = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSoshoPrice = "", sSold = "", sProductBanner = "";
-                    string sDUnit = "", sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sProductvariant = "", sIsSoshoRecommended = "";
-                    string sIsSpecialMessage = "", sProductDiscription = "", sIsProductDetails = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription = "";
-                    string sisFreeShipping = "", sisFixedShipping = "", sFixedShipRate = "", sSubCategoryId = "", sSubCategory = "";
+                    string sProductId = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSold = "", sProductBanner = "";
+                    string sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sIsSoshoRecommended = "";
+                    string sIsSpecialMessage = "", sProductDiscription = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription = "";
+                    string sisFreeShipping = "", sisFixedShipping = "", sFixedShipRate = "";
                     decimal dDiscount = 0;
-                    Boolean bIsQtyFreeze = false;
                     int prodrowCount = dtproduct.Rows.Count;
 
                     for (int i = 0; i < dtproduct.Rows.Count; i++)
@@ -387,26 +381,6 @@ namespace Test0555.Controllers
                         ProductModel.ProductDataImagelist dataImagelist = new ProductModel.ProductDataImagelist();
                         ProductModel.ProductAttributelist attributelist = new ProductModel.ProductAttributelist();
 
-                        //if (urlpathimg != "")
-                        //{
-
-                        //    string ImageDetails = "SELECT top 1  [Id] ,[ImageFileName] ,Productid,DisplayOrder  FROM ProductImages where productid=" + sProductId;
-                        //    DataTable dtdetails = dbc.GetDataTable(ImageDetails);
-
-                        //    if (dtdetails != null && dtdetails.Rows.Count > 0)
-                        //    {
-                        //        string productid3 = sProductId;
-                        //        string proimgid = dtdetails.Rows[0]["id"].ToString();
-                        //        string Imagename = dtdetails.Rows[0]["ImageFileName"].ToString();
-                        //        string pdisorder = dtdetails.Rows[0]["DisplayOrder"].ToString();
-
-                        //        dataImagelist.proimagid = proimgid;
-                        //        dataImagelist.PImgname = urlpathimg + Imagename;
-                        //        dataImagelist.prodid = sProductId;
-                        //        dataImagelist.PDisOrder = pdisorder;
-                        //        objProduct.ProductImageList.Add(dataImagelist);
-                        //    }
-                        //}
                         if (Attribuepathimg != "")
                         {
                             string AttImageDetails = " SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails, " +
@@ -531,7 +505,7 @@ namespace Test0555.Controllers
                         objProduct.isFreeShipping = Convert.ToBoolean(sisFreeShipping);
                         objProduct.isFixedShipping = Convert.ToBoolean(sisFixedShipping);
                         objProduct.FixedShipRate = Convert.ToDouble(sFixedShipRate);
-                        objProduct.ProductName = "";
+                        objProduct.ProductName = sPname;
                         objProduct.Title = "";
                         objProduct.bannerId = "0";
                         objProduct.bannerURL = "";
@@ -556,7 +530,7 @@ namespace Test0555.Controllers
                              " ISNULL(PA.AttributeId,0) AS AttributeId, " +
                              " ISNULL(P.SubCategoryId,0) AS SubCategoryId,ISNULL(SC.SubCategory,'') AS SubCategoryName " +
                              " From IntermediateBanners Im " +
-                             " INNER join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
+                             " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                              " Left join category cg on  cg.categoryId = CL.categoryId " +
                              " Left join Product P on  P.Id = Im.ProductId " +
                              " Left join category PC on PC.CategoryID = P.CategoryID " +
@@ -651,9 +625,7 @@ namespace Test0555.Controllers
                             objIntermediateBanner.isFreeShipping = false;
                             objIntermediateBanner.isFixedShipping = false;
                             objIntermediateBanner.FixedShipRate = 0;
-
                             objeprodt.ProductList.Add(objIntermediateBanner);
-
 
                             Attribuepathimg = "";
                             Attributedata = "select KeyValue from StringResources where KeyName='ProductAttributeImageUrl'";
@@ -738,7 +710,7 @@ namespace Test0555.Controllers
                 {
                     objeprodt.response = "0";
                     objeprodt.message = "Product Details Not Found";
-                    objeprodt.WhatsAppNo = "";
+                    objeprodt.WhatsAppNo = sWhatappNo;
 
                 }
                 return objeprodt;

@@ -35,7 +35,8 @@ namespace Test0555.Controllers
             try
             {
                 int iBannerPosition = (ConfigurationManager.AppSettings["BannerPosition"] != null && ConfigurationManager.AppSettings["BannerPosition"].Trim() != "") ? Convert.ToInt16(ConfigurationManager.AppSettings["BannerPosition"].Trim()) : 0;
-                EndNo = (iBannerPosition + 1).ToString();
+                //EndNo = (iBannerPosition + 1).ToString();
+                EndNo = ((Convert.ToInt32(StartNo)-1)+ iBannerPosition).ToString();
                 string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
                 string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
 
@@ -300,7 +301,8 @@ namespace Test0555.Controllers
                 {
                     sWhatappNo = dtsubmain.Rows[0]["Mobile"].ToString();
                 }
-                string querymain = " with pte as ( select TOP " + iBannerPosition + " ROW_NUMBER() over(order by convert(int,Isnull(Product.DisplayOrder,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
+                //string querymain = " with pte as ( select TOP " + iBannerPosition + " ROW_NUMBER() over(order by convert(int,Isnull(Product.DisplayOrder,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
+                string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(order by convert(int,Isnull(Product.id,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
                 querymain += "(select top 1 taxvalue from GstTaxCategory where GstTaxCategory.id=Product.GstTaxId)as Tax,";
                 querymain += " Product.unit+' - '+UnitMaster.UnitName as DUnit,(CONVERT(varchar,EndDate,103)+' '+ CONVERT(varchar,EndDate,108)) as edate,";
                 querymain += "CONVERT(varchar(12),EndDate,107)+' '+CONVERT(varchar(20),EndDate,108) as Enddate1, ";
@@ -328,10 +330,10 @@ namespace Test0555.Controllers
                 {
                     querymain += " and PL.SubCategoryID =" + SubCategoryId;
                 }
-                if (!string.IsNullOrEmpty(ProductId))
-                {
-                    querymain += " and Product.Id >" + ProductId;
-                }
+                //if (!string.IsNullOrEmpty(ProductId))
+                //{
+                //    querymain += " and Product.Id >" + ProductId;
+                //}
                 if (Filter == FilterRate.SoshoRecommended.GetHashCode())
                 {
                     querymain += " and ISNULL(Recommended,'') != '' ";

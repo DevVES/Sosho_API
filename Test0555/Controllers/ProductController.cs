@@ -48,18 +48,18 @@ namespace Test0555.Controllers
                 {
                     condstr = " and JB.JurisdictionId = " + JurisdictionID + " AND JB.BannerType = 'HomePage' ";
                 }
-                string querystr = " Select ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," +
-                                     " ISNULL(PC.CategoryName,'') AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
+                string querystr = " Select ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty," +
+                                     "  ISNULL(P.MinQty,0) AS MinQty, " +
                                      " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
-                                     " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
+                                     " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(CL.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
                                      " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
                                      " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
-                                     " ISNULL(PA.AttributeId,0) AS AttributeId" +
+                                     " ISNULL(PA.AttributeId,0) AS AttributeId, ISNULL(AC.CategoryName,'') AS ActionCategory,ISNULL(Im.CategoryId,0) AS ActionCategoryId " +
                                      " From HomepageBanner Im " +
                                      " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                                      " Left join category cg on  cg.categoryId = CL.categoryId " +
+                                     " Left join category Ac on  AC.CategoryID = Im.categoryId " +
                                      " Left join Product P on  P.Id = Im.ProductId " +
-                                     " Left join category PC on PC.CategoryID = P.CategoryID " +
                                      " Left join UnitMaster U on U.Id = P.UnitId " +
                                      " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
                                      " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
@@ -74,7 +74,7 @@ namespace Test0555.Controllers
                 DataTable dtmain = dbc.GetDataTable(querystr);
                 string Id = "", ImageName1 = "", sAction = "", bCategoryId = "", sCategoryName = "", sopenUrlLink = "";
                 string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", bDiscount = "";
-                string sTitle = "";
+                string sTitle = "", sActionCategoryId = "", sActionCategoryName = "";
                 string bMaxQty = "", bMinQty = "", sAttributeId = "";
                 int sActionId = 0, bProductId = 0;
                 bool sIsQtyFreeze = false;
@@ -144,6 +144,16 @@ namespace Test0555.Controllers
                                     bCategoryId = "0";
                                     sCategoryName = "";
                                 }
+                                if (!string.IsNullOrEmpty(dtmain.Rows[n]["ActionCategoryId"].ToString()))
+                                {
+                                    sActionCategoryId = dtmain.Rows[n]["ActionCategoryId"].ToString();
+                                    sActionCategoryName = dtmain.Rows[n]["ActionCategory"].ToString();
+                                }
+                                else
+                                {
+                                    sActionCategoryId = "0";
+                                    sActionCategoryName = "";
+                                }
                                 if (!string.IsNullOrEmpty(dtmain.Rows[n]["Link"].ToString()))
                                     sopenUrlLink = dtmain.Rows[n]["Link"].ToString();
                                 else
@@ -183,6 +193,8 @@ namespace Test0555.Controllers
                                 objHomePagebaner.openUrlLink = sopenUrlLink;
                                 objHomePagebaner.ProductId = bProductId.ToString();
                                 objHomePagebaner.ProductName = sProductName;
+                                objHomePagebaner.ActionCategoryId = sActionCategoryId;
+                                objHomePagebaner.ActionCategoryName = sActionCategoryName;
                                 objHomePagebaner.OfferEndDate = "";
                                 objHomePagebaner.SoldCount = "";
                                 objHomePagebaner.SpecialMessage = "";
@@ -298,14 +310,14 @@ namespace Test0555.Controllers
                 querymain += " case when isnull(ProductTemplateID,'') = '2' then 'true' else 'false' end as Productvariant,";
                 querymain += " case when isnull(Recommended,'') = '' then 'false' else 'true' end as IsSoshoRecommended,";
                 querymain += "case when isnull(ProductBanner,'') = '' then 'false' else 'true' end as IsSpecialMessage ";
-                querymain += "  ,Product.CategoryID,ProductMRP AS mrp,Isnull(cast(cast(discount as decimal(10,2)) AS FLOAT),'') AS discount,DiscountType,SoshoPrice,MaxQty,MinQty,case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription ";
-                querymain += " ,case when isnull(IsFreeShipping,'') = '' then 'false' else 'true' end as IsFreeShipping ,Product.SubCategoryID  ";
+                querymain += "  ,PL.CategoryID,ProductMRP AS mrp,Isnull(cast(cast(discount as decimal(10,2)) AS FLOAT),'') AS discount,DiscountType,SoshoPrice,MaxQty,MinQty,case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription ";
+                querymain += " ,case when isnull(IsFreeShipping,'') = '' then 'false' else 'true' end as IsFreeShipping ,PL.SubCategoryID  ";
                 querymain += " ,case when isnull(IsFixedShipping,'') = '' then 'false' else 'true' end as IsFixedShipping, FixedShipRate,isnull(Scat.SubCategory, '') as SubCategoryName ";
                 querymain += " from Product ";
                 querymain += " LEFT join tblCategoryProductLink PL on PL.ProductId = Product.Id ";
                 querymain += " inner join Unitmaster on Unitmaster.id=Product.UnitId ";
-                querymain += " inner join Category cat on cat.CategoryID = Product.CategoryID ";
-                querymain += " inner join tblSubCategory Scat on Scat.Id = Product.SubCategoryID ";
+                querymain += " inner join Category cat on cat.CategoryID = PL.CategoryID ";
+                querymain += " inner join tblSubCategory Scat on Scat.Id = PL.SubCategoryID ";
                 querymain += " Where StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and EndDate>='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "'";
                 querymain += "and Product.IsActive = 1 and Product.IsDeleted = 0 and Isnull(Product.IsApproved,'') = 1 and Product.JurisdictionID =" + JurisdictionID;
                 if (CategoryId > 0)
@@ -370,6 +382,7 @@ namespace Test0555.Controllers
                     string sIsSpecialMessage = "", sProductDiscription = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription = "";
                     string sisFreeShipping = "", sisFixedShipping = "", sFixedShipRate = "";
                     decimal dDiscount = 0;
+                    sActionCategoryId = ""; sActionCategoryName = "";
                     int prodrowCount = dtproduct.Rows.Count;
 
                     for (int i = 0; i < dtproduct.Rows.Count; i++)
@@ -512,6 +525,8 @@ namespace Test0555.Controllers
                         objProduct.ActionId = 0;
                         objProduct.action = "";
                         objProduct.openUrlLink = "";
+                        objProduct.ActionCategoryId = "0";
+                        objProduct.ActionCategoryName = "";
                         objeprodt.ProductList.Add(objProduct);
 
                     }
@@ -521,19 +536,20 @@ namespace Test0555.Controllers
                     {
                         cond = " and JB.JurisdictionId = " + JurisdictionID + " AND JB.BannerType = 'Intermediate' ";
                     }
-                    string qry = "Select  ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty,ISNULL(PC.CategoryID,0) AS ProdCategoryId," +
-                             " ISNULL(PC.CategoryName,'') AS ProductCategoryName, ISNULL(P.MinQty,0) AS MinQty, " +
+                    string qry = "Select  ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty," +
+                             " ISNULL(P.MinQty,0) AS MinQty, " +
                              " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
-                             " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.Action,'') AS Action, ISNULL(Im.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
+                             " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.Action,'') AS Action, ISNULL(CL.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
                              " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
                              " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
                              " ISNULL(PA.AttributeId,0) AS AttributeId, " +
-                             " ISNULL(P.SubCategoryId,0) AS SubCategoryId,ISNULL(SC.SubCategory,'') AS SubCategoryName " +
+                             " ISNULL(P.SubCategoryId,0) AS SubCategoryId,ISNULL(SC.SubCategory,'') AS SubCategoryName, " +
+                             " ISNULL(AC.CategoryName,'') AS ActionCategory,ISNULL(Im.CategoryId,0) AS ActionCategoryId " +
                              " From IntermediateBanners Im " +
                              " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                              " Left join category cg on  cg.categoryId = CL.categoryId " +
+                             " Left join category Ac on  AC.CategoryID = Im.categoryId " +
                              " Left join Product P on  P.Id = Im.ProductId " +
-                             " Left join category PC on PC.CategoryID = P.CategoryID " +
                              " Left join tblSubCategory SC on SC.Id = P.SubCategoryId  " +
                              " Left join UnitMaster U on U.Id = P.UnitId " +
                              " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
@@ -577,6 +593,16 @@ namespace Test0555.Controllers
                                 sCategoryId = "0";
                                 sCategoryName = "";
                             }
+                            if (!string.IsNullOrEmpty(dtInterBanner.Rows[j]["ActionCategoryId"].ToString()))
+                            {
+                                sActionCategoryId = dtInterBanner.Rows[j]["ActionCategoryId"].ToString();
+                                sActionCategoryName = dtInterBanner.Rows[j]["ActionCategory"].ToString();
+                            }
+                            else
+                            {
+                                sActionCategoryId = "0";
+                                sActionCategoryName = "";
+                            }
                             if (Convert.ToInt32(dtInterBanner.Rows[j]["ProductId"]) > 0)
                             {
                                 sProductId = Convert.ToInt32(dtInterBanner.Rows[j]["ProductId"]).ToString();
@@ -611,6 +637,8 @@ namespace Test0555.Controllers
                             objIntermediateBanner.openUrlLink = sopenUrlLink;
                             objIntermediateBanner.ProductId = sProductId;
                             objIntermediateBanner.ProductName = sProductName;
+                            objIntermediateBanner.ActionCategoryId = sActionCategoryId;
+                            objIntermediateBanner.ActionCategoryName = sActionCategoryName;
                             objIntermediateBanner.OfferEndDate = "";
                             objIntermediateBanner.SoldCount = "";
                             objIntermediateBanner.SpecialMessage = "";

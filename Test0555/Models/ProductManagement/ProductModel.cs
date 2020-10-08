@@ -96,7 +96,8 @@ namespace Test0555.Models.ProductManagement
             public int ActionId;
             public string action;
             public string openUrlLink;
-
+            public string ActionCategoryId;
+            public string ActionCategoryName;
         }
         public class ProductDataList
         {

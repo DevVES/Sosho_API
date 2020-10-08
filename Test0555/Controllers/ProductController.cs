@@ -78,7 +78,7 @@ namespace Test0555.Controllers
                 string bMaxQty = "", bMinQty = "", sAttributeId = "";
                 int sActionId = 0, bProductId = 0;
                 bool sIsQtyFreeze = false;
-                if (ProductId == "0" || ProductId == "")
+                if (ProductId == "0" || string.IsNullOrEmpty(ProductId))
                 {
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
@@ -729,7 +729,7 @@ namespace Test0555.Controllers
                                 }
 
                             }
-                            objBannerProduct.ProductAttributesList = objAttrList;
+                            objIntermediateBanner.ProductAttributesList = objAttrList;
                             break;
                         }
                     }

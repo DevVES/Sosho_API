@@ -128,7 +128,7 @@ namespace Test0555.Controllers
                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                         where +
                                         //" AND H.balance > 0 " +
-                                        " AND W.offer_id = 1 " +
+                                       // " AND W.offer_id = 1 " +
                                         " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id and Hi.customer_id =  WC.customer_id) " +
                                         " order by 2 desc";
                     DataTable dtmain = dbc.GetDataTable(querymain);
@@ -151,6 +151,8 @@ namespace Test0555.Controllers
                                         " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id  " +
                                         where +
                                         " AND W.offer_id = 3 " +
+                                        "AND  GETDATE() >= W.start_date and GETDATE() <= W.end_date "+
+                                        "AND ISNULL(WC.is_used,0) = 0 " +
                                         " AND (0 < (select isnull(H.balance,0) " +
                                         " from[tblWalletCustomerHistory] H " +
                                         " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) " +
@@ -164,6 +166,8 @@ namespace Test0555.Controllers
                                         " LEFT JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
                                         " WHERE WC.customer_id = -1 " +
                                         " AND W.offer_id = 3 " +
+                                       "AND  GETDATE() >= W.start_date and GETDATE() <= W.end_date " +
+                                        "AND ISNULL(WC.is_used,0) = 0 " +
                                         " AND(select count(*) From tblWalletCustomerHistory wch " +
                                         "  where wch.wallet_id = W.wallet_ID and wch.customer_id = " + CustomerId + ") = 0 ";
                         DataTable dtPromoCode = dbc.GetDataTable(queryPromoCode);
@@ -291,7 +295,7 @@ namespace Test0555.Controllers
                     " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
                     " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                      where +
-                    " AND W.offer_id = 1 " +
+                    //" AND W.offer_id = 1 " +
                     " AND W.is_active = 1 " +
                     " AND H.balance > 0 " +
                     " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
@@ -418,10 +422,24 @@ namespace Test0555.Controllers
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
 
+                    //string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.terms AS CR_description,  WC.created_date AS CR_date,W.per_type," +
+                    //                   " W.per_amount,wallet_amount,per_type,per_amount,  W.min_order_amount, ISNULL((select isnull(H.balance,0) " +
+                    //                   " from [tblWalletCustomerHistory] H " +
+                    //                   " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)),0) as Balance " +
+                    //                   " FROM[tblWalletCustomerLink] WC  " +
+                    //                   " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                    //                   where +
+                    //                   " AND W.offer_id = 3 " +
+                    //                   " AND W.is_active = 1 " +
+                    //                   " AND ISNULL(WC.is_used,0) = 0 " +
+                    //                   " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
+                    //                   " AND W.coupon_code = '" + PromoCode + "'" +
+                    //                   " order by WC.created_date  asc ";
+
                     string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.terms AS CR_description,  WC.created_date AS CR_date,W.per_type," +
                                        " W.per_amount,wallet_amount,per_type,per_amount,  W.min_order_amount, ISNULL((select isnull(H.balance,0) " +
                                        " from [tblWalletCustomerHistory] H " +
-                                       " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)),0) as Balance " +
+                                       " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.customer_id = Wc.customer_id)),0) as Balance " +
                                        " FROM[tblWalletCustomerLink] WC  " +
                                        " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                        where +

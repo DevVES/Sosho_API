@@ -29,7 +29,7 @@ namespace Test0555.Controllers
 
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1)
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1, string InterBannerid = "")
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -536,7 +536,7 @@ namespace Test0555.Controllers
                     string cond = string.Empty;
                     if (JurisdictionID != "" && JurisdictionID != null)
                     {
-                        cond = " and JB.JurisdictionId = " + JurisdictionID + " AND JB.BannerType = 'Intermediate' ";
+                        cond = " and JB.JurisdictionId = " + JurisdictionID + " AND CL.BannerType = 'Intermediate' ";
                     }
                     string qry = "Select  ISNULL(cg.CategoryName,'') AS CategoryName,ISNULL(P.Name,'') AS ProductName,ISNULL(P.MaxQty,0) AS MaxQty," +
                              " ISNULL(P.MinQty,0) AS MinQty, " +
@@ -563,6 +563,11 @@ namespace Test0555.Controllers
                     {
                         qry += " and CL.CategoryID =" + CategoryId;
                     }
+                    if(InterBannerid != "0" && !string.IsNullOrEmpty(InterBannerid))
+                    {
+                        qry += " and Im.Id NOT IN (" + InterBannerid + ")";
+                    }
+                    
                     qry += "  order by Im.Id desc";
                     DataTable dtInterBanner = dbc.GetDataTable(qry);
                     ProductModel.NewProductDataList objBannerProduct = new ProductModel.NewProductDataList();

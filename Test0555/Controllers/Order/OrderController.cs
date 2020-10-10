@@ -1543,7 +1543,7 @@ namespace Test0555.Controllers.Order
                         //}
                         //}
 
-                        string qry1 = "select Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId  where [Order].Id=" + OrderId;
+                        string qry1 = "select ISNULL(OrderItem.IsBannerProduct,0) AS IsBannerProduct, Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId  where [Order].Id=" + OrderId;
 
                         //
                         DataTable dt = dbCon.GetDataTable(qry1);
@@ -1553,7 +1553,7 @@ namespace Test0555.Controllers.Order
                         string date = "";
                         string whatsappmsg = "";
                         string mess = "";
-
+                        bool IsBannerProduct = false;
                         List<OrderModels.finallistprod> list = new List<OrderModels.finallistprod>();
                         for (int i = 0; i < dt.Rows.Count; i++)
                         {
@@ -1570,7 +1570,7 @@ namespace Test0555.Controllers.Order
                                 int lendata = dataaa.Length;
 
                                 string time = dataaa[lendata - 1];
-
+                                IsBannerProduct = Convert.ToBoolean(dt.Rows[i]["IsBannerProduct"]);
                                 date = date + ' ' + time;
 
 
@@ -1661,6 +1661,7 @@ namespace Test0555.Controllers.Order
 
                             list.Add(new OrderModels.finallistprod
                             {
+                                IsBannerProduct = IsBannerProduct,
                                 ProductName = dt.Rows[i]["Name"].ToString(),
                                 msg = mess,
                                 Qty = dt.Rows[i]["Quantity"].ToString(),

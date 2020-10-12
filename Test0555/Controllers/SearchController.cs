@@ -1,0 +1,743 @@
+﻿using InquiryManageAPI.Controllers;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Web.Http;
+using Test0555.Models.ProductManagement;
+using System.Linq;
+using System.Web;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Test0555.Controllers
+{
+    public class SearchController : ApiController
+    {
+        public HttpApplicationState Application
+        {
+            get;
+            //private set;
+        }
+
+
+        dbConnection dbc = new dbConnection();
+        CommonString cms = new CommonString();
+        // GET: Search
+        //public ActionResult Index()
+        //{
+        //    return View();
+        //}
+        //08-10-2020 Search Related API
+        [HttpGet]
+        public string[] GetResultsBySearch(string Searchname1)
+        {
+            if (Searchname1.Contains('\''))
+            {
+                Searchname1 = Searchname1.Replace("'", "");
+            }
+
+            string Searchname = "", Searchnamewithoutspace = "";
+            bool isSpaceStringSame = false;
+            DataTable dtResult = new DataTable();
+            string[] returnSearch = new string[2];
+            try
+            {
+                if (Searchname1 != null && Searchname1.Trim() != "")
+                {
+                    char[] ch = { ' ' };
+                    string[] splt = Searchname1.Split(ch, StringSplitOptions.RemoveEmptyEntries);
+                    if (splt.Length > 1)
+                    {
+
+                    }
+                    else
+                        Searchname = splt[0].Trim();
+
+                    if (Searchname != "")
+                    {
+                        Searchnamewithoutspace = Searchname.Replace(" ", "").Trim();
+                        if (Searchname.Equals(Searchnamewithoutspace))
+                            isSpaceStringSame = true;
+                    }
+                    int Max_Seller = 10, Max_Category = 10, Max_Product = 10;
+                    DataTable dtCategory = new DataTable();
+                    DataTable dtProduct = new DataTable();
+                    DataTable dtSubCategory = new DataTable();
+
+                    DataTable dtCategoryFinal = new DataTable();
+                    DataTable dtSubCategoryFinal = new DataTable();
+                    DataTable dtProductFinal = new DataTable();
+
+                    DataTable dtCategory_reverse = new DataTable();
+                    DataTable dtProduct_reverse = new DataTable();
+                    DataTable dtSubCategory_reverse = new DataTable();
+
+                    try
+                    {
+                        dtResult.Columns.Add("ID", typeof(System.Int64));
+                        dtResult.Columns.Add("Name");
+                        dtResult.Columns.Add("Link");
+                        dtResult.Columns.Add("Type", typeof(System.Int64));//1=Seller 2=Category 3=Product
+                        dtResult.Columns.Add("Total_Word", typeof(System.Int64));
+                        dtResult.Columns.Add("SearchType", typeof(System.Int64));//1=Direct Word  2=Word without space
+                        dtResult.Columns.Add("CategoryId"); //CategoryId
+
+                        if (Searchname.Trim() != "" || Searchnamewithoutspace.Trim() != "")
+                        {
+                            GetProductSearchResult(Searchname, Searchnamewithoutspace, isSpaceStringSame, dtResult, ref dtCategory, ref dtSubCategory, ref dtProduct);
+                        }
+                        else
+                        {
+                            dtCategory = dtResult.Clone();
+                            dtProduct = dtResult.Clone();
+                        }
+                        int intCategory = dtCategory.Rows.Count;
+                        int intProduct = dtProduct.Rows.Count;
+                        int intSubCategory = dtSubCategory.Rows.Count;
+
+                        int intCategory_reverse = dtCategory_reverse.Rows.Count;
+                        int intProduct_reverse = dtProduct_reverse.Rows.Count;
+                        int intSubCategory_reverse = dtSubCategory_reverse.Rows.Count;
+
+                        dtCategoryFinal = dtCategory.Clone();
+                        //dtSubCategoryFinal = dtCategory.Clone();
+                        dtSubCategoryFinal = dtSubCategory.Clone();
+                        dtProductFinal = dtProduct.Clone();
+
+                        // SqlConnection sqlcon1 = GetConnection();
+                        AddUniqueSearchResult(dtCategoryFinal, dtCategory, Max_Category);
+
+                        AddUniqueSearchResult(dtSubCategoryFinal, dtSubCategory, Max_Category);
+                        //AddSubCategoryUniqueSearchResult(dtSubCategoryFinal, dtSubCategory, Max_Category);
+
+                        //if (dtCategoryFinal.Rows.Count != Max_Category)
+                        //{
+                        //    //AddUniqueSearchResult(dtCategoryFinal, dtCategory_reverse, Max_Category);
+                        //    AddCategoryUniqueSearchResult(dtCategoryFinal, dtCategory, Max_Category, distinctcategoryid);
+                        //}
+
+                        AddUniqueSearchResult(dtProductFinal, dtProduct, Max_Product);
+
+                        if (dtProductFinal.Rows.Count != Max_Product)
+                        {
+                            AddUniqueSearchResult(dtProductFinal, dtProduct_reverse, Max_Product);
+                        }
+
+                        StringBuilder sb = new StringBuilder();
+
+                        //AppendSearchResultString(dtCategoryFinal, sb);
+                        AppendCategorySearchResultString(dtCategoryFinal, sb);
+                        AppendSubCategorySearchResultString(dtSubCategoryFinal, sb);
+                        AppendSearchResultString(dtProductFinal, sb);
+
+                        string finalstr = sb.ToString();
+                        string[] arrstr = { "@@@@" };
+                        returnSearch = finalstr.Split(arrstr, StringSplitOptions.RemoveEmptyEntries);
+                    }
+                    catch (Exception ex)
+                    {
+
+                        throw ex;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+            return returnSearch;
+        }
+        private static void AddUniqueSearchResult(DataTable dtSellerFinal, DataTable dtSeller, int Max_Seller)
+        {
+            foreach (DataRow dr in dtSeller.Rows)
+            {
+                if (Max_Seller == -1 || dtSellerFinal.Rows.Count < Max_Seller)
+                {
+                    string id = dr["Id"].ToString();
+                    string Type = dr["Type"].ToString();
+
+                    DataRow[] drfindRec = dtSellerFinal.Select("ID=" + id + " and Type=" + Type);
+                    if (drfindRec.Length == 0)
+                    {
+                        dtSellerFinal.ImportRow(dr);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        private void AddSubCategoryUniqueSearchResult(DataTable dtSellerFinal, DataTable dtSeller, int Max_Seller)
+        {
+
+            //foreach (DataRow dr in dtSeller.Rows)
+            //{
+            // var distinctcategoryid = (from row in dtProduct.AsEnumerable() select row.Field<string>("CategoryId")).Distinct().ToList();
+            //var subcategoryname = (from row in dtSeller.AsEnumerable() select row.Field<string>("Id")).ToList();
+            if (Max_Seller == -1 || dtSellerFinal.Rows.Count < Max_Seller)
+            {
+                //string id = dr["Id"].ToString();
+                //string Type = dr["Type"].ToString();
+
+                //foreach (var item in distinctcategoryid)
+                //{
+                //string id = item;
+                string id = "";
+                if (dtSeller != null)
+                {
+                    if (dtSeller.Rows.Count > 0)
+                    {
+                        DataTable dtSub = new DataTable();
+
+                        //SqlConnection sqlcon = GetConnection();
+                        //SqlCommand sqlcmd = new SqlCommand();
+                        //sqlcmd.Connection = sqlcon;
+
+                        string query = "";
+                        query = "select *,(replace(replace((isnull(SubCategory,'')), '''', ''),'’','')) as Name,(isnull(SubCategory,'')) as Name1 from tblSubCategory where CategoryId =" + id;
+                        //SqlDataAdapter sqladapter = new SqlDataAdapter(query, sqlcon);
+                        //sqladapter.Fill(dtSub);
+                        //DataRow[] drfindRec = dtSellerFinal.Select("ID=" + id + " and Type=" + Type);
+                        dtSub = dbc.GetDataTable(query);
+
+                        DataRow[] drfindRec = dtSub.Select("CategoryId=" + id);
+                        foreach (DataRow dr in drfindRec)
+                        {
+                            dtSellerFinal.ImportRow(dr);
+                        }
+                    }
+                }
+                // DataRow[] drfindRec = dtSeller.Select("ROWID=" + id);
+                //if (drfindRec.Length == 0)
+                //{
+                //foreach (DataRow dr in drfindRec)
+                //{
+                //    string id1 = dr["RowId"].ToString();
+                //    string Type1 = dr["Link"].ToString();
+
+
+                //  //  dtSellerFinal.ImportRow(dr);
+
+                //    DataRow[] drfindRec1 = dtSeller.Select("Link='" + Type1 + "'");
+
+                //    foreach(DataRow dr1 in drfindRec1)
+                //    {
+                //        dtSellerFinal.ImportRow(dr1);
+                //    }
+                //}
+
+                // }
+                //}
+            }
+            //else
+            //{
+            //    break;
+            //}
+            //}
+        }
+
+        private void GetProductSearchResult(string Searchname, string Searchnamewithoutspace, bool isSpaceStringSame, DataTable dtResult, ref DataTable dtCategory, ref DataTable dtSubCategory, ref DataTable dtProduct)
+        {
+            //FOR GETTING CATEGORY FROM SEARCH
+            string[] arrCategory = { "CategoryName" };
+
+            string strCAtegorySearch = "";
+            string strCAtegorySearchWordStart = "", strCAtegorySearchWordStartInner = "";
+
+            foreach (string cname in arrCategory)
+            {
+                strCAtegorySearch += cname + " like '%" + Searchname + "%' or ";
+            }
+            strCAtegorySearch = strCAtegorySearch.Trim().TrimEnd('o', 'r');
+
+            string strCAtegorySearchwithoutspace = "";
+            string strCAtegorySearchWordStartwithoutspace = "", strCAtegorySearchWordStartInnerwithoutspace = "";
+
+            foreach (string cname in arrCategory)
+            {
+                strCAtegorySearchwithoutspace += cname + " like '%" + Searchnamewithoutspace + "%' or ";
+            }
+            strCAtegorySearchwithoutspace = strCAtegorySearchwithoutspace.Trim().TrimEnd('o', 'r');
+
+            string strCAtegoryTableName = "Category";
+            dtCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrCategory, strCAtegorySearch, strCAtegorySearchwithoutspace, strCAtegoryTableName, 2, strCAtegorySearchWordStart, strCAtegorySearchWordStartInner, strCAtegorySearchWordStartwithoutspace, strCAtegorySearchWordStartInnerwithoutspace, 2).Copy();
+
+
+            //FOR GETTING SUB CATEGORY FROM SEARCH
+
+            string[] arrSubCategory = { "SubCategory" };
+
+            string strsubCAtegorySearch = "";
+            string strsCAtegorySearchWordStart = "", strsCAtegorySearchWordStartInner = "";
+
+            foreach (string cname in arrSubCategory)
+            {
+                strsubCAtegorySearch += cname + " like '%" + Searchname + "%' or ";
+            }
+            strsubCAtegorySearch = strsubCAtegorySearch.Trim().TrimEnd('o', 'r');
+
+            string strsubCAtegorySearchwithoutspace = "";
+            string strsCAtegorySearchWordStartwithoutspace = "", strsCAtegorySearchWordStartInnerwithoutspace = "";
+            foreach (string cname in arrSubCategory)
+            {
+                strsubCAtegorySearchwithoutspace += cname + " like '%" + Searchnamewithoutspace + "%' or ";
+            }
+            strsubCAtegorySearchwithoutspace = strsubCAtegorySearchwithoutspace.Trim().TrimEnd('o', 'r');
+
+            string strsubCAtegoryTableName = "tblSubCategory";
+            dtSubCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrSubCategory, strsubCAtegorySearch, strsubCAtegorySearchwithoutspace, strsubCAtegoryTableName, 4, strsCAtegorySearchWordStart, strsCAtegorySearchWordStartInner, strsCAtegorySearchWordStartwithoutspace, strsCAtegorySearchWordStartInnerwithoutspace, 2).Copy();
+
+
+
+            //FOR GETTING PRODUCTS FROM SEARCH
+
+            string[] arrProduct = { "Name" };
+
+            string strProductSearch = "";
+            string strProductSearchWordStart = "", strProductSearchWordStartInner = "";
+
+            foreach (string cname in arrProduct)
+            {
+                strProductSearch += cname + " like '%" + Searchname + "%' or ";
+                //strProductSearchWordStart += cname + " like '" + Searchname + "%' or ";
+                //strProductSearchWordStartInner += cname + " like '% " + Searchname + "%' or ";
+            }
+            strProductSearch = strProductSearch.Trim().TrimEnd('o', 'r');
+            //strProductSearchWordStart = strProductSearchWordStart.Trim().TrimEnd('o', 'r');
+            //strProductSearchWordStartInner = strProductSearchWordStartInner.Trim().TrimEnd('o', 'r');
+
+            string strProductSearchwithoutspace = "";
+            string strProductSearchWordStartwithoutspace = "", strProductSearchWordStartInnerwithoutspace = "";
+
+            foreach (string cname in arrProduct)
+            {
+                strProductSearchwithoutspace += cname + " like '%" + Searchnamewithoutspace + "%' or ";
+                //strProductSearchWordStartwithoutspace += cname + " like '" + Searchnamewithoutspace + "%' or ";
+                //strProductSearchWordStartInnerwithoutspace += cname + " like '% " + Searchnamewithoutspace + "%' or ";
+            }
+            strProductSearchwithoutspace = strProductSearchwithoutspace.Trim().TrimEnd('o', 'r');
+            //strProductSearchWordStartwithoutspace = strProductSearchWordStartwithoutspace.Trim().TrimEnd('o', 'r');
+            //strProductSearchWordStartInnerwithoutspace = strProductSearchWordStartInnerwithoutspace.Trim().TrimEnd('o', 'r');
+
+
+            string strProductTableName = "Product";
+            dtProduct = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrProduct, strProductSearch, strProductSearchwithoutspace, strProductTableName, 3, strProductSearchWordStart, strProductSearchWordStartInner, strProductSearchWordStartwithoutspace, strProductSearchWordStartInnerwithoutspace, 2).Copy();
+
+
+        }
+
+        private DataTable GetProductSearchTable(string Searchname, DataTable dtResult, string Searchnamewithoutspace, bool isSpaceStringSame, string[] arrSeller, string strSellerSearch, string strSellerSearchwithoutspace, string strTableName, int Type, string strSellerSearchWordStart, string strSellerSearchWordStartInner, string strSellerSearchWordStartwithoutspace, string strSellerSearchWordStartInnerwithoutspace, int Searchfrom)//Searchfrom = 1 for search button 2 for display list on key press
+        {
+            DataTable dtSeller = new DataTable();
+            string tablename = strTableName;
+            try
+            {
+                if (Searchfrom == 1)
+                {
+                    strTableName = strTableName + "btn";
+                }
+
+                //if (Application[strTableName] != null)
+                //{
+                //    dtSeller = (DataTable)Application[strTableName];
+                //    if (dtSeller.Rows.Count == 0)
+                //    {
+                //        dtSeller = GetAllData(tablename, arrSeller);
+                //        Application[strTableName] = dtSeller;
+                //    }
+                //}
+                //else
+                //{
+                dtSeller = GetAllData(tablename, arrSeller);
+                //Application[strTableName] = dtSeller;
+                //}
+
+            }
+            catch (Exception E)
+            {
+                dtSeller = GetAllData(tablename, arrSeller);
+                Application[strTableName] = dtSeller;
+            }
+
+            if (dtSeller != null && dtSeller.Rows.Count > 0)
+            {
+                // if (strTableName != "tblCategoryMaster")
+                //{
+                //It will search word start with string
+                SearchWordStartWith(Searchname, dtResult, strSellerSearchWordStart, Type, dtSeller, 1);
+
+                //It will search word start within string
+                SearchWordStartWithInner(Searchname, dtResult, strSellerSearchWordStartInner, Type, dtSeller, 2);
+                //if (Searchfrom != 1) //1=search button 
+                //{
+                //    //It will search same word
+                //    SearchSameWord(Searchname, dtResult, strSellerSearch, Type, dtSeller, 3);
+                //}
+                //It will search wihtout space word start with string
+                //SearchWordStartWith(Searchname, dtResult, strSellerSearchWordStartwithoutspace, Type, dtSeller, 4);
+
+                //It will search wihtout space word start within string
+                // SearchWordStartWithInner(Searchname, dtResult, strSellerSearchWordStartInnerwithoutspace, Type, dtSeller, 5);
+
+                if (Searchfrom != 1) //1=search button 
+                {
+                    //It will search wihtout space same word
+                    SearchSameWordRemoveAllSpaceAvailability(Searchname, dtResult, Type, dtSeller, 6);
+                }
+
+                //It will search reverse string of search word
+                SearchReverseofSearchWord(Searchname, dtResult, Searchnamewithoutspace, isSpaceStringSame, strSellerSearchwithoutspace, Type, dtSeller, 7);
+
+                // if (Searchfrom == 1)
+                {
+                    //It will search all words availability in the string
+                    SearchAllWordsAvailability(Searchname, dtResult, Type, dtSeller, 8);
+                }
+                DataView dv = dtResult.DefaultView;
+                dv.Sort = "SearchType asc";//,Total_Word desc
+                dtResult = dv.ToTable();
+                // }
+                //else
+                // {
+                //     DataView dv = dtSeller.DefaultView;
+                //     dtResult = dv.ToTable();
+                // }
+
+            }
+            return dtResult;
+        }
+
+        public DataTable GetAllData(string Tablename, string[] arrSeller)
+        {
+            //DataTable dt = new DataTable();
+            try
+            {
+                string[] filter_for_daiplay = { "producttag" };
+                //SqlConnection sqlcon = GetConnection();
+                //SqlCommand sqlcmd = new SqlCommand();
+                //sqlcmd.Connection = sqlcon;
+
+                string append = "";
+                string append1 = "";
+
+                int display_count = 0;
+                foreach (string cname in arrSeller)
+                {
+                    if (!filter_for_daiplay.Contains(cname.ToLower()))
+                    {
+                        display_count++;
+                    }
+                }
+
+                int count = 0;
+                foreach (string cname in arrSeller)
+                {
+                    count++;
+                    if (count != arrSeller.Length)
+                    {
+                        append += "replace(replace((isnull(" + cname + ",'')), '''', ''),'’','')+ ', ' +";
+                    }
+                    else
+                    {
+                        append += "replace(replace((isnull(" + cname + ",'')), '''', ''),'’','')";
+                    }
+
+                    if (!filter_for_daiplay.Contains(cname.ToLower()))
+                    {
+                        if (count != display_count)
+                        {
+                            append1 += "isnull(" + cname + ",'')+ ', ' +";
+                        }
+                        else
+                        {
+                            append1 += "isnull(" + cname + ",'')";
+                        }
+                    }
+                }
+
+                append = ",(" + append + ") as Name";
+                //append1 = ",(" + append1 + ") as Name1";
+                string query = "";
+                if (Tablename == "Product")
+                {
+                    //append1 = ",(" + append1 + ")" + " + ' (' + cm.CategoryName + ')' as Name1";
+                    //query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN Category cm on pm.CategoryId = cm.CategoryID ";
+
+                    //append1 = ",(" + append1 + ")" + " + ' (' + cm.CategoryName + ')' as Name1";
+                    append1 = ",(" + append1 + ") as Name1";
+                    query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN tblCategoryProductLink cpl on pm.Id = cpl.ProductId ";
+                }
+                else
+                {
+                    append1 = ",(" + append1 + ") as Name1";
+                    query = "select *" + append + append1 + " from " + Tablename;
+                }
+                //SqlDataAdapter sqladapter = new SqlDataAdapter(query, sqlcon);
+                //sqladapter.Fill(dt);
+
+                DataTable dt = dbc.GetDataTable(query);
+                if (Tablename == "Product")
+                {
+                    dt.Columns["Id"].ColumnName = "ROWID";
+                    //dt.Columns["Name2"].ColumnName = "Link";
+                    dt.Columns["SubCategoryId1"].ColumnName = "Link";
+                }
+
+                if (Tablename == "Category")
+                {
+                    dt.Columns["CategoryID"].ColumnName = "ROWID";
+                    dt.Columns["CategoryName"].ColumnName = "Link";
+                }
+                if (Tablename == "tblSubCategory")
+                {
+                    dt.Columns["ID"].ColumnName = "ROWID";
+                    dt.Columns["SubCategory"].ColumnName = "Link";
+                }
+
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            //return dt;
+        }
+        private static void SearchWordStartWith(string Searchname, DataTable dtResult, string strSellerSearch, int Type, DataTable dtSeller, int SearchType)
+        {
+            DataRow[] drfindsearch = null;
+
+            if (Searchname.Trim() != "")
+            {
+                DataRow[] drfind = dtSeller.Select(strSellerSearch);
+                drfindsearch = drfind;
+            }
+            if (drfindsearch != null)
+            {
+                foreach (DataRow dr in drfindsearch)
+                {
+                    //int SearchType = 0; //same search word
+                    AddResultRow(Searchname, dtResult, Type, dtSeller, dr, SearchType);
+                }
+            }
+        }
+        private static void SearchWordStartWithInner(string Searchname, DataTable dtResult, string strSellerSearch, int Type, DataTable dtSeller, int SearchType)
+        {
+            DataRow[] drfindsearch = null;
+
+            if (Searchname.Trim() != "")
+            {
+                DataRow[] drfind = dtSeller.Select(strSellerSearch);
+                drfindsearch = drfind;
+            }
+            if (drfindsearch != null)
+            {
+                foreach (DataRow dr in drfindsearch)
+                {
+                    //int SearchType = 1; //same search word
+                    AddResultRow(Searchname, dtResult, Type, dtSeller, dr, SearchType);
+                }
+            }
+        }
+        private static void AddResultRow(string Searchname, DataTable dtResult, int Type, DataTable dtSeller, DataRow dr, int SearchType)
+        {
+            DataRow drnew = dtResult.NewRow();
+
+            //drnew["ID"] = dr["ROWID"].ToString();
+            drnew["ID"] = dr[0].ToString();
+            string data = dr["Name1"].ToString().Trim();
+            data = data.Trim().TrimEnd(',');
+            data = data.Trim().TrimEnd(',');
+
+            drnew["Name"] = data;
+            drnew["Link"] = dr["Link"].ToString();
+            //if(SearchType == 1)
+            drnew["Type"] = Type;
+            //else
+            //    drnew["Type"] = Convert.ToInt64(dr[1].ToString());
+            drnew["SearchType"] = SearchType;
+            //if (SearchType != 1)
+            if (Type == 3)
+                drnew["CategoryId"] = dr[55].ToString();
+            else
+                drnew["CategoryId"] = dr[1].ToString();
+            //else if (SearchType == 1)
+            //    drnew["CategoryId"] = Convert.ToInt64(dr[0].ToString());
+            string strAppend = "";
+            foreach (DataColumn dc in dtSeller.Columns)
+            {
+                string cname = dc.ColumnName;
+                if (cname == "Name")
+                    strAppend += dr[cname].ToString();
+            }
+            var matches = Regex.Matches(strAppend, Searchname, RegexOptions.IgnoreCase);
+            drnew["Total_Word"] = matches.Count;
+            if (matches.Count > 0)
+                dtResult.Rows.Add(drnew);
+        }
+        private static void SearchSameWordRemoveAllSpaceAvailability(string Searchname, DataTable dtResult, int Type, DataTable dtSeller, int SearchType)
+        {
+            // char[] ch = { ' ' };
+            // string[] spltSearch = Searchname.Split(ch, StringSplitOptions.RemoveEmptyEntries);
+            // if (spltSearch.Length > 1)
+            // {
+            foreach (DataRow dr in dtSeller.Rows)
+            {
+                string searchwords = dr["Name"].ToString();
+                searchwords = searchwords.Replace(" ", "");
+                bool isAllow = true;
+                int findindex = searchwords.ToLower().IndexOf(Searchname.ToLower());
+
+                if (findindex == -1)
+                {
+                    isAllow = false;
+                }
+
+                if (isAllow)
+                {
+                    //int SearchType = 4;//Remove All Space from search word and check search keyword available in the search phrase
+                    AddResultRow(Searchname, dtResult, Type, dtSeller, dr, SearchType);
+                }
+            }
+            //}
+        }
+        private static void SearchAllWordsAvailability(string Searchname, DataTable dtResult, int Type, DataTable dtSeller, int SearchType)
+        {
+            char[] ch = { ' ' };
+            string[] spltSearch = Searchname.Split(ch, StringSplitOptions.RemoveEmptyEntries);
+            if (spltSearch.Length > 1)
+            {
+                foreach (DataRow dr in dtSeller.Rows)
+                {
+                    string searchwords = dr["Name"].ToString();
+                    int indexno = 0;
+                    bool isAllow = true;
+                    foreach (string strcheck in spltSearch)
+                    {
+                        int findindex = searchwords.ToLower().IndexOf(strcheck.ToLower());
+
+                        if (findindex != -1 && findindex == 0)
+                        {
+
+                        }
+                        else
+                        {
+                            string strcheck1 = " " + strcheck;
+                            findindex = searchwords.ToLower().IndexOf(strcheck1.ToLower());
+
+                            if (findindex == -1)
+                            {
+                                isAllow = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isAllow)
+                    {
+                        //int SearchType = 3;//All Space word available in the search phrase
+                        AddResultRow(Searchname, dtResult, Type, dtSeller, dr, SearchType);
+                    }
+                }
+            }
+        }
+        private static void SearchReverseofSearchWord(string Searchname, DataTable dtResult, string Searchnamewithoutspace, bool isSpaceStringSame, string strSellerSearchwithoutspace, int Type, DataTable dtSeller, int SearchType)
+        {
+            DataRow[] drfindwithoutspace = null;
+
+            if (!isSpaceStringSame && Searchnamewithoutspace.Trim() != "")
+            {
+                DataRow[] drfind1 = dtSeller.Select(strSellerSearchwithoutspace);
+                drfindwithoutspace = drfind1;
+            }
+            if (drfindwithoutspace != null)
+            {
+                foreach (DataRow dr in drfindwithoutspace)
+                {
+                    //int SearchType = 2;//reverse of search word
+                    AddResultRow(Searchname, dtResult, Type, dtSeller, dr, SearchType);
+                }
+            }
+        }
+        private static void AppendCategorySearchResultString(DataTable dtSeller, StringBuilder sb)
+        {
+            string newRecordPattern = "@@@@";
+            string recordSplitPattern = "#TM#TM#TM#TM";
+
+            foreach (DataRow drnew in dtSeller.Rows)
+            {
+
+                sb.Append(drnew["Name"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["Link"].ToString());
+                sb.Append(recordSplitPattern);
+
+                //sb.Append(drnew["RowID"].ToString());
+                sb.Append("2");
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["ID"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(newRecordPattern);
+            }
+        }
+        private static void AppendSubCategorySearchResultString(DataTable dtSeller, StringBuilder sb)
+        {
+            string newRecordPattern = "@@@@";
+            string recordSplitPattern = "#TM#TM#TM#TM";
+
+            foreach (DataRow drnew in dtSeller.Rows)
+            {
+
+                // sb.Append(drnew["SubCategoryName"].ToString());
+                sb.Append(drnew["Name"].ToString());
+                sb.Append(recordSplitPattern);
+
+                //sb.Append(drnew["SubCategoryName"].ToString());
+                //sb.Append(drnew["Link"].ToString());
+                sb.Append(drnew["CategoryId"].ToString());
+                sb.Append(recordSplitPattern);
+
+                //sb.Append(drnew["RowID"].ToString());
+                sb.Append("4");
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["ID"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(newRecordPattern);
+            }
+        }
+        private static void AppendSearchResultString(DataTable dtSeller, StringBuilder sb)
+        {
+            string newRecordPattern = "@@@@";
+            string recordSplitPattern = "#TM#TM#TM#TM";
+
+            foreach (DataRow drnew in dtSeller.Rows)
+            {
+
+                sb.Append(drnew["Name"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["Link"].ToString());
+                sb.Append(recordSplitPattern);
+
+                //sb.Append(drnew["Type"].ToString());
+                sb.Append("3");
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["CategoryId"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["ID"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(newRecordPattern);
+            }
+        }
+    }
+}

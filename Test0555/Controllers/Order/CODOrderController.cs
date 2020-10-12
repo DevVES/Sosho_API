@@ -1288,7 +1288,7 @@ namespace Test0555.Controllers.Order
                         }
                         else
                         {
-                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount,model.JurisdictionID);
+                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount,model.JurisdictionID, model.PaidAmount, model.PromoCode,model.Cashbackamount);
                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder start : step 14");
                             if (chkalternat > 0 && !string.IsNullOrEmpty(model.totalAmount) && model.totalAmount != "0")
                             {
@@ -1445,7 +1445,7 @@ namespace Test0555.Controllers.Order
             }
             return objCODplaceorder;
         }
-        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "",string JurisdictionID = "")
+        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "",string JurisdictionID = "", decimal PaidAmount = 0, string PromoCode = "", decimal CashbackAmount = 0)
         {
             var jsonstring = JsonConvert.SerializeObject(products);
             //ccode = products.Where(m => m.couponCode != string.Empty && m.couponCode != null && m.couponCode != "0").FirstOrDefault().couponCode;
@@ -1487,8 +1487,8 @@ namespace Test0555.Controllers.Order
                         string querystr = "";
 
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 4");
-                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24);Select SCOPE_IDENTITY()";
-                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, "0", totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID };
+                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID],[CashbackAmount]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24,@25);Select SCOPE_IDENTITY()";
+                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, PaidAmount.ToString(), totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID,CashbackAmount.ToString() };
                         int Orderrslt = dbCon.ExecuteScalarQueryWithParams(insertquery, param1);
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 5 - " + Orderrslt.ToString());
 
@@ -1599,7 +1599,7 @@ namespace Test0555.Controllers.Order
                                             DataTable dtgstv = dbCon.GetDataTable(gst);
                                             string insertquery1 = "insert into [AlternetOrderItem](OrderId,[ProductId],[Quantity],[MrpPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[BuyWithPerUnit],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit],[AttributeId],[IsBannerProduct]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,GETDATE(),@18,@19,@20,@21,@22,@23);Select SCOPE_IDENTITY()";
                                             //string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, item.buywith, buywithprice.ToString(), item.couponCode, item.refrcode };
-                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), item.couponCode, item.refrcode ,unitid.ToString(),sUnit.ToString(), item.AttributeId.ToString(),item.IsBannerProduct.ToString()};
+                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), PromoCode, item.refrcode ,unitid.ToString(),sUnit.ToString(), item.AttributeId.ToString(),item.IsBannerProduct.ToString()};
                                             result11 = dbCon.ExecuteScalarQueryWithParams(insertquery1, param11);
                                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder dtmain start : step 12 " + result11.ToString());
                                             try

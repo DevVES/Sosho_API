@@ -32,6 +32,7 @@ namespace Test0555.Models.Order
         public string CustomerId { get; set; }
         public string JurisdictionID { get; set; }
         public string AddressId { get; set; }
+        public decimal Cashbackamount { get; set; } = 0;
         public string discountamount { get; set; } = "";
         public string Redeemeamount { get; set; } = "";
         public string PromoCodeamount { get; set; } = "";
@@ -45,6 +46,7 @@ namespace Test0555.Models.Order
 
 
         public string PromoCodeId;
+        public string PromoCode;
         public string PromoCodeLinkId;
         public string PromoCodetype;
         public string PromoCodeCrAmount;
@@ -53,6 +55,7 @@ namespace Test0555.Models.Order
         public string PromoCodebalance;
         public string orderMRP { get; set; }
         public string totalAmount { get; set; }
+        public decimal PaidAmount { get; set; }
         public string totalQty { get; set; }
         public string totalWeight { get; set; }
         public List<ProductListNew> products { get; set; }

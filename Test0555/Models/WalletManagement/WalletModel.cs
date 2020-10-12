@@ -51,6 +51,8 @@ namespace Test0555.Models.WalletManagement
             public string start_date;
             public string end_date;
             public string terms;
+            public string OfferId;
+            public string OfferName;
         }
 
         //public class CashbackDataList
@@ -90,6 +92,8 @@ namespace Test0555.Models.WalletManagement
             public string PromoCodeCrAmount;
             public string PromoCodeCrDate;
             public string PromoCodeCrDescription;
+            public string OfferId;
+            public string OfferName;
             public string PromoCodebalance;
             public string ValidationMessage;
         }

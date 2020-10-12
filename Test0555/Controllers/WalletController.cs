@@ -92,7 +92,6 @@ namespace Test0555.Controllers
         public WalletModel.RedeemeWallet GetCustomerOfferDetail(string CustomerId = "")
         {
             WalletModel.RedeemeWallet objRedeemeWalletdt = new WalletModel.RedeemeWallet();
-
             try
             {
                 objRedeemeWalletdt.response = "1";
@@ -102,33 +101,11 @@ namespace Test0555.Controllers
                 {
                     where = "WHERE [WC].customer_id=" + CustomerId;
                     //For Wallet
-                    //string querymain = "Select sum(BalanceAmount) AS BalanceAmount From " +
-                    //                   " ( " +
-                    //                   " Select Sum(H.balance) as BalanceAmount " +
-                    //                   " FROM[tblWalletCustomerLink] WC " +
-                    //                   " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
-                    //                   " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
-                    //                    where +
-                    //                    " AND H.balance > 0 " +
-                    //                    " AND W.offer_id = 1 " +
-                    //                    " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id) " +
-                    //                    " Group by H.id , WC.wallet_id " +
-                    //                    " Union " +
-                    //                    " SELECT Sum(W.wallet_amount) as BalanceAmount " +
-                    //                    " FROM[WalletMaster] W " +
-                    //                    " LEFT OUTER JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
-                    //                    " WHERE WC.customer_id = -1 " +
-                    //                    " AND W.offer_id = 1 " +
-                    //                    " AND(select count(*) From tblWalletCustomerHistory wch " +
-                    //                    "  where wch.wallet_id = W.wallet_ID and wch.customer_id = " + CustomerId + ") = 0 " +
-                    //                    " ) t ";
                     String querymain = " Select Top 1 H.balance as BalanceAmount, h.Id " +
                                       " FROM[tblWalletCustomerLink] WC " +
                                       " LEFT OUTER JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                         where +
-                                        //" AND H.balance > 0 " +
-                                       // " AND W.offer_id = 1 " +
                                         " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id and Hi.customer_id =  WC.customer_id) " +
                                         " order by 2 desc";
                     DataTable dtmain = dbc.GetDataTable(querymain);
@@ -136,22 +113,21 @@ namespace Test0555.Controllers
                     {
                         for (int i = 0; i < dtmain.Rows.Count; i++)
                         {
-                            //WalletModel.RedeemeWallet objWallet = new WalletModel.RedeemeWallet();
                             string redeemeAmt = dtmain.Rows[i]["BalanceAmount"].ToString();
-
                             objRedeemeWalletdt.RedeemeAmount = redeemeAmt;
-
                         }
                         //For PromoCode
                         string queryPromoCode = " Select  w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
-                                        " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date,  (select isnull(H.balance,0) " +
+                                        " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date,  ISNULL((select isnull(H.balance,0) " +
                                         " from[tblWalletCustomerHistory] H " +
-                                        " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)) as Balance " +
+                                        " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)),0) as Balance " +
+                                        " , O.offer_id, O.offer_name  " +
                                         " FROM[tblWalletCustomerLink] WC " +
                                         " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id  " +
+                                        " INNER JOIN tblOfferTypes O ON O.offer_id = W.offer_id " +
                                         where +
-                                        " AND W.offer_id = 3 " +
-                                        "AND  GETDATE() >= W.start_date and GETDATE() <= W.end_date "+
+                                        " AND ISNULL(W.coupon_code,'') != '' " +
+                                        " AND  GETDATE() >= W.start_date and GETDATE() <= W.end_date " +
                                         "AND ISNULL(WC.is_used,0) = 0 " +
                                         " AND (0 < (select isnull(H.balance,0) " +
                                         " from[tblWalletCustomerHistory] H " +
@@ -162,10 +138,12 @@ namespace Test0555.Controllers
                                         " Union " +
                                         " SELECT w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
                                         " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date, 0 AS Balance " +
+                                        " , O.offer_id, O.offer_name  " +
                                         " FROM[WalletMaster] W " +
                                         " LEFT JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
+                                        " INNER JOIN tblOfferTypes O ON O.offer_id = W.offer_id " +
                                         " WHERE WC.customer_id = -1 " +
-                                        " AND W.offer_id = 3 " +
+                                        " AND ISNULL(W.coupon_code,'') != '' " +
                                        "AND  GETDATE() >= W.start_date and GETDATE() <= W.end_date " +
                                         "AND ISNULL(WC.is_used,0) = 0 " +
                                         " AND(select count(*) From tblWalletCustomerHistory wch " +
@@ -187,7 +165,8 @@ namespace Test0555.Controllers
                                 string endDate = dtPromoCode.Rows[i]["end_date"].ToString();
                                 string balance = dtPromoCode.Rows[i]["Balance"].ToString();
                                 string terms = dtPromoCode.Rows[i]["terms"].ToString();
-
+                                string offerId = dtPromoCode.Rows[i]["offer_id"].ToString();
+                                string offerName = dtPromoCode.Rows[i]["offer_name"].ToString();
                                 objPromoCode.wallet_id = walletId;
                                 objPromoCode.PromoCode = promocode;
                                 objPromoCode.campaign_name = campaignname;
@@ -198,65 +177,14 @@ namespace Test0555.Controllers
                                 objPromoCode.start_date = startDate;
                                 objPromoCode.end_date = endDate;
                                 objPromoCode.terms = terms;
+                                objPromoCode.OfferId = offerId;
+                                objPromoCode.OfferName = offerName;
                                 objRedeemeWalletdt.PromoCodeList.Add(objPromoCode);
-
                             }
-
                         }
-
-                        //For Cashback
-                        //string queryForCashback = " Select  w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, " +
-                        //                " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date, H.Balance " +
-                        //               " FROM[tblWalletCustomerLink] WC " +
-                        //               " LEFT JOIN[tblWalletCustomerHistory] H ON H.wallet_id = WC.wallet_id " +
-                        //               " INNER JOIN [WalletMaster] W ON W.wallet_id = WC.wallet_id " +
-                        //                where +
-                        //                " AND H.balance > 0 " +
-                        //                " AND W.offer_id = 2 " +
-                        //                " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id) " +
-                        //                " Union " +
-                        //                " SELECT w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, " +
-                        //                " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date, 0 AS Balance " +
-                        //                " FROM[WalletMaster] W " +
-                        //                " LEFT JOIN tblWalletCustomerLink WC ON WC.wallet_id = W.wallet_id " +
-                        //                " WHERE WC.customer_id = -1 " +
-                        //                " AND W.offer_id = 2 " +
-                        //                " AND(select count(*) From tblWalletCustomerHistory wch " +
-                        //                "  where wch.wallet_id = W.wallet_ID and wch.customer_id = " + CustomerId + ") = 0 ";
-                        //DataTable dtCashback = dbc.GetDataTable(queryForCashback);
-                        //objRedeemeWalletdt.CashbackList = new List<WalletModel.CashbackDataList>();
-                        //if (dtCashback != null && dtCashback.Rows.Count > 0)
-                        //{
-                        //    for (int i = 0; i < dtCashback.Rows.Count; i++)
-                        //    {
-                        //        WalletModel.CashbackDataList objCashback = new WalletModel.CashbackDataList();
-                        //        string walletId = dtCashback.Rows[i]["wallet_id"].ToString();
-                        //        string couponcode = dtCashback.Rows[i]["coupon_code"].ToString();
-                        //        string campaignname = dtCashback.Rows[i]["campaign_name"].ToString();
-                        //        string pertype = dtCashback.Rows[i]["per_type"].ToString();
-                        //        string perAmt = dtCashback.Rows[i]["per_amount"].ToString();
-                        //        string minOrdAmt = dtCashback.Rows[i]["min_order_amount"].ToString();
-                        //        string startDate = dtCashback.Rows[i]["start_date"].ToString();
-                        //        string endDate = dtCashback.Rows[i]["end_date"].ToString();
-                        //        string balance = dtCashback.Rows[i]["Balance"].ToString();
-
-                        //        objCashback.wallet_id = walletId;
-                        //        objCashback.campaign_name = campaignname;
-                        //        objCashback.per_type = pertype;
-                        //        objCashback.per_amount = perAmt;
-                        //        objCashback.min_order_amount = minOrdAmt;
-                        //        objCashback.balance = balance;
-                        //        objCashback.start_date = startDate;
-                        //        objCashback.end_date = endDate;
-
-                        //        objRedeemeWalletdt.CashbackList.Add(objCashback);
-
-                        //    }
-                        //}
                         objRedeemeWalletdt.response = CommonString.successresponse;
                         objRedeemeWalletdt.message = CommonString.successmessage;
                     }
-
                     else
                     {
                         objRedeemeWalletdt.response = CommonString.DataNotFoundResponse;
@@ -277,13 +205,10 @@ namespace Test0555.Controllers
         public WalletModel.RedeemeWalletFromOrder RedeemeWalletFromOrder(string CustomerId = "", string OrderAmount = "", string RedeemeAmount = "")
         {
             WalletModel.RedeemeWalletFromOrder objeWalletdt = new WalletModel.RedeemeWalletFromOrder();
-
             try
             {
                 objeWalletdt.response = "1";
                 objeWalletdt.message = "Successfully";
-                //objeWalletdt.WhatsAppNo = sWhatappNo;
-                //objeWalletdt.WalletList = new List<WalletModel.WalletDataList>();
                 string where = "";
                 if (CustomerId != "" && CustomerId != null)
                 {
@@ -295,7 +220,6 @@ namespace Test0555.Controllers
                     " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
                     " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                      where +
-                    //" AND W.offer_id = 1 " +
                     " AND W.is_active = 1 " +
                     " AND H.balance > 0 " +
                     " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
@@ -332,13 +256,13 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "%")
@@ -348,13 +272,13 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= redeemPerAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
@@ -363,13 +287,13 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (minOrdAmt > Convert.ToDecimal(OrderAmount))
@@ -378,7 +302,6 @@ namespace Test0555.Controllers
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
                                     objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
                                 }
-
                             }
                             else
                             {
@@ -386,10 +309,7 @@ namespace Test0555.Controllers
                                 objeWalletdt.message = CommonString.DataNotFoundMessage;
                                 objeWalletdt.ValidationMessage = "Your Wallet money is ₹ " + balance;
                             }
-
-
                         }
-
                     }
                     else
                     {
@@ -421,29 +341,16 @@ namespace Test0555.Controllers
                 if (CustomerId != "" && CustomerId != null)
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
-
-                    //string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.terms AS CR_description,  WC.created_date AS CR_date,W.per_type," +
-                    //                   " W.per_amount,wallet_amount,per_type,per_amount,  W.min_order_amount, ISNULL((select isnull(H.balance,0) " +
-                    //                   " from [tblWalletCustomerHistory] H " +
-                    //                   " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id)),0) as Balance " +
-                    //                   " FROM[tblWalletCustomerLink] WC  " +
-                    //                   " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
-                    //                   where +
-                    //                   " AND W.offer_id = 3 " +
-                    //                   " AND W.is_active = 1 " +
-                    //                   " AND ISNULL(WC.is_used,0) = 0 " +
-                    //                   " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
-                    //                   " AND W.coupon_code = '" + PromoCode + "'" +
-                    //                   " order by WC.created_date  asc ";
-
                     string querymain = " SELECT Top 1 w.wallet_id,WC.Id as wallet_link_id, W.terms AS CR_description,  WC.created_date AS CR_date,W.per_type," +
                                        " W.per_amount,wallet_amount,per_type,per_amount,  W.min_order_amount, ISNULL((select isnull(H.balance,0) " +
                                        " from [tblWalletCustomerHistory] H " +
-                                       " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.customer_id = Wc.customer_id)),0) as Balance " +
+                                       " where H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.customer_id = Wc.customer_id)),0) as Balance, " +
+                                       " O.offer_id, O.offer_name" + 
                                        " FROM[tblWalletCustomerLink] WC  " +
                                        " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
+                                       " INNER JOIN tblOfferTypes O ON O.offer_id = W.offer_id " +
                                        where +
-                                       " AND W.offer_id = 3 " +
+                                       " AND ISNULL(W.coupon_code,'') != '' " +
                                        " AND W.is_active = 1 " +
                                        " AND ISNULL(WC.is_used,0) = 0 " +
                                        " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
@@ -462,8 +369,9 @@ namespace Test0555.Controllers
                             decimal minOrdAmt = Convert.ToDecimal(dtmain.Rows[i]["min_order_amount"]);
                             string crDate = dtmain.Rows[i]["CR_date"].ToString();
                             string crDescription = dtmain.Rows[i]["CR_description"].ToString();
-                            //string crAmount = dtmain.Rows[i]["CR_amount"].ToString();
                             string balance = dtmain.Rows[i]["balance"].ToString();
+                            string offerId = dtmain.Rows[i]["offer_id"].ToString();
+                            string offerName = dtmain.Rows[i]["offer_name"].ToString();
                             decimal calcAmt = 0;
                             if (dtmain.Rows[i]["per_type"].ToString() == "Fixed" || dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
                             {
@@ -482,19 +390,21 @@ namespace Test0555.Controllers
                             objeWalletdt.PromoCodeCrDescription = crDescription;
                             objeWalletdt.PromoCodebalance = balance;
                             objeWalletdt.PromoCodeCalcAmount = calcAmt.ToString();
+                            objeWalletdt.OfferId = offerId;
+                            objeWalletdt.OfferName = offerName;
                             if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
                             {
                                 if (calcAmt > perAmt)
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
                                 }
                                 else if (calcAmt <= perAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
                                 }
                             }
                             if (dtmain.Rows[i]["per_type"].ToString() == "%")
@@ -504,13 +414,13 @@ namespace Test0555.Controllers
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                 }
                                 else if (calcAmt <= redeemPerAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
                                 }
                             }
                             if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
@@ -519,20 +429,20 @@ namespace Test0555.Controllers
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
                                 }
                                 else if (calcAmt <= perAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "You can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
                                 }
                             }
                             if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                             {
                                 objeWalletdt.response = CommonString.DataNotFoundResponse;
                                 objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
+                                objeWalletdt.ValidationMessage = "Coupon money can be used for order amount more than ₹ " + minOrdAmt;
                             }
                         }
                     }

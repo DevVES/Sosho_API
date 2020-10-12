@@ -141,6 +141,7 @@ namespace Test0555.Models.Order
         
         public class finallistprod
         {
+            public bool IsBannerProduct;
             public string ProductName;
             public string Qty;
             public string msg;

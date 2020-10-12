@@ -59,6 +59,7 @@ namespace Test0555.Models.Order
     }
     public class ProductListNew
     {
+        public bool IsBannerProduct { get; set; }
         public string productid { get; set; }
         public string couponCode { get; set; } = "0";
         public string refrcode { get; set; } = "0";

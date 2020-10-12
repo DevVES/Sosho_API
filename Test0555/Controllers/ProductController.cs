@@ -41,7 +41,7 @@ namespace Test0555.Controllers
 
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1, string InterBannerid = "")
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1, string InterBannerid = "",int SearchProductId=-1)
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -357,6 +357,10 @@ namespace Test0555.Controllers
                 if (SubCategoryId > 0)
                 {
                     querymain += " and PL.SubCategoryID =" + SubCategoryId;
+                }
+                if(SearchProductId > 0)
+                {
+                    querymain += " and Product.Id =" + SearchProductId;
                 }
                 //if (!string.IsNullOrEmpty(ProductId))
                 //{
@@ -2109,16 +2113,20 @@ namespace Test0555.Controllers
                 append = ",(" + append + ") as Name";
                 //append1 = ",(" + append1 + ") as Name1";
                 string query = "";
-                //if (Tablename == "Product")
-                //{
-                //    append1 = ",(" + append1 + ")" + " + ' (' + cm.CategoryName + ')' as Name1";
-                //    query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN Category cm on pm.CategoryId = cm.CategoryID ";
-                //}
-                //else
-                //{
-                append1 = ",(" + append1 + ") as Name1";
+                if (Tablename == "Product")
+                {
+                    //append1 = ",(" + append1 + ")" + " + ' (' + cm.CategoryName + ')' as Name1";
+                    //query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN Category cm on pm.CategoryId = cm.CategoryID ";
+
+                    //append1 = ",(" + append1 + ")" + " + ' (' + cm.CategoryName + ')' as Name1";
+                    append1 = ",(" + append1 + ") as Name1";
+                    query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN tblCategoryProductLink cpl on pm.Id = cpl.ProductId ";
+                }
+                else
+                {
+                    append1 = ",(" + append1 + ") as Name1";
                 query = "select *" + append + append1 + " from " + Tablename;
-                //}
+                }
                 //SqlDataAdapter sqladapter = new SqlDataAdapter(query, sqlcon);
                 //sqladapter.Fill(dt);
 
@@ -2126,7 +2134,8 @@ namespace Test0555.Controllers
                 if (Tablename == "Product")
                 {
                     dt.Columns["Id"].ColumnName = "ROWID";
-                    dt.Columns["Name2"].ColumnName = "Link";
+                    //dt.Columns["Name2"].ColumnName = "Link";
+                    dt.Columns["SubCategoryId1"].ColumnName = "Link";
                 }
 
                 if (Tablename == "Category")
@@ -2202,6 +2211,9 @@ namespace Test0555.Controllers
             //    drnew["Type"] = Convert.ToInt64(dr[1].ToString());
             drnew["SearchType"] = SearchType;
             //if (SearchType != 1)
+            if(Type ==3)
+                drnew["CategoryId"] = dr[55].ToString();
+            else
             drnew["CategoryId"] = dr[1].ToString();
             //else if (SearchType == 1)
             //    drnew["CategoryId"] = Convert.ToInt64(dr[0].ToString());
@@ -2338,7 +2350,8 @@ namespace Test0555.Controllers
                 sb.Append(recordSplitPattern);
 
                 //sb.Append(drnew["SubCategoryName"].ToString());
-                sb.Append(drnew["Link"].ToString());
+                //sb.Append(drnew["Link"].ToString());
+                sb.Append(drnew["CategoryId"].ToString());
                 sb.Append(recordSplitPattern);
 
                 //sb.Append(drnew["RowID"].ToString());
@@ -2365,10 +2378,14 @@ namespace Test0555.Controllers
                 sb.Append(drnew["Link"].ToString());
                 sb.Append(recordSplitPattern);
 
-                sb.Append(drnew["Type"].ToString());
+                //sb.Append(drnew["Type"].ToString());
+                sb.Append("3");
                 sb.Append(recordSplitPattern);
 
                 sb.Append(drnew["CategoryId"].ToString());
+                sb.Append(recordSplitPattern);
+
+                sb.Append(drnew["ID"].ToString());
                 sb.Append(recordSplitPattern);
 
                 sb.Append(newRecordPattern);

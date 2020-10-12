@@ -315,7 +315,22 @@ namespace Test0555.Controllers
                 }
                 
                 //string querymain = " with pte as ( select TOP " + iBannerPosition + " ROW_NUMBER() over(order by convert(int,Isnull(Product.DisplayOrder,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
-                string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(order by convert(int,Isnull(Product.id,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
+                //string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(order by convert(int,Isnull(Product.id,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
+                string rownumfield = string.Empty;
+                switch (Filter)
+                {
+                    case (int)FilterRate.LowToHigh:
+                        rownumfield = "order by convert(int,Isnull(Product.SoshoPrice,'0'))";
+                        break;
+                    case (int)FilterRate.HighToLow:
+                        rownumfield = "order by convert(int,Isnull(Product.SoshoPrice,'0')) desc";
+                        break;
+                    default:
+                        rownumfield = "order by convert(int,Isnull(Product.Id,'0'))";
+                        break;
+                }
+                //string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(order by convert(int,Isnull("+ rownumfield + ",'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
+                string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(" + rownumfield + ") as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
                 querymain += "(select top 1 taxvalue from GstTaxCategory where GstTaxCategory.id=Product.GstTaxId)as Tax,";
                 querymain += " Product.unit+' - '+UnitMaster.UnitName as DUnit,(CONVERT(varchar,EndDate,103)+' '+ CONVERT(varchar,EndDate,108)) as edate,";
                 querymain += "CONVERT(varchar(12),EndDate,107)+' '+CONVERT(varchar(20),EndDate,108) as Enddate1, ";

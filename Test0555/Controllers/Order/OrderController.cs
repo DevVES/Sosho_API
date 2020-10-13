@@ -1256,9 +1256,9 @@ namespace Test0555.Controllers.Order
                     DataTable dtorderdetails = dbCon.GetDataTable(OrderDetails);
 
                     //string imaagedetails = "select Product.ProductMrp,Product.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount,Product.id as pid,product.Name,isnull(Unit,'0') as unitweg,isnull((select UnitName from UnitMaster where UnitMaster.Id=Product.UnitId),'Gram')as Unit from Product where Product.Id IN (select ProductId from orderitem where orderid=" + OrderId + ")";
-                    string imaagedetails = "select Product.ProductMrp,Product.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount, " + 
-                                           " Product.id as pid,OrderItem.Quantity,product.Name,isnull(Product.Unit,'0') as unitweg, " + 
-                                           " isnull((select UnitName from UnitMaster where UnitMaster.Id=Product.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice, " +
+                    string imaagedetails = "select Product.ProductMrp,PA.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount, " + 
+                                           " Product.id as pid,OrderItem.Quantity,product.Name,isnull(PA.Unit,'0') as unitweg, " + 
+                                           " isnull((select UnitName from UnitMaster where UnitMaster.Id=PA.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice, " +
                                            " PA.Id AS AttributeId , PA.ProductImage " +
                                            " from Product " + 
                                            " inner join OrderItem ON OrderItem.ProductId = Product.Id " +
@@ -1359,9 +1359,15 @@ namespace Test0555.Controllers.Order
 
                                 //string title = "Final Step";
                                 string[] daaata = forcust.Split('.');
-                                forcust = daaata[0].ToString();
+                                if (daaata != null && daaata.Count() > 0)
+                                {
+                                    forcust = daaata[0].ToString();
+                                }
                                 string[] mrpdata = mrp.Split('.');
-                                mrp = mrpdata[0].ToString();
+                                if (mrpdata != null && mrpdata.Count() > 0)
+                                {
+                                    mrp = mrpdata[0].ToString();
+                                }
                                 //objorderdtil.MRP = mrp;
                                 //ClientScript.RegisterStartupScript(this.GetType(), "Popup", "ShowPopup('" + title + "');", true);
                                 msg = "Since you have chosen to buy with 1 friend, share offer to ensure your friend buys it by " + expon + " to pay offer price of only ₹" + forcust + " instead of single-buy price of ₹" + mrp + " at time of delivery.Link sosho.in";
@@ -1373,11 +1379,17 @@ namespace Test0555.Controllers.Order
 
                                 forcust = dtimgstr.Rows[i]["BuyWith5FriendExtraDiscount"].ToString();
                                 string[] daaata = forcust.Split('.');
-                                forcust = daaata[0].ToString();
+                                if (daaata != null && daaata.Count() > 0)
+                                {
+                                    forcust = daaata[0].ToString();
+                                }
 
 
                                 string[] mrpdata = mrp.Split('.');
-                                mrp = mrpdata[0].ToString();
+                                if (mrpdata != null && mrpdata.Count() > 0)
+                                {
+                                    mrp = mrpdata[0].ToString();
+                                }
                                 //string title = "Final Step";
 
                                 //ClientScript.RegisterStartupScript(this.GetType(), "Popup", "ShowPopup('" + title + "');", true);
@@ -1416,7 +1428,7 @@ namespace Test0555.Controllers.Order
                                 }
                                 string query = "SELECT [KeyValue] FROM [StringResources] where KeyName='" + keyVal + "'";
                                 DataTable dtfolder = dbCon.GetDataTable(query);
-                                if (dtfolder.Rows.Count > 0)
+                                if (dtfolder != null && dtfolder.Rows.Count > 0)
                                 {
                                     folder = dtfolder.Rows[0]["KeyValue"].ToString();
                                 }
@@ -1436,7 +1448,10 @@ namespace Test0555.Controllers.Order
                                     //{
                                     //    folder = dtfolder.Rows[0]["keyvalue"].ToString();
                                     //}
-                                    imgname = folder + dtimage.Rows[0]["imagefilename"].ToString();
+                                    if (dtimage != null && dtimage.Rows.Count > 0)
+                                    {
+                                        imgname = folder + dtimage.Rows[0]["imagefilename"].ToString();
+                                    }
                                 }
 
                                 //objorderdtil.ProductImg = imgname;
@@ -1461,7 +1476,7 @@ namespace Test0555.Controllers.Order
                                 string proddetails = "Select TOP 1 FORMAT(EndDate, 'dd MMM yyy htt') AS ProductEndDate, Product.Name + ' at only Rs ' + CONVERT(nvarchar, Product.Mrp) + ' (MRP ' + CONVERT(nvarchar, Product.ProductMrp) + ') for ' + isnull(Product.Unit, '0') + ' ' + isnull((select UnitName from UnitMaster where UnitMaster.Id = Product.UnitId),'Gram') as productdetails from Product inner join OrderItem ON OrderItem.ProductId = Product.Id Where OrderItem.OrderId =" + orderid + " Order By EndDate Desc";
 
                                 DataTable dtproductdetail = dbCon.GetDataTable(proddetails);
-                                if (dtproductdetail.Rows.Count > 0)
+                                if (dtproductdetail != null && dtproductdetail.Rows.Count > 0)
                                 {
                                     productdetails = dtproductdetail.Rows[0]["productdetails"].ToString();
                                     enddate = dtproductdetail.Rows[0]["ProductEndDate"].ToString();
@@ -1490,6 +1505,7 @@ namespace Test0555.Controllers.Order
             }
             catch (Exception ex)
             {
+                Logger.InsertLogs(Logger.InvoiceLOGS.InvoiceLogLevel.Error, "", 0, false, "", ex.StackTrace);
                 objorderdtil.Response = "0";
                 objorderdtil.Message = "Fail";
             }
@@ -1501,6 +1517,7 @@ namespace Test0555.Controllers.Order
         public OrderModels.finallistformulti FinalScreenForMultiple(string orderid, string custid, string ccode)
         {
             OrderModels.finallistformulti objfs = new OrderModels.finallistformulti();
+            List<OrderModels.finallistprod> list = new List<OrderModels.finallistprod>();
             try
             {
                 string OrderId = orderid;
@@ -1543,7 +1560,7 @@ namespace Test0555.Controllers.Order
                         //}
                         //}
 
-                        string qry1 = "select ISNULL(OrderItem.IsBannerProduct,0) AS IsBannerProduct, Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId  where [Order].Id=" + OrderId;
+                        string qry1 = "select ISNULL(OrderItem.BannerProductType,0) AS BannerProductType, Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId  where [Order].Id=" + OrderId;
 
                         //
                         DataTable dt = dbCon.GetDataTable(qry1);
@@ -1553,8 +1570,8 @@ namespace Test0555.Controllers.Order
                         string date = "";
                         string whatsappmsg = "";
                         string mess = "";
-                        bool IsBannerProduct = false;
-                        List<OrderModels.finallistprod> list = new List<OrderModels.finallistprod>();
+                        int BannerProductType = 1;
+                        
                         for (int i = 0; i < dt.Rows.Count; i++)
                         {
 
@@ -1570,7 +1587,7 @@ namespace Test0555.Controllers.Order
                                 int lendata = dataaa.Length;
 
                                 string time = dataaa[lendata - 1];
-                                IsBannerProduct = Convert.ToBoolean(dt.Rows[i]["IsBannerProduct"]);
+                                BannerProductType = Convert.ToInt32(dt.Rows[i]["BannerProductType"]);
                                 date = date + ' ' + time;
 
 
@@ -1661,7 +1678,7 @@ namespace Test0555.Controllers.Order
 
                             list.Add(new OrderModels.finallistprod
                             {
-                                IsBannerProduct = IsBannerProduct,
+                                BannerProductType = BannerProductType,
                                 ProductName = dt.Rows[i]["Name"].ToString(),
                                 msg = mess,
                                 Qty = dt.Rows[i]["Quantity"].ToString(),
@@ -1669,7 +1686,6 @@ namespace Test0555.Controllers.Order
 
                             });
                         }
-                        objfs.finallistprods = list;
                         objfs.Response = "1";
                         objfs.Message = "Success";
 
@@ -1683,9 +1699,11 @@ namespace Test0555.Controllers.Order
                 }
                 else
                 {
+                    
                     objfs.Response = "0";
                     objfs.Message = "Fail";
                 }
+                objfs.finallistprods = list;
             }
             catch (Exception ex)
             {

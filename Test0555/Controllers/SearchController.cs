@@ -7,7 +7,7 @@ using System.Linq;
 using System.Web;
 using System.Text;
 using System.Text.RegularExpressions;
-
+using System.Web.Script.Serialization;
 namespace Test0555.Controllers
 {
     public class SearchController : ApiController
@@ -20,10 +20,234 @@ namespace Test0555.Controllers
 
         dbConnection dbc = new dbConnection();
         CommonString cms = new CommonString();
+
+        [HttpGet]
+        //14-10-2020 Search Related API New
+        public ProductModel.SearchList SearchHintListV1(string SearchName, string JurisdictionID)
+        {
+            JavaScriptSerializer js = new JavaScriptSerializer();
+            var objectToSerialize = new ProductModel.SearchList();
+            if (SearchName.Contains('\''))
+            {
+                SearchName = SearchName.Replace("'", "");
+            }
+            string Searchname = "", Searchnamewithoutspace = "";
+            bool isSpaceStringSame = false;
+            DataTable dtResult = new DataTable();
+            string[] returnSearch = new string[2];
+            try
+            {
+                if (SearchName != null && SearchName.Trim() != "")
+                {
+                    char[] ch = { ' ' };
+                    string[] splt = SearchName.Split(ch, StringSplitOptions.RemoveEmptyEntries);
+                    if (splt.Length > 1)
+                    {
+                        Searchname = "";
+                        Searchname = Searchname.Trim();
+                    }
+                    else
+                    {
+                        Searchname = splt[0].Trim();
+                    }
+
+                    if (Searchname != "")
+                    {
+                        Searchnamewithoutspace = Searchname.Replace(" ", "").Trim();
+
+                        if (Searchname.Equals(Searchnamewithoutspace))
+                        {
+                            isSpaceStringSame = true;
+                        }
+                    }
+                    else
+                    {
+                        objectToSerialize.resultflag = "0";
+                        objectToSerialize.Message = "Service is not available";
+                    }
+                }
+                else
+                {
+                    objectToSerialize.resultflag = "0";
+                    objectToSerialize.Message = "Service is not available";
+                }
+
+                DataTable dtSellerFinal = new DataTable();
+                DataTable dtCategoryFinal = new DataTable();
+                DataTable dtProductFinal = new DataTable();
+                DataTable dtSubCategoryFinal = new DataTable();
+
+                DataTable dtSeller = new DataTable();
+                DataTable dtCategory = new DataTable();
+                DataTable dtProduct = new DataTable();
+                DataTable dtSubCategory = new DataTable();
+
+                DataTable dtSeller_reverse = new DataTable();
+                DataTable dtCategory_reverse = new DataTable();
+                DataTable dtProduct_reverse = new DataTable();
+                DataTable dtSubCategory_reverse = new DataTable();
+
+                int Max_Seller = 10;
+                int Max_Category = 10;
+                int Max_Product = 10;
+                int Max_SubCategory = 10;
+                try
+                {
+                    dtResult.Columns.Add("ID", typeof(System.Int64));
+                    dtResult.Columns.Add("Name");
+                    dtResult.Columns.Add("Link");
+                    dtResult.Columns.Add("Type", typeof(System.Int64));//1=Seller 2=Category 3=Product
+                    dtResult.Columns.Add("Total_Word", typeof(System.Int64));
+                    dtResult.Columns.Add("SearchType", typeof(System.Int64));//1=Direct Word  2=Word without space
+                    dtResult.Columns.Add("CategoryId"); //CategoryId
+
+                    if (Searchname.Trim() != "" || Searchnamewithoutspace.Trim() != "")
+                    {
+                        GetProductSearchResult(Searchname, Searchnamewithoutspace, isSpaceStringSame, dtResult, ref dtCategory, ref dtSubCategory, ref dtProduct, JurisdictionID);
+                    }
+                    else
+                    {
+                        dtCategory = dtResult.Clone();
+                        dtProduct = dtResult.Clone();
+                    }
+                    int intCategory = dtCategory.Rows.Count;
+                    int intProduct = dtProduct.Rows.Count;
+                    int intSubCategory = dtSubCategory.Rows.Count;
+
+                    int intCategory_reverse = dtCategory_reverse.Rows.Count;
+                    int intProduct_reverse = dtProduct_reverse.Rows.Count;
+                    int intSubCategory_reverse = dtSubCategory_reverse.Rows.Count;
+
+                    dtCategoryFinal = dtCategory.Clone();
+                    dtSubCategoryFinal = dtSubCategory.Clone();
+                    dtProductFinal = dtProduct.Clone();
+
+                    AddUniqueSearchResult(dtCategoryFinal, dtCategory, Max_Category);
+
+                    if (dtCategoryFinal.Rows.Count != Max_Category)
+                    {
+                        AddUniqueSearchResult(dtCategoryFinal, dtCategory_reverse, Max_Category);
+                    }
+
+                    AddUniqueSearchResult(dtSubCategoryFinal, dtSubCategory, Max_Category);
+                    if (dtSubCategoryFinal.Rows.Count != Max_Category)
+                    {
+                        AddUniqueSearchResult(dtSubCategoryFinal, dtSubCategory_reverse, Max_SubCategory);
+                    }
+
+                    AddUniqueSearchResult(dtProductFinal, dtProduct, Max_Product);
+
+                    if (dtProductFinal.Rows.Count != Max_Product)
+                    {
+                        AddUniqueSearchResult(dtProductFinal, dtProduct_reverse, Max_Product);
+                    }
+
+
+                    if (dtCategoryFinal != null && dtCategoryFinal.Rows.Count > 0)
+                    {
+                        var Category = new ProductModel.SearchDetails();
+                        Category.Header = "Category";
+                        Category.Name = "";
+                        Category.PageType = "";
+                        Category.CategoryId = "";
+                        Category.SubCategoryId = "";
+                        Category.ProductId = "";
+
+                        objectToSerialize.resultflag = "1";
+                        objectToSerialize.Message = CommonString.successmessage;
+                        objectToSerialize.ProductSearch.Add(Category);
+                        foreach (DataRow dr in dtCategoryFinal.Rows)
+                        {
+                            var Categorysearch = new ProductModel.SearchDetails();
+                            Categorysearch.Name = dr["Name"].ToString();
+                            Categorysearch.PageType = "1";
+                            Categorysearch.CategoryId = dr["ID"].ToString();
+                            Categorysearch.SubCategoryId = "";
+                            Categorysearch.ProductId = "";
+
+                            objectToSerialize.resultflag = "1";
+                            objectToSerialize.Message = CommonString.successmessage;
+
+                            objectToSerialize.ProductSearch.Add(Categorysearch);
+                        }
+                    }
+                    if (dtSubCategoryFinal != null && dtSubCategory.Rows.Count > 0)
+                    {
+                        var SubCategory = new ProductModel.SearchDetails();
+                        SubCategory.Header = "SubCategory";
+                        SubCategory.Name = "";
+                        SubCategory.PageType = "";
+                        SubCategory.CategoryId = "";
+                        SubCategory.SubCategoryId = "";
+                        SubCategory.ProductId = "";
+
+                        objectToSerialize.resultflag = "1";
+                        objectToSerialize.Message = CommonString.successmessage;
+                        objectToSerialize.ProductSearch.Add(SubCategory);
+                        foreach (DataRow dr in dtSubCategoryFinal.Rows)
+                        {
+                            var SubCategorysearch = new ProductModel.SearchDetails();
+                            SubCategorysearch.Name = dr["Name"].ToString();
+                            SubCategorysearch.PageType = "2";
+                            SubCategorysearch.CategoryId = dr["CategoryId"].ToString();
+                            SubCategorysearch.SubCategoryId = dr["ID"].ToString();
+                            SubCategorysearch.ProductId = "";
+
+                            objectToSerialize.resultflag = "1";
+                            objectToSerialize.Message = CommonString.successmessage;
+
+                            objectToSerialize.ProductSearch.Add(SubCategorysearch);
+                        }
+                    }
+                    if (dtProductFinal != null && dtProductFinal.Rows.Count > 0)
+                    {
+                        var Product = new ProductModel.SearchDetails();
+                        Product.Header = "Product";
+                        Product.Name = "";
+                        Product.PageType = "";
+                        Product.CategoryId = "";
+                        Product.SubCategoryId = "";
+                        Product.ProductId = "";
+
+                        objectToSerialize.resultflag = "1";
+                        objectToSerialize.Message = CommonString.successmessage;
+                        objectToSerialize.ProductSearch.Add(Product);
+                        foreach (DataRow dr in dtProductFinal.Rows)
+                        {
+                            var Productsearch = new ProductModel.SearchDetails();
+                            Productsearch.Name = dr["Name"].ToString();
+                            Productsearch.PageType = "3";
+                            Productsearch.CategoryId = dr["CategoryId"].ToString();
+                            Productsearch.SubCategoryId = dr["ID"].ToString();
+                            Productsearch.ProductId = dr["Link"].ToString();
+
+                            objectToSerialize.resultflag = "1";
+                            objectToSerialize.Message = CommonString.successmessage;
+                            objectToSerialize.ProductSearch.Add(Productsearch);
+
+                        }
+                    }
+
+
+                }
+                catch (Exception err)
+                {
+                    objectToSerialize.resultflag = "0";
+                    objectToSerialize.Message = "Service is not available";
+                }
+                
+            }
+            catch (Exception err)
+            {
+                objectToSerialize.resultflag = "0";
+                objectToSerialize.Message = "Service is not available";
+            }
+            return objectToSerialize;
+        }
         //08-10-2020 Search Related API
         [HttpGet]
         //public string[] GetResultsBySearch(string Searchname1)
-        public ProductModel.getSearchproduct GetResultsBySearch(string Searchname1,string JurisdictionID)
+        public ProductModel.getSearchproduct GetResultsBySearch(string Searchname1, string JurisdictionID)
         {
             if (Searchname1.Contains('\''))
             {
@@ -80,7 +304,7 @@ namespace Test0555.Controllers
 
                         if (Searchname.Trim() != "" || Searchnamewithoutspace.Trim() != "")
                         {
-                            GetProductSearchResult(Searchname, Searchnamewithoutspace, isSpaceStringSame, dtResult, ref dtCategory, ref dtSubCategory, ref dtProduct,JurisdictionID);
+                            GetProductSearchResult(Searchname, Searchnamewithoutspace, isSpaceStringSame, dtResult, ref dtCategory, ref dtSubCategory, ref dtProduct, JurisdictionID);
                         }
                         else
                         {
@@ -128,7 +352,7 @@ namespace Test0555.Controllers
             catch (Exception ex)
             {
                 objsearchproduct.response = CommonString.Errorresponse;
-                
+
                 throw ex;
             }
             objsearchproduct.response = "1";
@@ -206,7 +430,7 @@ namespace Test0555.Controllers
             strCAtegorySearchwithoutspace = strCAtegorySearchwithoutspace.Trim().TrimEnd('o', 'r');
 
             string strCAtegoryTableName = "Category";
-            dtCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrCategory, strCAtegorySearch, strCAtegorySearchwithoutspace, strCAtegoryTableName, 2, strCAtegorySearchWordStart, strCAtegorySearchWordStartInner, strCAtegorySearchWordStartwithoutspace, strCAtegorySearchWordStartInnerwithoutspace, 2,JurisdictionID).Copy();
+            dtCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrCategory, strCAtegorySearch, strCAtegorySearchwithoutspace, strCAtegoryTableName, 2, strCAtegorySearchWordStart, strCAtegorySearchWordStartInner, strCAtegorySearchWordStartwithoutspace, strCAtegorySearchWordStartInnerwithoutspace, 2, JurisdictionID).Copy();
 
 
             //FOR GETTING SUB CATEGORY FROM SEARCH
@@ -231,7 +455,7 @@ namespace Test0555.Controllers
             strsubCAtegorySearchwithoutspace = strsubCAtegorySearchwithoutspace.Trim().TrimEnd('o', 'r');
 
             string strsubCAtegoryTableName = "tblSubCategory";
-            dtSubCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrSubCategory, strsubCAtegorySearch, strsubCAtegorySearchwithoutspace, strsubCAtegoryTableName, 4, strsCAtegorySearchWordStart, strsCAtegorySearchWordStartInner, strsCAtegorySearchWordStartwithoutspace, strsCAtegorySearchWordStartInnerwithoutspace, 2,JurisdictionID).Copy();
+            dtSubCategory = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrSubCategory, strsubCAtegorySearch, strsubCAtegorySearchwithoutspace, strsubCAtegoryTableName, 4, strsCAtegorySearchWordStart, strsCAtegorySearchWordStartInner, strsCAtegorySearchWordStartwithoutspace, strsCAtegorySearchWordStartInnerwithoutspace, 2, JurisdictionID).Copy();
 
 
 
@@ -259,12 +483,12 @@ namespace Test0555.Controllers
 
 
             string strProductTableName = "Product";
-            dtProduct = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrProduct, strProductSearch, strProductSearchwithoutspace, strProductTableName, 3, strProductSearchWordStart, strProductSearchWordStartInner, strProductSearchWordStartwithoutspace, strProductSearchWordStartInnerwithoutspace, 2,JurisdictionID).Copy();
+            dtProduct = GetProductSearchTable(Searchname, dtResult.Copy(), Searchnamewithoutspace, isSpaceStringSame, arrProduct, strProductSearch, strProductSearchwithoutspace, strProductTableName, 3, strProductSearchWordStart, strProductSearchWordStartInner, strProductSearchWordStartwithoutspace, strProductSearchWordStartInnerwithoutspace, 2, JurisdictionID).Copy();
 
 
         }
 
-        private DataTable GetProductSearchTable(string Searchname, DataTable dtResult, string Searchnamewithoutspace, bool isSpaceStringSame, string[] arrSeller, string strSellerSearch, string strSellerSearchwithoutspace, string strTableName, int Type, string strSellerSearchWordStart, string strSellerSearchWordStartInner, string strSellerSearchWordStartwithoutspace, string strSellerSearchWordStartInnerwithoutspace, int Searchfrom,string JurisdictionID)//Searchfrom = 1 for search button 2 for display list on key press
+        private DataTable GetProductSearchTable(string Searchname, DataTable dtResult, string Searchnamewithoutspace, bool isSpaceStringSame, string[] arrSeller, string strSellerSearch, string strSellerSearchwithoutspace, string strTableName, int Type, string strSellerSearchWordStart, string strSellerSearchWordStartInner, string strSellerSearchWordStartwithoutspace, string strSellerSearchWordStartInnerwithoutspace, int Searchfrom, string JurisdictionID)//Searchfrom = 1 for search button 2 for display list on key press
         {
             DataTable dtSeller = new DataTable();
             string tablename = strTableName;
@@ -275,12 +499,12 @@ namespace Test0555.Controllers
                     strTableName = strTableName + "btn";
                 }
 
-                dtSeller = GetAllData(tablename, arrSeller,JurisdictionID);
+                dtSeller = GetAllData(tablename, arrSeller, JurisdictionID);
 
             }
             catch (Exception E)
             {
-                dtSeller = GetAllData(tablename, arrSeller,JurisdictionID);
+                dtSeller = GetAllData(tablename, arrSeller, JurisdictionID);
                 Application[strTableName] = dtSeller;
             }
 

@@ -132,26 +132,26 @@ namespace Test0555.Models.ProductManagement
             public string pJustBougth;
             public string pgst;
             public string IsQtyFreeze;
-           
+
 
 
 
 
 
             public List<ProductDataImagelist> ProductImageList { get; set; }
-         
+
         }
 
         public class OfferProductList
         {
-            
+
             public string productid;
             public string pname;
             public string pdec;
             public string pkey;
             public string pprice;
             public string PImgname;
-        
+
 
         }
 
@@ -197,6 +197,27 @@ namespace Test0555.Models.ProductManagement
             public string[] message;
         }
 
-
+        //14-10-2020 Developed By - Hiren
+        public class SearchList
+        {
+            public string resultflag = "";
+            public string Message = "";
+            public List<SearchDetails> ProductSearch { get; set; }
+            public SearchList()
+            {
+                ProductSearch = new List<SearchDetails>();
+            }
         }
+        public class SearchDetails
+        {
+            public string Name = "";
+            public string PageType = "";
+            public string Header = "";
+            public string CategoryId = "";
+            public string SubCategoryId = "";
+            public string ProductId = "";
+            public string CategoryName = "";
+            public string SubCategoryName = "";
+        }
+    }
 }

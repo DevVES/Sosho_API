@@ -1288,7 +1288,7 @@ namespace Test0555.Controllers.Order
                         }
                         else
                         {
-                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount,model.JurisdictionID, model.PaidAmount, model.PromoCode,model.Cashbackamount);
+                            int chkalternat = CreateMultipleAlternateOrderNew(model.CustomerId, merchantTxnId, model.AddressId, model.products, model.orderMRP, model.totalAmount, model.totalQty, model.totalWeight, out ccode, model.discountamount, model.Redeemeamount,model.JurisdictionID, model.PaidAmount, model.PromoCode,model.Cashbackamount, model.ReOrderId);
                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder start : step 14");
                             if (chkalternat > 0 && !string.IsNullOrEmpty(model.totalAmount) && model.totalAmount != "0")
                             {
@@ -1445,7 +1445,7 @@ namespace Test0555.Controllers.Order
             }
             return objCODplaceorder;
         }
-        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "",string JurisdictionID = "", decimal PaidAmount = 0, string PromoCode = "", decimal CashbackAmount = 0)
+        public int CreateMultipleAlternateOrderNew(string Customerid, string transid, string Address, List<ProductListNew> products, string orderMRP, string totalAmount, string totalQty, string totalWeight, out string ccode, string discountamount = "", string Redemeamount = "",string JurisdictionID = "", decimal PaidAmount = 0, string PromoCode = "", decimal CashbackAmount = 0, string ReOrderId = "")
         {
             var jsonstring = JsonConvert.SerializeObject(products);
             //ccode = products.Where(m => m.couponCode != string.Empty && m.couponCode != null && m.couponCode != "0").FirstOrDefault().couponCode;
@@ -1487,8 +1487,8 @@ namespace Test0555.Controllers.Order
                         string querystr = "";
 
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 4");
-                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID],[CashbackAmount]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24,@25);Select SCOPE_IDENTITY()";
-                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, PaidAmount.ToString(), totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID,CashbackAmount.ToString() };
+                        string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID],[CashbackAmount],[ReOrderId]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24,@25,@26);Select SCOPE_IDENTITY()";
+                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, PaidAmount.ToString(), totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID,CashbackAmount.ToString(), ReOrderId };
                         int Orderrslt = dbCon.ExecuteScalarQueryWithParams(insertquery, param1);
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 5 - " + Orderrslt.ToString());
 
@@ -1597,9 +1597,9 @@ namespace Test0555.Controllers.Order
                                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder dtmain start : step 11");
                                             string gst = "select [TaxValue] from [GstTaxCategory] where Id=" + dtmain.Rows[i]["GSTTaxId"].ToString();
                                             DataTable dtgstv = dbCon.GetDataTable(gst);
-                                            string insertquery1 = "insert into [AlternetOrderItem](OrderId,[ProductId],[Quantity],[MrpPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[BuyWithPerUnit],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit],[AttributeId],[IsBannerProduct]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,GETDATE(),@18,@19,@20,@21,@22,@23);Select SCOPE_IDENTITY()";
+                                            string insertquery1 = "insert into [AlternetOrderItem](OrderId,[ProductId],[Quantity],[MrpPerUnit],[DiscountPerUnit],[ExtraDiscountPerUnit],[SGSTValuePerUnit],[SGSTAmountPerUnit],[CGSTValuePerUnit],[CGSTAmountPerUnit],[IGSTValuePerUnit],[IGSTAmountPerUnit],[TaxablePerUnit],[TotalAmount],[ProductName],[BuyWith],[BuyWithPerUnit],[CreatedOnUtc],[CustOfferCode],[RefferedOfferCode],[UnitId],[Unit],[AttributeId],[BannerProductType],[BannerId]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,GETDATE(),@18,@19,@20,@21,@22,@23,@24);Select SCOPE_IDENTITY()";
                                             //string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, item.buywith, buywithprice.ToString(), item.couponCode, item.refrcode };
-                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), PromoCode, item.refrcode ,unitid.ToString(),sUnit.ToString(), item.AttributeId.ToString(),item.IsBannerProduct.ToString()};
+                                            string[] param11 = { Orderrslt.ToString(), productid.ToString(), quantity.ToString(), price.ToString(), discountamount, offer.ToString(), "0", "0", "0", "0", "0", "0", dtgstv.Rows[0]["TaxValue"].ToString(), item.PaidAmount.ToString(), productname, "0", buywithprice.ToString(), PromoCode, item.refrcode ,unitid.ToString(),sUnit.ToString(), item.AttributeId.ToString(),item.BannerProductType.ToString(),item.BannerId.ToString()};
                                             result11 = dbCon.ExecuteScalarQueryWithParams(insertquery1, param11);
                                             Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder dtmain start : step 12 " + result11.ToString());
                                             try
@@ -1665,7 +1665,295 @@ namespace Test0555.Controllers.Order
             return 0;
         }
 
+        [HttpGet]
+        public ReOrderProductList GetProductListFromReOrder(String OrderId="", String JurisdictionId="", String CustomerId = "")
+        {
+            Logger.InsertLogsApp("ReOrder start ");
+            ReOrderProductList objeprodt = new ReOrderProductList();
+            objeprodt.ProductList = new List<NewProductDataList>();
+            try
+            {
+                objeprodt.response = "1";
+                objeprodt.message = "Successfully";
+                string querystr = " SELECT O.Id AS OrderId, O.AddressId FROM[Order] O WHERE O.Id = " + OrderId +
+                                  " AND O.JurisdictionID = "+ JurisdictionId + 
+                                  " AND O.CustomerId = " + CustomerId;
+                DataTable dtOrder = dbCon.GetDataTable(querystr);
+                if (dtOrder != null && dtOrder.Rows.Count > 0)
+                {
+                    string addressId = dtOrder.Rows[0]["AddressId"].ToString();
+                    objeprodt.AddressId = addressId;
+                    string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " +
+                                    " isnull((Select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId),'') as statename, " +
+                                    " isnull((Select Area from ZipCode where ZipCode.Id=CustomerAddress.AreaId),'') as Area, " +
+                                    " isnull((Select Building from tblBuilding where tblBuilding.Id=CustomerAddress.BuildingId),'') as Building, " +
+                                    " isnull((Select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId),'') as CountryName, " +
+                                    " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" +
+                                    " from CustomerAddress where IsActive=1 and IsDeleted=0 and Id = " + addressId;
+                    DataTable dtdata = dbCon.GetDataTable(Insertdata);
+                    objeprodt.CustAddressList = new List<CustAddressDataList>();
+                    if (dtdata != null && dtdata.Rows.Count > 0)
+                    {
+                        for (int i = 0; i < dtdata.Rows.Count; i++)
+                        {
+                            string custaddid = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["Id"].ToString() : "");
+                            string custid1 = (dtdata.Rows[i]["CustomerId"] != null ? dtdata.Rows[i]["CustomerId"].ToString() : "");
+                            string fnaem1 = (dtdata.Rows[i]["FirstName"] != null ? dtdata.Rows[i]["FirstName"].ToString() : "");
+                            string lname1 = "";// dtdata.Rows[i]["LastName"].ToString();
+                            string tagname1 = (dtdata.Rows[i]["Tagname"] != null ? dtdata.Rows[i]["Tagname"].ToString() : "");
+                            string country1 = (dtdata.Rows[i]["CountryName"] != null ? dtdata.Rows[i]["CountryName"].ToString() : "");
+                            string state1 = (dtdata.Rows[i]["statename"] != null ? dtdata.Rows[i]["statename"].ToString() : "");
+                            string city1 = (dtdata.Rows[i]["CityName"] != null ? dtdata.Rows[i]["CityName"].ToString() : "");
+                            string addr1 = (dtdata.Rows[i]["Address"] != null ? dtdata.Rows[i]["Address"].ToString() : "");
+                            string mob1 = (dtdata.Rows[i]["MobileNo"] != null ? dtdata.Rows[i]["MobileNo"].ToString() : "");
+                            string email = (dtdata.Rows[i]["Email"] != null ? dtdata.Rows[i]["Email"].ToString() : "");
+                            string pin1 = (dtdata.Rows[i]["PinCode"] != null ? dtdata.Rows[i]["PinCode"].ToString() : "");
+                            string buildingId = (dtdata.Rows[i]["BuildingId"] != null ? dtdata.Rows[i]["BuildingId"].ToString() : "");
+                            string building = (dtdata.Rows[i]["Building"] != null ? dtdata.Rows[i]["Building"].ToString() : "");
+                            string AreaId = (dtdata.Rows[i]["AreaId"] != null ? dtdata.Rows[i]["AreaId"].ToString() : "");
+                            string Area = (dtdata.Rows[i]["Area"] != null ? dtdata.Rows[i]["Area"].ToString() : "");
+                            string buildingNo = (dtdata.Rows[i]["BuildingNo"] != null ? dtdata.Rows[i]["BuildingNo"].ToString() : "");
+                            string landmark = (dtdata.Rows[i]["LandMark"] != null ? dtdata.Rows[i]["LandMark"].ToString() : "");
+                            string otherdetail = (dtdata.Rows[i]["OtherDetail"] != null ? dtdata.Rows[i]["OtherDetail"].ToString() : "");
+                            string stateId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["StateId"].ToString() : "");
+                            string cityId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["CityId"].ToString() : "");
+                            string countryId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["CountryId"].ToString() : "");
+                            ;
+                            objeprodt.CustAddressList.Add(new CustAddressDataList
+                            {
+                                CustomerAddressId = custaddid,
+                                Custid = custid1,
+                                fname = fnaem1,
+                                lname = lname1,
+                                tagname = tagname1,
+                                countryId = countryId,
+                                countryName = country1,
+                                stateId = stateId,
+                                statename = state1,
+                                cityId = cityId,
+                                cityname = city1,
+                                addr = addr1,
+                                email = email,
+                                mob = mob1,
+                                pcode = pin1,
+                                AreaId = AreaId,
+                                Area = Area,
+                                BuildingId = buildingId,
+                                Building = building,
+                                BuildingNo = buildingNo,
+                                LandMark = landmark,
+                                OtherDetail = otherdetail
+                            });
+                        }
+                        
+                    }
 
+                    string sAttributeId="",sCategoryId = "", sCategoryName = "", sProductId = "", sProductName="", sItemType="";
+                    string sITitle = "", sHTitle = "", sBannerId="", sEdate = "", Attribuepathimg="";
+                    bool sIsExpired = false;
+                    string querydata = "select KeyValue from StringResources where KeyName='BannerImageUrl'";
+                    DataTable dtpath = dbCon.GetDataTable(querydata);
+                    string urlpath = string.Empty;
+                    string ImageName1 = string.Empty;
+                    if (dtpath != null && dtpath.Rows.Count > 0)
+                    {
+                        urlpath = dtpath.Rows[0]["KeyValue"].ToString();
+                    }
+                    string Attributedata = "select KeyValue from StringResources where KeyName='ProductAttributeImageUrl'";
+                    DataTable dtAttrpathimg = dbCon.GetDataTable(Attributedata);
+                    if (dtAttrpathimg != null && dtAttrpathimg.Rows.Count > 0)
+                    {
+                        //Image Path
+                        Attribuepathimg = dtAttrpathimg.Rows[0]["KeyValue"].ToString();
+                    }
+                    string qry = "SELECT OI.ProductId, OI.AttributeId, O.Id AS OrderId, P.Name AS ProductName, " +
+                                 " PL.CategoryID, isnull(cat.CategoryName, '') as CategoryName, " +
+                                  " CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired', OI.BannerProductType, " +
+                                 " ISNULL(OI.BannerId, 0) AS BannerId, IM.Title AS ITitle, HM.Title AS HTitle, ISNULL(Im.ImageName,'') AS IImageName, " +
+                                 " ISNULL(HM.ImageName,'') AS HImageName, (CONVERT(varchar,P.EndDate,103)+' '+ CONVERT(varchar,P.EndDate,108)) as edate " +
+                                 " FROM[Order] O " +
+                                 " INNER JOIN OrderItem OI ON OI.OrderId = O.Id " +
+                                 " LEFT join Product P on P.Id = OI.ProductId " +
+                                 " LEFT join tblCategoryProductLink PL on PL.ProductId = OI.ProductId " +
+                                 " inner join Category cat on cat.CategoryID = PL.CategoryID " +
+                                 " LEFT JOIN IntermediateBanners IM ON IM.Id = OI.BannerId " +
+                                 " LEFT JOIN HomepageBanner HM ON HM.Id = OI.BannerId " +
+                                 " WHERE OI.OrderId = " + OrderId +
+                                 " AND O.JurisdictionID = " + JurisdictionId +
+                                 " AND O.CustomerId = " + CustomerId;
+                    DataTable dtProductList = dbCon.GetDataTable(qry);
+                    if (dtProductList != null && dtProductList.Rows.Count > 0)
+                    {
+                        ProductAttributelist attributelist = new ProductAttributelist();
+                        for (int j = 0; j < dtProductList.Rows.Count; j++)
+                        {
+                            if (!string.IsNullOrEmpty(dtProductList.Rows[j]["CategoryID"].ToString()))
+                            {
+                                sCategoryId = dtProductList.Rows[j]["CategoryID"].ToString();
+                                sCategoryName = dtProductList.Rows[j]["CategoryName"].ToString();
+                            }
+                            else
+                            {
+                                sCategoryId = "0";
+                                sCategoryName = "";
+                            }
+                            if (Convert.ToInt32(dtProductList.Rows[j]["AttributeId"]) > 0)
+                            {
+                                sAttributeId = Convert.ToInt32(dtProductList.Rows[j]["AttributeId"]).ToString();
+                            }
+                            if (Convert.ToInt32(dtProductList.Rows[j]["ProductId"]) > 0)
+                            {
+                                sProductId = Convert.ToInt32(dtProductList.Rows[j]["ProductId"]).ToString();
+                            }
+                            if (Convert.ToInt32(dtProductList.Rows[j]["BannerId"]) > 0)
+                            {
+                                sBannerId = Convert.ToInt32(dtProductList.Rows[j]["BannerId"]).ToString();
+                            }
+                            sEdate = dtProductList.Rows[j]["edate"].ToString();
+                            sProductName = dtProductList.Rows[j]["ProductName"].ToString();
+                            sItemType = dtProductList.Rows[j]["BannerProductType"].ToString();
+                            sITitle = dtProductList.Rows[j]["ITitle"].ToString();
+                            sHTitle = dtProductList.Rows[j]["HTitle"].ToString();
+                            sIsExpired = Convert.ToBoolean( dtProductList.Rows[j]["ISOfferExpired"]);
+                            
+                            NewProductDataList objProdList = new NewProductDataList();
+                            objProdList.CategoryId = sCategoryId;
+                            objProdList.CategoryName = sCategoryName;
+                            objProdList.ProductId = sProductId;
+                            objProdList.ProductName = sProductName;
+                            objProdList.ItemType = sItemType;
+                            objProdList.isOfferExpired = sIsExpired;
+                            objProdList.OfferEndDate = sEdate;
+                            objProdList.bannerId = sBannerId;
+                            
+                            if (sItemType == "2")
+                            {
+                                objProdList.Title = sITitle;
+                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["IImageName"].ToString();
+                            }
+                            else if (sItemType == "3")
+                            {
+                                objProdList.Title = sHTitle;
+                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["HImageName"].ToString();
+                            }
+                            else 
+                            {
+                                objProdList.Title = "";
+                                objProdList.bannerURL = "";
+                            }
+                            objeprodt.ProductList.Add(objProdList);
+
+                            string AttImageDetails = " SELECT pam.unit+' - '+um.UnitName as DUnit,case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails, " +
+                                                     " Isnull(cast(cast(pam.discount as decimal(10,2)) AS FLOAT),'') AS Discount, " +
+                                                     " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice, " +
+                                                     " pam.PackingType,pam.ProductImage, pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy," +
+                                                     " pam.isOutOfStock,case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, " +
+                                                     " pam.MaxQty, pam.MinQty,case when isnull(IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze " +
+                                                     " FROM Product_ProductAttribute_Mapping pam " +
+                                                     " inner join Unitmaster um on um.id=pam.UnitId " +
+                                                     " where pam.id=" + sAttributeId + " and pam.IsActive=1 and pam.IsDeleted = 0";
+                            DataTable dtAttdetails = dbCon.GetDataTable(AttImageDetails);
+                            List<ProductAttributelist> objAttrList = new List<ProductAttributelist>();
+                            if (dtAttdetails != null && dtAttdetails.Rows.Count > 0)
+                            {
+                                string sAMrp = "", sADiscount = "", sAPackingType = "", sAsoshoPrice = "", sAweight = "", sApackSizeId = "", sAImage = "";
+                                string sAPDiscount = "", sisSelected = "", sisQtyFreeze = "";
+                                string sMaxQty = "", sMinQty = "";
+                                Boolean bAisOutOfStock = false;
+                                for (int n = 0; n < dtAttdetails.Rows.Count; n++)
+                                {
+                                    attributelist = new ProductAttributelist();
+                                    sApackSizeId = dtAttdetails.Rows[n]["Id"].ToString();
+                                    sAMrp = dtAttdetails.Rows[n]["Mrp"].ToString();
+                                    sMinQty = dtAttdetails.Rows[n]["MinQty"].ToString();
+                                    sMaxQty = dtAttdetails.Rows[n]["MaxQty"].ToString();
+
+
+                                    sADiscount = dtAttdetails.Rows[n]["Discount"].ToString();
+                                    if (sADiscount.ToString() != "0")
+                                    {
+                                        if (dtAttdetails.Rows[n]["DiscountType"].ToString() == "%")
+                                            sAPDiscount = sADiscount.ToString() + "% Off";
+                                        else if (dtAttdetails.Rows[n]["DiscountType"].ToString() == "Fixed")
+                                            sAPDiscount = CommonString.rusymbol + " " + sADiscount.ToString() + " Off";
+                                        else
+                                            sAPDiscount = "";
+                                    }
+                                    else
+                                        sAPDiscount = "";
+
+                                    sAPackingType = dtAttdetails.Rows[n]["PackingType"].ToString();
+                                    sAsoshoPrice = dtAttdetails.Rows[n]["SoshoPrice"].ToString();
+                                    sAweight = dtAttdetails.Rows[n]["DUnit"].ToString();
+                                    sAImage = dtAttdetails.Rows[n]["ProductImage"].ToString();
+                                    if (dtAttdetails.Rows[n]["isOutOfStock"].ToString() == "1")
+                                        bAisOutOfStock = true;
+                                    else
+                                        bAisOutOfStock = false;
+
+                                    sisSelected = dtAttdetails.Rows[n]["isSelectedDetails"].ToString();
+                                    sisQtyFreeze = dtAttdetails.Rows[n]["IsQtyFreeze"].ToString();
+
+                                    attributelist.Mrp = Convert.ToDouble(sAMrp);
+                                    attributelist.Discount = sAPDiscount;
+                                    attributelist.PackingType = sAPackingType;
+                                    attributelist.soshoPrice = Convert.ToDouble(sAsoshoPrice);
+                                    attributelist.weight = sAweight;
+                                    attributelist.AImageName = Attribuepathimg + sAImage;
+                                    attributelist.isOutOfStock = Convert.ToBoolean(bAisOutOfStock);
+                                    attributelist.isSelected = Convert.ToBoolean(sisSelected);
+                                    attributelist.isQtyFreeze = Convert.ToBoolean(sisQtyFreeze);
+                                    attributelist.MinQty = Convert.ToInt32(sMinQty);
+                                    attributelist.MaxQty = Convert.ToInt32(sMaxQty);
+                                    attributelist.AttributeId = sApackSizeId;
+                                    objAttrList.Add(attributelist);
+                                }
+                                objProdList.ProductAttributesList = objAttrList;
+
+                            }
+                        }
+                    }
+                    objeprodt.response = "1";
+                    objeprodt.message = "Successfully";
+
+                }
+                else
+                {
+                    objeprodt.response = "0";
+                    objeprodt.message = "Details Not Found";
+                }
+
+
+                //DataTable dtProductList = dbCon.GetDataTable("SELECT O.Id AS OrderId,O.AddressId, OI.ProductId, OI.AttributeId, P.Name AS ProductName, PA.Unit, PA.UnitId, U.UnitName, PA.isOutOfStock, PA.Mrp, P.SoshoPrice, OI.Quantity, CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired' FROM[Order] O INNER JOIN OrderItem OI ON OI.OrderId = O.Id INNER JOIN Product P ON P.Id = OI.ProductId INNER JOIN Product_ProductAttribute_Mapping PA ON PA.Id = OI.AttributeId INNER JOIn UnitMaster U ON U.Id= PA.UnitId WHERE OI.OrderId = " + OrderId+ " AND O.JurisdictionID = "+JurisdictionId+" AND O.CustomerId = "+CustomerId +"");
+                //if (dtProductList != null && dtProductList.Rows.Count > 0)
+                //{
+                //    for (int i = 0; i < dtProductList.Rows.Count; i++)
+                //    {
+                //        orderList.Add(new ReOrderProductList
+                //        {
+                //            OrderId = dtProductList.Rows[i]["OrderId"].ToString(),
+                //            AddressId = dtProductList.Rows[i]["AddressId"].ToString(),
+                //            ProductId = dtProductList.Rows[i]["ProductId"].ToString(),
+                //            AttributeId = dtProductList.Rows[i]["AttributeId"].ToString(),
+                //            ProductName = dtProductList.Rows[i]["ProductName"].ToString(),
+                //            UnitId = dtProductList.Rows[i]["UnitId"].ToString(),
+                //            UnitName = dtProductList.Rows[i]["UnitName"].ToString(),
+                //            Unit = dtProductList.Rows[i]["Unit"].ToString(),
+                //            isOutOfStock = Convert.ToBoolean(dtProductList.Rows[i]["isOutOfStock"]),
+                //            isOfferExpired = Convert.ToBoolean(dtProductList.Rows[i]["ISOfferExpired"]),
+                //            Mrp =Convert.ToDecimal(dtProductList.Rows[i]["Mrp"]),
+                //            SoshoPrice = Convert.ToDecimal(dtProductList.Rows[i]["SoshoPrice"]),
+                //            Quantity = Convert.ToDecimal(dtProductList.Rows[i]["Quantity"])
+                //        });
+                //    }
+                //}
+            }
+            catch (Exception ex)
+            {
+                Logger.InsertLogs(Logger.InvoiceLOGS.InvoiceLogLevel.Error, "", 0, false, "", ex.StackTrace);
+            }
+            return objeprodt;
+        }
 
     }
 }

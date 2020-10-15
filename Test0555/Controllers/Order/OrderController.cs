@@ -1534,6 +1534,17 @@ namespace Test0555.Controllers.Order
                     objfs.deliverymsg = "Delivery in 1-2 working days";
                     objfs.whatsappmsg = "";
 
+                    string OrderQry = " select OrderTotal,CustOfferCode,CashbackAmount,CustReedeemAmount,OrderDiscount from [order] where Id= " + OrderId;
+                    DataTable dtOrderQry = dbCon.GetDataTable(OrderQry);
+                    if (dtOrderQry.Rows.Count > 0)
+                    {
+                        objfs.OrderTotal = dtOrderQry.Rows[0]["OrderTotal"].ToString();
+                        objfs.PromoCode = dtOrderQry.Rows[0]["CustOfferCode"].ToString();
+                        objfs.CashbackAmount = dtOrderQry.Rows[0]["CashbackAmount"].ToString();
+                        objfs.ReedeemAmount = dtOrderQry.Rows[0]["CustReedeemAmount"].ToString();
+                        objfs.DiscountAmount = dtOrderQry.Rows[0]["OrderDiscount"].ToString();
+                    }
+
                     string Custid = custid;
                     if (Custid != null && Custid != "")
                     {
@@ -1681,13 +1692,14 @@ namespace Test0555.Controllers.Order
                                 BannerProductType = BannerProductType,
                                 ProductName = dt.Rows[i]["Name"].ToString(),
                                 msg = mess,
-                                Qty = dt.Rows[i]["Quantity"].ToString(),
-                                whatsappmsg = whatsappmsg
+                                Qty = dt.Rows[i]["Quantity"].ToString()
+                                //whatsappmsg = whatsappmsg
 
                             });
                         }
                         objfs.Response = "1";
                         objfs.Message = "Success";
+
 
                     }
                     else

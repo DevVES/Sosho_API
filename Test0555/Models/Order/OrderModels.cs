@@ -135,6 +135,11 @@ namespace Test0555.Models.Order
             public string whatsappmsg;
             public string Response;
             public string Message;
+            public string OrderTotal;
+            public string PromoCode;
+            public string CashbackAmount;
+            public string ReedeemAmount;
+            public string DiscountAmount;
             public List<finallistprod> finallistprods { get; set; }
 
         }
@@ -145,7 +150,6 @@ namespace Test0555.Models.Order
             public string ProductName;
             public string Qty;
             public string msg;
-            public string whatsappmsg;
         }
 
         public class custorderdetails1

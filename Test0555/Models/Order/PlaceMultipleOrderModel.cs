@@ -35,7 +35,7 @@ namespace Test0555.Models.Order
         public decimal Cashbackamount { get; set; } = 0;
         public string discountamount { get; set; } = "";
         public string Redeemeamount { get; set; } = "";
-        public string PromoCodeamount { get; set; } = "";
+        //public string PromoCodeamount { get; set; } = "";
         public string WalletId;
         public string WalletLinkId;
         public string WalletType;

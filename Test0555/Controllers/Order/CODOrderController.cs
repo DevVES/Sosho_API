@@ -1322,7 +1322,7 @@ namespace Test0555.Controllers.Order
                                                                           " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
                                             dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
                                         }
-                                        if(model.PromoCodeamount.ToString() != "0" && model.PromoCodeId != "0")
+                                        if(model.Cashbackamount.ToString() != "0" && model.PromoCodeId != "0")
                                         {
                                             //decimal promocodeAmt = 0;
                                             //if (model.PromoCodetype == "%")
@@ -1333,9 +1333,9 @@ namespace Test0555.Controllers.Order
                                             //else
                                             //{
                                                 //promocodeAmt = Convert.ToDecimal(model.PromoCodebalance);
-                                            balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) + Convert.ToInt32(Convert.ToDecimal(model.PromoCodeamount)));
+                                            balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount)));
                                             //}
-                                            string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"),model.PromoCodeCrDescription,model.PromoCodeamount.ToString(),
+                                            string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"),model.PromoCodeCrDescription,model.Cashbackamount.ToString(),
                                                                "0",balanceAmt.ToString(),"1",
                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
                                                 string insertCouponCodeAmt = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
@@ -1488,7 +1488,7 @@ namespace Test0555.Controllers.Order
 
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 4");
                         string insertquery = "insert into AlterNetOrder([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[RefundedAmount],[CustomerIp],[ShippingMethod],[Deleted],[CreatedOnUtc],[TotalQty],[PaidAmount],[TotalGram],[TotalSaving],[Customer_Redeem_Amount],[TrnId],[IsPaymentDone],[OrderSourceId],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[UpdatedOnUtc],[JurisdictionID],[CashbackAmount],[ReOrderId]) values (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,GETDATE(),@12,@13,@14,@15,@16,@17,@18,@19,@20,@21,@22,@23,GETDATE(),@24,@25,@26);Select SCOPE_IDENTITY()";
-                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, PaidAmount.ToString(), totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", "0", "0", "7", "0" , JurisdictionID,CashbackAmount.ToString(), ReOrderId };
+                        string[] param1 = { Guid.NewGuid().ToString(), Customerid, Address, "10", discountamount, orderMRP, totalAmount, "0", dbCon.GetIP4Address().ToString(), ShipperId.ToString(), "0", totalQty, PaidAmount.ToString(), totalWeight, totalsaving.ToString(), Redemeamount, transid, "0", "3", PromoCode, "0", "7", "0" , JurisdictionID,CashbackAmount.ToString(), ReOrderId };
                         int Orderrslt = dbCon.ExecuteScalarQueryWithParams(insertquery, param1);
                         Logger.InsertLogsApp("PlaceOrder CreateAlternateOrder  : step 5 - " + Orderrslt.ToString());
 

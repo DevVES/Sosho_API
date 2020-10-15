@@ -100,6 +100,8 @@ namespace Test0555.Controllers
                     dtResult.Columns.Add("Total_Word", typeof(System.Int64));
                     dtResult.Columns.Add("SearchType", typeof(System.Int64));//1=Direct Word  2=Word without space
                     dtResult.Columns.Add("CategoryId"); //CategoryId
+                    dtResult.Columns.Add("CategoryName");
+                    dtResult.Columns.Add("SubCategoryName");
 
                     if (Searchname.Trim() != "" || Searchnamewithoutspace.Trim() != "")
                     {
@@ -135,11 +137,12 @@ namespace Test0555.Controllers
                         AddUniqueSearchResult(dtSubCategoryFinal, dtSubCategory_reverse, Max_SubCategory);
                     }
 
-                    AddUniqueSearchResult(dtProductFinal, dtProduct, Max_Product);
-
+                    //AddUniqueSearchResult(dtProductFinal, dtProduct, Max_Product);
+                    AddProductUniqueSearchResult(dtProductFinal, dtProduct, Max_Product);
                     if (dtProductFinal.Rows.Count != Max_Product)
                     {
-                        AddUniqueSearchResult(dtProductFinal, dtProduct_reverse, Max_Product);
+                        //AddUniqueSearchResult(dtProductFinal, dtProduct_reverse, Max_Product);
+                        AddProductUniqueSearchResult(dtProductFinal, dtProduct_reverse, Max_Product);
                     }
 
 
@@ -218,8 +221,10 @@ namespace Test0555.Controllers
                             Productsearch.Name = dr["Name"].ToString();
                             Productsearch.PageType = "3";
                             Productsearch.CategoryId = dr["CategoryId"].ToString();
-                            Productsearch.SubCategoryId = dr["ID"].ToString();
-                            Productsearch.ProductId = dr["Link"].ToString();
+                            Productsearch.SubCategoryId = dr["Link"].ToString(); 
+                            Productsearch.ProductId = dr["ID"].ToString();
+                            Productsearch.CategoryName = dr["CategoryName"].ToString();
+                            Productsearch.SubCategoryName = dr["SubCategoryName"].ToString();
 
                             objectToSerialize.resultflag = "1";
                             objectToSerialize.Message = CommonString.successmessage;
@@ -405,7 +410,39 @@ namespace Test0555.Controllers
                 }
             }
         }
+        private void AddProductUniqueSearchResult(DataTable dtSellerFinal, DataTable dtSeller, int Max_Seller)
+        {
+            foreach (DataRow dr in dtSeller.Rows)
+            {
+                if (Max_Seller == -1 || dtSellerFinal.Rows.Count < Max_Seller)
+                {
+                    string id = dr["Id"].ToString();
+                    string Type = dr["Type"].ToString();
 
+                    DataRow[] drfindRec = dtSellerFinal.Select("ID=" + id + " and Type=" + Type);
+                    if (drfindRec.Length == 0)
+                    {
+                        DataTable dtSub = new DataTable();
+                        string query = "";
+                        query = " Select * From Category where CategoryID = " + dr["CategoryID"].ToString();
+                        dtSub = dbc.GetDataTable(query);
+                        if (dtSub.Rows.Count > 0)
+                            dr["CategoryName"] = dtSub.Rows[0]["CategoryName"];
+
+                        query = " Select * From tblSubCategory where ID = " + dr["Link"].ToString();
+                        dtSub = dbc.GetDataTable(query);
+                        if (dtSub.Rows.Count > 0)
+                            dr["SubCategoryName"] = dtSub.Rows[0]["SubCategory"];
+
+                        dtSellerFinal.ImportRow(dr);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
         private void GetProductSearchResult(string Searchname, string Searchnamewithoutspace, bool isSpaceStringSame, DataTable dtResult, ref DataTable dtCategory, ref DataTable dtSubCategory, ref DataTable dtProduct, string JurisdictionID)
         {
             //FOR GETTING CATEGORY FROM SEARCH

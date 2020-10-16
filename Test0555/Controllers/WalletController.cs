@@ -107,6 +107,7 @@ namespace Test0555.Controllers
                                       " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
                                         where +
                                         " AND H.Id = (select max(id) From[tblWalletCustomerHistory] Hi where Hi.wallet_id = WC.wallet_id and Hi.customer_id =  WC.customer_id) " +
+                                        " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
                                         " order by 2 desc";
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
@@ -209,13 +210,20 @@ namespace Test0555.Controllers
             {
                 objeWalletdt.response = "1";
                 objeWalletdt.message = "Successfully";
+                objeWalletdt.WalletId = "";
+                objeWalletdt.WalletLinkId = "";
+                objeWalletdt.WalletType = "";
+                objeWalletdt.CrAmount = "";
+                objeWalletdt.CrDate = "";
+                objeWalletdt.CrDescription = "";
+                objeWalletdt.balance = "";
+                objeWalletdt.ValidationMessage = "";
                 string where = "";
                 if (CustomerId != "" && CustomerId != null)
                 {
                     where = "AND [WC].customer_id=" + CustomerId;
                     string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.terms AS CR_description, " +
-                                       " WC.created_date AS CR_date,campaign_name,wallet_amount,per_type,per_amount, " +
-                    " W.min_order_amount, H.balance " +
+                                       " WC.created_date AS CR_date,campaign_name,wallet_amount, H.balance " +
                     " FROM[tblWalletCustomerHistory] H " +
                     " INNER JOIN[tblWalletCustomerLink] WC ON H.wallet_id = WC.wallet_id " +
                     " INNER JOIN[WalletMaster] W ON W.wallet_id = WC.wallet_id " +
@@ -224,21 +232,25 @@ namespace Test0555.Controllers
                     " AND H.balance > 0 " +
                     " AND GETDATE() >=  W.start_date and GETDATE() <= W.end_date " +
                     " Order by H.Id desc";
-
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
-                        for (int i = 0; i < dtmain.Rows.Count; i++)
-                        {
-                            string walletId = dtmain.Rows[i]["wallet_id"].ToString();
-                            string walletlinkId = dtmain.Rows[i]["wallet_link_id"].ToString();
-                            decimal walletAmt = Convert.ToDecimal(dtmain.Rows[i]["wallet_amount"]);
-                            decimal perAmt = Convert.ToDecimal(dtmain.Rows[i]["per_amount"]);
-                            decimal minOrdAmt = Convert.ToDecimal(dtmain.Rows[i]["min_order_amount"]);
-                            string crDate = dtmain.Rows[i]["CR_date"].ToString();
-                            string crDescription = dtmain.Rows[i]["CR_description"].ToString();
-                            string balance = dtmain.Rows[i]["balance"].ToString();
-                            string pertype = dtmain.Rows[i]["per_type"].ToString();
+                        string walletId = dtmain.Rows[0]["wallet_id"].ToString();
+                        string usagequery = "SELECT w.per_type,w.per_amount,w.min_order_amount " +
+                                           " FROM[tblWalletUsageMaster] w " +
+                                           " WHERE w.is_active = 1 ";
+                                           
+                        DataTable dtusageQry = dbc.GetDataTable(usagequery);
+                        //for (int i = 0; i < dtmain.Rows.Count; i++)
+                        //{
+                            string walletlinkId = dtmain.Rows[0]["wallet_link_id"].ToString();
+                            decimal walletAmt = Convert.ToDecimal(dtmain.Rows[0]["wallet_amount"]);
+                            decimal perAmt = Convert.ToDecimal(dtusageQry.Rows[0]["per_amount"]);
+                            decimal minOrdAmt = Convert.ToDecimal(dtusageQry.Rows[0]["min_order_amount"]);
+                            string crDate = dtmain.Rows[0]["CR_date"].ToString();
+                            string crDescription = dtmain.Rows[0]["CR_description"].ToString();
+                            string balance = dtmain.Rows[0]["balance"].ToString();
+                            string pertype = dtusageQry.Rows[0]["per_type"].ToString();
 
                             objeWalletdt.WalletId = walletId;
                             objeWalletdt.WalletLinkId = walletlinkId;
@@ -250,7 +262,7 @@ namespace Test0555.Controllers
 
                             if (Convert.ToDecimal(balance) >= Convert.ToDecimal(RedeemeAmount))
                             {
-                                if (dtmain.Rows[i]["per_type"].ToString() == "Fixed")
+                                if (dtusageQry.Rows[0]["per_type"].ToString() == "Fixed")
                                 {
                                     if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
@@ -265,7 +277,7 @@ namespace Test0555.Controllers
                                         objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
-                                if (dtmain.Rows[i]["per_type"].ToString() == "%")
+                                if (dtusageQry.Rows[0]["per_type"].ToString() == "%")
                                 {
                                     decimal redeemPerAmt = (walletAmt * perAmt) / 100;
                                     if (Convert.ToDecimal(RedeemeAmount) > redeemPerAmt)
@@ -281,7 +293,7 @@ namespace Test0555.Controllers
                                         objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
-                                if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
+                                if (dtusageQry.Rows[0]["per_type"].ToString() == "Full Amount Applicable")
                                 {
                                     if (Convert.ToDecimal(RedeemeAmount) > perAmt)
                                     {
@@ -313,11 +325,13 @@ namespace Test0555.Controllers
                     }
                     else
                     {
+
                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                         objeWalletdt.message = CommonString.DataNotFoundMessage;
                         objeWalletdt.ValidationMessage = "";
-                    }
+               
                 }
+                //}
                 return objeWalletdt;
             }
             catch (Exception ex)

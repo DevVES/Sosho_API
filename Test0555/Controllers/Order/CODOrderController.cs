@@ -1324,17 +1324,14 @@ namespace Test0555.Controllers.Order
                                         }
                                         if(model.Cashbackamount.ToString() != "0" && model.PromoCodeId != "0")
                                         {
-                                            //decimal promocodeAmt = 0;
-                                            //if (model.PromoCodetype == "%")
-                                            //{
-                                            //    promocodeAmt = Convert.ToDecimal(Convert.ToDecimal(model.totalAmount) * (Convert.ToDecimal(model.PromoCodeCrAmount) / 100));
-                                            //    balanceAmt = 0;
-                                            //}
-                                            //else
-                                            //{
-                                                //promocodeAmt = Convert.ToDecimal(model.PromoCodebalance);
-                                            balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount)));
-                                            //}
+                                            if (balanceAmt > 0)
+                                            {
+                                                balanceAmt = balanceAmt + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount));
+                                            }
+                                            else
+                                            {
+                                                balanceAmt = Convert.ToDecimal(Convert.ToInt32(model.PromoCodebalance) + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount)));
+                                            }
                                             string[] parm2 = { model.PromoCodeId, model.CustomerId, OrderId.ToString(),model.PromoCodeLinkId, dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"),model.PromoCodeCrDescription,model.Cashbackamount.ToString(),
                                                                "0",balanceAmt.ToString(),"1",
                                                                dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
@@ -1671,17 +1668,19 @@ namespace Test0555.Controllers.Order
             Logger.InsertLogsApp("ReOrder start ");
             ReOrderProductList objeprodt = new ReOrderProductList();
             objeprodt.ProductList = new List<NewProductDataList>();
+            objeprodt.AddressId = string.Empty;
+            objeprodt.CustAddressList = new List<CustAddressDataList>();
             try
             {
                 objeprodt.response = "1";
                 objeprodt.message = "Successfully";
                 string querystr = " SELECT O.Id AS OrderId, O.AddressId FROM[Order] O WHERE O.Id = " + OrderId +
-                                  " AND O.JurisdictionID = "+ JurisdictionId + 
                                   " AND O.CustomerId = " + CustomerId;
                 DataTable dtOrder = dbCon.GetDataTable(querystr);
+                string addressId = string.Empty;
                 if (dtOrder != null && dtOrder.Rows.Count > 0)
                 {
-                    string addressId = dtOrder.Rows[0]["AddressId"].ToString();
+                    addressId = dtOrder.Rows[0]["AddressId"].ToString();
                     objeprodt.AddressId = addressId;
                     string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " +
                                     " isnull((Select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId),'') as statename, " +
@@ -1691,7 +1690,7 @@ namespace Test0555.Controllers.Order
                                     " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" +
                                     " from CustomerAddress where IsActive=1 and IsDeleted=0 and Id = " + addressId;
                     DataTable dtdata = dbCon.GetDataTable(Insertdata);
-                    objeprodt.CustAddressList = new List<CustAddressDataList>();
+                    
                     if (dtdata != null && dtdata.Rows.Count > 0)
                     {
                         for (int i = 0; i < dtdata.Rows.Count; i++)
@@ -1749,7 +1748,7 @@ namespace Test0555.Controllers.Order
                     }
 
                     string sAttributeId="",sCategoryId = "", sCategoryName = "", sProductId = "", sProductName="", sItemType="";
-                    string sITitle = "", sHTitle = "", sBannerId="", sEdate = "", Attribuepathimg="";
+                    string sITitle = "", sHTitle = "", sBannerId="", sEdate = "", Attribuepathimg="", sJurisdictionId = "", sTotalQty = "";
                     bool sIsExpired = false;
                     string querydata = "select KeyValue from StringResources where KeyName='BannerImageUrl'";
                     DataTable dtpath = dbCon.GetDataTable(querydata);
@@ -1766,8 +1765,8 @@ namespace Test0555.Controllers.Order
                         //Image Path
                         Attribuepathimg = dtAttrpathimg.Rows[0]["KeyValue"].ToString();
                     }
-                    string qry = "SELECT OI.ProductId, OI.AttributeId, O.Id AS OrderId, P.Name AS ProductName, " +
-                                 " PL.CategoryID, isnull(cat.CategoryName, '') as CategoryName, " +
+                    string qry = "SELECT O.JurisdictionID,OI.ProductId, OI.AttributeId, O.Id AS OrderId, P.Name AS ProductName, " +
+                                 " PL.CategoryID, isnull(cat.CategoryName, '') as CategoryName, O.TotalQty, " +
                                   " CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired', OI.BannerProductType, " +
                                  " ISNULL(OI.BannerId, 0) AS BannerId, IM.Title AS ITitle, HM.Title AS HTitle, ISNULL(Im.ImageName,'') AS IImageName, " +
                                  " ISNULL(HM.ImageName,'') AS HImageName, (CONVERT(varchar,P.EndDate,103)+' '+ CONVERT(varchar,P.EndDate,108)) as edate " +
@@ -1779,7 +1778,6 @@ namespace Test0555.Controllers.Order
                                  " LEFT JOIN IntermediateBanners IM ON IM.Id = OI.BannerId " +
                                  " LEFT JOIN HomepageBanner HM ON HM.Id = OI.BannerId " +
                                  " WHERE OI.OrderId = " + OrderId +
-                                 " AND O.JurisdictionID = " + JurisdictionId +
                                  " AND O.CustomerId = " + CustomerId;
                     DataTable dtProductList = dbCon.GetDataTable(qry);
                     if (dtProductList != null && dtProductList.Rows.Count > 0)
@@ -1787,6 +1785,11 @@ namespace Test0555.Controllers.Order
                         ProductAttributelist attributelist = new ProductAttributelist();
                         for (int j = 0; j < dtProductList.Rows.Count; j++)
                         {
+                            if (!string.IsNullOrEmpty(dtProductList.Rows[j]["JurisdictionID"].ToString()))
+                            {
+                                sJurisdictionId = dtProductList.Rows[j]["JurisdictionID"].ToString();
+                            }
+                            
                             if (!string.IsNullOrEmpty(dtProductList.Rows[j]["CategoryID"].ToString()))
                             {
                                 sCategoryId = dtProductList.Rows[j]["CategoryID"].ToString();
@@ -1809,12 +1812,17 @@ namespace Test0555.Controllers.Order
                             {
                                 sBannerId = Convert.ToInt32(dtProductList.Rows[j]["BannerId"]).ToString();
                             }
+                            if (Convert.ToInt32(dtProductList.Rows[j]["TotalQty"]) > 0)
+                            {
+                                sTotalQty = Convert.ToInt32(dtProductList.Rows[j]["TotalQty"]).ToString();
+                            }
                             sEdate = dtProductList.Rows[j]["edate"].ToString();
                             sProductName = dtProductList.Rows[j]["ProductName"].ToString();
                             sItemType = dtProductList.Rows[j]["BannerProductType"].ToString();
                             sITitle = dtProductList.Rows[j]["ITitle"].ToString();
                             sHTitle = dtProductList.Rows[j]["HTitle"].ToString();
                             sIsExpired = Convert.ToBoolean( dtProductList.Rows[j]["ISOfferExpired"]);
+                            
                             
                             NewProductDataList objProdList = new NewProductDataList();
                             objProdList.CategoryId = sCategoryId;
@@ -1825,7 +1833,15 @@ namespace Test0555.Controllers.Order
                             objProdList.isOfferExpired = sIsExpired;
                             objProdList.OfferEndDate = sEdate;
                             objProdList.bannerId = sBannerId;
-                            
+                            objProdList.Quantity = Convert.ToInt32(sTotalQty);
+                            if (sJurisdictionId == JurisdictionId)
+                            {
+                                objProdList.isProductAvailable = true;
+                            }
+                            else
+                            {
+                                objProdList.isProductAvailable = false;
+                            }
                             if (sItemType == "2")
                             {
                                 objProdList.Title = sITitle;

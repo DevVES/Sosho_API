@@ -133,12 +133,14 @@ namespace Test0555.Models.Order
         public string CategoryName;
         public string ProductId;
         public string ProductName;
+        public int Quantity;
         public string OfferEndDate;
         public string ItemType;
         public string Title;
         public string bannerURL;
         public string bannerId;
         public bool isOfferExpired { get; set; }
+        public bool isProductAvailable { get; set; }
         public List<ProductAttributelist> ProductAttributesList { get; set; }
     }
 

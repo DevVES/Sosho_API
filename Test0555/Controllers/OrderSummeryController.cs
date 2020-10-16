@@ -21,7 +21,7 @@ namespace Test0555.Controllers.Order
             { 
               try 
 	            {
-                    string Querydata = "select CustomerAddress.Id as addrid,CustomerAddress.Address,CustomerAddress.CustomerId as custid,CustomerAddress.FirstName as fname,CustomerAddress.LastName as lname,(select tagname from TagMaster where TagMaster.id=CustomerAddress.TagId) as tagname,(select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId) as Countyname,CustomerAddress.MobileNo,(select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as statename,(select cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cname from CustomerAddress where CustomerAddress.CustomerId=" + custid + " and CustomerAddress.Id=" + AddressId + "";
+                    string Querydata = "select CustomerAddress.Id as addrid,CustomerAddress.Address,CustomerAddress.CustomerId as custid,CustomerAddress.FirstName as fname,CustomerAddress.LastName as lname,(select tagname from TagMaster where TagMaster.id=CustomerAddress.TagId) as tagname,(select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId) as Countyname,CustomerAddress.MobileNo,(select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as statename,(select cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cname,AreaId,BuildingId,BuildingNo,LandMark,OtherDetail,(select Area from Zipcode where Zipcode.IsActive=1 and Zipcode.id=CustomerAddress.AreaId) as AreaName,(select Building from tblBuilding where tblBuilding.IsActive=1 and tblBuilding.id=CustomerAddress.BuildingId) as BuildingName from CustomerAddress where CustomerAddress.CustomerId=" + custid + " and CustomerAddress.Id=" + AddressId + "";
 
                     DataTable dtmain = dbc.GetDataTable(Querydata);
 
@@ -51,6 +51,13 @@ namespace Test0555.Controllers.Order
                         string CityName = dtmain.Rows[0]["Cname"].ToString();
                         string MobileNo = dtmain.Rows[0]["MobileNo"].ToString();
                         string addr = dtmain.Rows[0]["Address"].ToString();
+                        string areaid = dtmain.Rows[0]["AreaId"].ToString();
+                        string buildingid = dtmain.Rows[0]["BuildingId"].ToString();
+                        string buildingname = dtmain.Rows[0]["BuildingName"].ToString();
+                        string areaname = dtmain.Rows[0]["AreaName"].ToString();
+                        string buildingno = dtmain.Rows[0]["BuildingNo"].ToString();
+                        string landmark = dtmain.Rows[0]["LandMark"].ToString();
+                        string otherDetails = dtmain.Rows[0]["OtherDetail"].ToString();
 
                         objordresum.OrderCustomerList.Add(new OrderSummeryModels.OrderCustDataList
                         {
@@ -63,7 +70,14 @@ namespace Test0555.Controllers.Order
                             Countryname=CountryName,
                             statename=StateName,
                             Cityname=CityName,
-                            cph=MobileNo
+                            cph=MobileNo,
+                            AreaId = areaid,
+                            BuildingId =  buildingid,
+                            AreaName = areaname,
+                            BuildingName = buildingname,
+                            BuildingNo = buildingno,
+                            Landmark = landmark,
+                            OtherDetails = otherDetails
 
                         });
     

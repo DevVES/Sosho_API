@@ -1312,19 +1312,19 @@ namespace Test0555.Controllers.Order
                                                 redeemeAmt = Convert.ToDecimal(model.Redeemeamount);
                                             }
                                             balanceAmt = Convert.ToDecimal(model.Walletbalance) - redeemeAmt;
-                                            string[] parm1 = { model.WalletId, model.CustomerId, OrderId.ToString(),model.WalletLinkId, model.WalletCrDate,model.WalletCrDescription,model.WalletCrAmount,
+                                            string[] parm1 = { model.WalletId, model.CustomerId, OrderId.ToString(),model.WalletLinkId,
                                                                 dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.WalletCrDescription,
                                                 redeemeAmt.ToString(),balanceAmt.ToString(),"1",
                                             dbCon.getindiantime().ToString("dd-MMM-yyyy HH:mm:ss"), model.CustomerId};
 
                                             string insertredeemewallet = "INSERT INTO [dbo].[tblWalletCustomerHistory]([wallet_id],[customer_id],[order_id]," +
                                                                           " [wallet_link_id],[Cr_date],[Cr_description],[Cr_amount],[Dr_date],[Dr_description], " +
-                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14);";
+                                                                          " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,null,null,null,@5,@6,@7,@8,@9,@10,@11);";
                                             dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
                                         }
-                                        if(model.Cashbackamount.ToString() != "0" && model.PromoCodeId != "0")
+                                        if(model.Cashbackamount > 0 && model.PromoCodeId != "0")
                                         {
-                                            if (balanceAmt > 0)
+                                            if (model.Redeemeamount.ToString() != "0")
                                             {
                                                 balanceAmt = balanceAmt + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount));
                                             }

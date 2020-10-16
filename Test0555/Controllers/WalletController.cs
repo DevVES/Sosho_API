@@ -512,7 +512,12 @@ namespace Test0555.Controllers
                         string chkHistoryRecord = " SELECT * FROM tblWalletCustomerHistory " +
                                                   " WHERE customer_id = " + CustomerId +
                                                   " AND wallet_id = " + walletId;
+
+                        string chkLinkRecord = " SELECT * FROM tblWalletCustomerLink " +
+                                                  " WHERE customer_id = " + CustomerId +
+                                                  " AND wallet_id = " + walletId;
                         DataTable dtHistoryRecord = dbc.GetDataTable(chkHistoryRecord);
+                        DataTable dtLinkRecord = dbc.GetDataTable(chkLinkRecord);
                         int linkVAL = 0;
                         if (dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0)
                         {
@@ -529,7 +534,7 @@ namespace Test0555.Controllers
                                 
                             }
                             balAmt = Convert.ToDecimal(walletAmt) + walletBalance;
-                            if (dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0)
+                            if ((dtHistoryRecord == null || dtHistoryRecord.Rows.Count == 0) && (dtLinkRecord == null || dtLinkRecord.Rows.Count == 0))
                             {
                                 string[] para2 = { walletId, CustomerId, "1", dtCreatedon.ToString(), CustomerId };
                                 string customerlinkinsertquery = "INSERT INTO [dbo].[tblWalletCustomerLink] ([wallet_id],[customer_id],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5) SELECT SCOPE_IDENTITY();";

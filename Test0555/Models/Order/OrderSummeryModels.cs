@@ -42,7 +42,14 @@ namespace Test0555.Models.Order
             public string Countryname;
             public string statename;
             public string Cityname;
-            
+            public string AreaId;
+            public string BuildingId;
+            public string AreaName;
+            public string BuildingName;
+            public string BuildingNo;
+            public string Landmark;
+            public string OtherDetails;
+
 
         }
 

@@ -1691,7 +1691,7 @@ namespace Test0555.Controllers.Order
                             {
                                 BannerProductType = BannerProductType,
                                 ProductName = dt.Rows[i]["Name"].ToString(),
-                                msg = mess,
+                               // msg = mess,
                                 Qty = dt.Rows[i]["Quantity"].ToString()
                                 //whatsappmsg = whatsappmsg
 

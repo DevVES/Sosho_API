@@ -1669,12 +1669,15 @@ namespace Test0555.Controllers.Order
             ReOrderProductList objeprodt = new ReOrderProductList();
             objeprodt.ProductList = new List<NewProductDataList>();
             objeprodt.AddressId = string.Empty;
+            objeprodt.response = "1";
+            objeprodt.message = "Successfully";
             objeprodt.CustAddressList = new List<CustAddressDataList>();
             try
             {
                 objeprodt.response = "1";
                 objeprodt.message = "Successfully";
                 string querystr = " SELECT O.Id AS OrderId, O.AddressId FROM[Order] O WHERE O.Id = " + OrderId +
+                                  " AND O.JurisdictionId = " + JurisdictionId +
                                   " AND O.CustomerId = " + CustomerId;
                 DataTable dtOrder = dbCon.GetDataTable(querystr);
                 string addressId = string.Empty;
@@ -1690,7 +1693,7 @@ namespace Test0555.Controllers.Order
                                     " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" +
                                     " from CustomerAddress where IsActive=1 and IsDeleted=0 and Id = " + addressId;
                     DataTable dtdata = dbCon.GetDataTable(Insertdata);
-                    
+
                     if (dtdata != null && dtdata.Rows.Count > 0)
                     {
                         for (int i = 0; i < dtdata.Rows.Count; i++)
@@ -1744,9 +1747,9 @@ namespace Test0555.Controllers.Order
                                 OtherDetail = otherdetail
                             });
                         }
-                        
-                    }
 
+                    }
+                }
                     string sAttributeId="",sCategoryId = "", sCategoryName = "", sProductId = "", sProductName="", sItemType="";
                     string sITitle = "", sHTitle = "", sBannerId="", sEdate = "", Attribuepathimg="", sJurisdictionId = "", sTotalQty = "";
                     bool sIsExpired = false;
@@ -1929,15 +1932,17 @@ namespace Test0555.Controllers.Order
                             }
                         }
                     }
-                    objeprodt.response = "1";
-                    objeprodt.message = "Successfully";
-
-                }
                 else
                 {
                     objeprodt.response = "0";
                     objeprodt.message = "Details Not Found";
                 }
+                
+
+                //else
+                //{
+                //    
+                //}
 
 
                 //DataTable dtProductList = dbCon.GetDataTable("SELECT O.Id AS OrderId,O.AddressId, OI.ProductId, OI.AttributeId, P.Name AS ProductName, PA.Unit, PA.UnitId, U.UnitName, PA.isOutOfStock, PA.Mrp, P.SoshoPrice, OI.Quantity, CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired' FROM[Order] O INNER JOIN OrderItem OI ON OI.OrderId = O.Id INNER JOIN Product P ON P.Id = OI.ProductId INNER JOIN Product_ProductAttribute_Mapping PA ON PA.Id = OI.AttributeId INNER JOIn UnitMaster U ON U.Id= PA.UnitId WHERE OI.OrderId = " + OrderId+ " AND O.JurisdictionID = "+JurisdictionId+" AND O.CustomerId = "+CustomerId +"");

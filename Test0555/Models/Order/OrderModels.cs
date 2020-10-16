@@ -149,7 +149,7 @@ namespace Test0555.Models.Order
             public int BannerProductType;
             public string ProductName;
             public string Qty;
-            public string msg;
+            //public string msg;
         }
 
         public class custorderdetails1

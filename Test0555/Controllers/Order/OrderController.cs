@@ -1237,15 +1237,30 @@ namespace Test0555.Controllers.Order
                 objorderdtil.OrderDate = "";
                 if (orderid != "")
                 {
-                    string addressstr = "select FirstName as CustName,Address,(select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId)as CityName,CustomerAddress.pincode,(select StateMaster.StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as StateName,(select CountryMaster.CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId)as CountryName,CustomerAddress.MobileNo from CustomerAddress where Id=(select AddressId from [Order] where id=" + OrderId + ") ;";
-
+                    //string addressstr = "select FirstName as CustName,Address,(select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId)as CityName,CustomerAddress.pincode,(select StateMaster.StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as StateName,(select CountryMaster.CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId)as CountryName,CustomerAddress.MobileNo from CustomerAddress where Id=(select AddressId from [Order] where id=" + OrderId + ") ;";
+                    string addressstr = "select FirstName as CustName, Address, PinCode, BuildingId, BuildingNo, landmark, " + 
+                                        " (select Cityname from CityMaster where CityMaster.Id = CustomerAddress.CityId) as Cityname, " + 
+                                        " (select StateMaster.StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as StateName ," +
+                                        " (select CountryMaster.CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId) as CountryName, "+
+                                        " CustomerAddress.MobileNo , B.Area, B.Building " + 
+                                        " from CustomerAddress " + 
+                                        " LEFT JOIN tblBuilding B ON B.Id = CustomerAddress.BuildingId " +
+                                        " where CustomerAddress.Id = (select AddressId from[Order] where id = " + OrderId + ") ; ";
                     DataTable dtdataa = dbCon.GetDataTable(addressstr);
 
                     if (dtdataa != null && dtdataa.Rows.Count > 0)
                     {
                         string custname = dtdataa.Rows[0]["CustName"].ToString();
                         objorderdtil.CustName = custname;
-                        string custadd = dtdataa.Rows[0]["Address"].ToString() + ", " + dtdataa.Rows[0]["CityName"] + "-" + dtdataa.Rows[0]["pincode"].ToString() + " " + dtdataa.Rows[0]["StateName"] + ", " + dtdataa.Rows[0]["CountryName"];
+                        string custadd = string.Empty;
+                        if (!string.IsNullOrEmpty(dtdataa.Rows[0]["BuildingNo"].ToString()) || !string.IsNullOrEmpty(dtdataa.Rows[0]["BuildingId"].ToString()))
+                        {
+                            custadd = dtdataa.Rows[0]["BuildingNo"] + "," + dtdataa.Rows[0]["Building"] + "," + dtdataa.Rows[0]["landmark"] + "," + dtdataa.Rows[0]["Area"] + ", " + dtdataa.Rows[0]["CityName"] + "-" + dtdataa.Rows[0]["pincode"].ToString() + " " + dtdataa.Rows[0]["StateName"] + ", " + dtdataa.Rows[0]["CountryName"];
+                        }
+                        else
+                        {
+                            custadd = dtdataa.Rows[0]["Address"].ToString() + ", " + dtdataa.Rows[0]["CityName"] + "-" + dtdataa.Rows[0]["pincode"].ToString() + " " + dtdataa.Rows[0]["StateName"] + ", " + dtdataa.Rows[0]["CountryName"];
+                        }
                         objorderdtil.CustAddress = custadd;
                         string mobno = dtdataa.Rows[0]["MobileNo"].ToString();
                         objorderdtil.CustMob = mobno;
@@ -1259,7 +1274,7 @@ namespace Test0555.Controllers.Order
                     string imaagedetails = "select Product.ProductMrp,PA.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount, " + 
                                            " Product.id as pid,OrderItem.Quantity,product.Name,isnull(PA.Unit,'0') as unitweg, " + 
                                            " isnull((select UnitName from UnitMaster where UnitMaster.Id=PA.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice, " +
-                                           " PA.Id AS AttributeId , PA.ProductImage " +
+                                           " PA.Id AS AttributeId , PA.ProductImage, PA.SoshoPrice " +
                                            " from Product " + 
                                            " inner join OrderItem ON OrderItem.ProductId = Product.Id " +
                                            " LEFT Join Product_ProductAttribute_Mapping PA ON PA.id = OrderItem.AttributeId " +
@@ -1323,6 +1338,7 @@ namespace Test0555.Controllers.Order
                             string expon = dtorderdetails.Rows[0]["EndDate"].ToString();
                             //objorderdtil.ProductEnddate = expon;
                             string mrp = dtimgstr.Rows[i]["ProductMrp"].ToString();
+                            string soshoPrice = dtimgstr.Rows[i]["SoshoPrice"].ToString();
                             //objorderdtil.MRP = mrp;
 
 
@@ -1465,7 +1481,8 @@ namespace Test0555.Controllers.Order
                                     Weight = unt,
                                     WhatsappbtnShowStatus = ShowStatus,
                                     WhatsappMsg = msg,
-                                    Qty = dtimgstr.Rows[i]["Quantity"].ToString()
+                                    Qty = dtimgstr.Rows[i]["Quantity"].ToString(),
+                                    SoshoPrice=soshoPrice
                                     //BuyWith = flag
 
                                 });
@@ -1555,10 +1572,19 @@ namespace Test0555.Controllers.Order
                         //{
                         //    string proname = dtproduct.Rows[0]["Name"].ToString();
                         //    objfs.ProductName = proname;
-                        DataTable custaddr = dbCon.GetDataTable("select FirstName,Address,PinCode,,BuildingNo,landmark,(select Cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cityname from CustomerAddress where id=(select AddressId from [Order] where [Order].Id=" + OrderId + ")");
+                        //DataTable custaddr = dbCon.GetDataTable("select FirstName,Address,PinCode,,BuildingNo,landmark,(select Cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cityname from CustomerAddress where id=(select AddressId from [Order] where [Order].Id=" + OrderId + ")");
+                        DataTable custaddr = dbCon.GetDataTable("select FirstName, Address, PinCode, BuildingId, BuildingNo, landmark,(select Cityname from CityMaster where CityMaster.Id = CustomerAddress.CityId) as Cityname ,B.Area, B.Building from CustomerAddress LEFT JOIN tblBuilding B ON B.Id = CustomerAddress.BuildingId where CustomerAddress.id = (select AddressId from[Order] where[Order].Id = " + OrderId + ")");
+                        string custdetail = string.Empty;
                         if (custaddr != null && custaddr.Rows.Count > 0)
                         {
-                            string custdetail = custaddr.Rows[0]["FirstName"] + " " + custaddr.Rows[0]["Address"] + "-" + custaddr.Rows[0]["PinCode"];
+                            if (!string.IsNullOrEmpty(custaddr.Rows[0]["BuildingNo"].ToString()) || !string.IsNullOrEmpty(custaddr.Rows[0]["BuildingId"].ToString()))
+                            {
+                                custdetail = custaddr.Rows[0]["FirstName"] + " " + custaddr.Rows[0]["BuildingNo"] + "," + custaddr.Rows[0]["Building"] + "," + custaddr.Rows[0]["landmark"] + "," + custaddr.Rows[0]["Area"] + "-" + custaddr.Rows[0]["PinCode"];
+                            }
+                            else
+                            {
+                                custdetail = custaddr.Rows[0]["FirstName"] + " " + custaddr.Rows[0]["Address"] + "-" + custaddr.Rows[0]["PinCode"];
+                            }
                             objfs.CustomerDetail = custdetail;
                         }
                         //DataTable custorderqty = dbCon.GetDataTable("select TotalQTY from [Order] where [Order].Id=" + OrderId + "");

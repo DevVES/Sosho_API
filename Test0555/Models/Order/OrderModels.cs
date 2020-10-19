@@ -111,7 +111,8 @@ namespace Test0555.Models.Order
             public string Weight;
             public string MRP;
             public string Qty;
-           // public string BuyWith;
+            public string SoshoPrice;
+            // public string BuyWith;
         }
         public class finallist
         {

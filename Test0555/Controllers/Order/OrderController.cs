@@ -1016,10 +1016,25 @@ namespace Test0555.Controllers.Order
             OrderModels.orderlist objorder = new OrderModels.orderlist();
             try
             {
+                string whatsappmsg = string.Empty;
+                string facebookmsg = string.Empty;
                 string CustomerId = custid;
                 if (!string.IsNullOrWhiteSpace(CustomerId))
                 {
-                    
+                    string socialmsgqry = "SELECT [Id],[Key],[Value] FROM [tblShareSocialMessage]";
+                    DataTable SocialMsgdt = dbCon.GetDataTable(socialmsgqry);
+                    if (SocialMsgdt != null && SocialMsgdt.Rows.Count > 0)
+                    {
+                        for (int i = 0; i < SocialMsgdt.Rows.Count; i++)
+                        {
+                            string key = SocialMsgdt.Rows[i]["Key"].ToString();
+                            if (key == "WhatsAppMessage")
+                            {
+                                whatsappmsg = SocialMsgdt.Rows[i]["Value"].ToString();
+                            }
+
+                        }
+                    }
                     string Querydata = "select ISNULL(OrderItem.CustOfferCode,[Order].CustOfferCode) as cccode,(convert(varchar,[Order].CreatedOnUtc,106)+ ' '+ (CONVERT(varchar,[Order].CreatedOnUtc,108))) as OrderDate, " +
                                        " ISNULL(OrderItem.RefferedOfferCode,[Order].RefferedOfferCode) as Refercode, " +
                                        " (select top 1 Product.EndDate from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as enddatetime, " + 
@@ -1191,12 +1206,14 @@ namespace Test0555.Controllers.Order
                                 productname = productname,
                                 orderdate = orddate,
                                 whatsappflag = wflag,
-                                whatsappMessage = wmessage,
+                                whatsappMessage = whatsappmsg,
                                 IsCancel = isCancel,
                                 OrderStatusText = "",
                                 OrderStatus = "0"
                             });
                         }
+
+                  
                         objorder.Responce = "1";
                         objorder.Message = "Success";
                     }
@@ -1235,6 +1252,7 @@ namespace Test0555.Controllers.Order
                 objorderdtil.IsCancel = "";
                 objorderdtil.PaymentMode = "";
                 objorderdtil.OrderDate = "";
+                objorderdtil.WhatsappMsg = "";
                 if (orderid != "")
                 {
                     //string addressstr = "select FirstName as CustName,Address,(select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId)as CityName,CustomerAddress.pincode,(select StateMaster.StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId) as StateName,(select CountryMaster.CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId)as CountryName,CustomerAddress.MobileNo from CustomerAddress where Id=(select AddressId from [Order] where id=" + OrderId + ") ;";
@@ -1420,7 +1438,8 @@ namespace Test0555.Controllers.Order
                             // objorderdtil.WhatsappMsg = msg;
 
 
-
+                            string whatsappmsg = string.Empty;
+                            string facebookmsg = string.Empty;
                             if (dtimgstr.Rows.Count > 0)
                             {
                                 string prdtname = dtimgstr.Rows[i]["name"].ToString();
@@ -1469,9 +1488,7 @@ namespace Test0555.Controllers.Order
                                         imgname = folder + dtimage.Rows[0]["imagefilename"].ToString();
                                     }
                                 }
-
                                 //objorderdtil.ProductImg = imgname;
-
                                 list.Add(new OrderModels.ProductList
                                 {
                                     MRP = mrp,
@@ -1479,8 +1496,8 @@ namespace Test0555.Controllers.Order
                                     ProductImg = imgname,
                                     ProductName = prdtname,
                                     Weight = unt,
-                                    WhatsappbtnShowStatus = ShowStatus,
-                                    WhatsappMsg = msg,
+                                    //WhatsappbtnShowStatus = ShowStatus,
+                                    //WhatsappMsg = msg,
                                     Qty = dtimgstr.Rows[i]["Quantity"].ToString(),
                                     SoshoPrice=soshoPrice
                                     //BuyWith = flag
@@ -1499,8 +1516,22 @@ namespace Test0555.Controllers.Order
                                     enddate = dtproductdetail.Rows[0]["ProductEndDate"].ToString();
                                 }
 
-
-                                objorderdtil.WhatsappMsg = "Hi! I bought " + productdetails + " and other items at great rates. Free shipping with Covid precautions and Cash on delivery. If you buy it before " + enddate + ", you can also get the same discount. Just follow this link: http://www.sosho.in" + ocode;
+                                string qry = "SELECT [Id],[Key],[Value] FROM [tblShareSocialMessage]";
+                                DataTable SocialMsgdt = dbCon.GetDataTable(qry);
+                                if (SocialMsgdt != null && SocialMsgdt.Rows.Count > 0)
+                                {
+                                    for (int j = 0; j < SocialMsgdt.Rows.Count; j++)
+                                    {
+                                        string key = SocialMsgdt.Rows[j]["Key"].ToString();
+                                        if (key == "WhatsAppMessage")
+                                        {
+                                            whatsappmsg = SocialMsgdt.Rows[j]["Value"].ToString();
+                                        }
+                                    }
+                                }
+                                //objorderdtil.WhatsappMsg = "Hi! I bought " + productdetails + " and other items at great rates. Free shipping with Covid precautions and Cash on delivery. If you buy it before " + enddate + ", you can also get the same discount. Just follow this link: http://www.sosho.in" + ocode;
+                                objorderdtil.WhatsappMsg = whatsappmsg;
+                                //objorderdtil.facebookMsg = facebookmsg;
                                 objorderdtil.IsCancel = "0";
                                 objorderdtil.Response = "1";
                                 objorderdtil.Message = "Success";
@@ -1551,7 +1582,7 @@ namespace Test0555.Controllers.Order
                     objfs.deliverymsg = "Delivery in 1-2 working days";
                     objfs.whatsappmsg = "";
 
-                    string OrderQry = " select OrderTotal,CustOfferCode,CashbackAmount,CustReedeemAmount,OrderDiscount from [order] where Id= " + OrderId;
+                    string OrderQry = " select OrderTotal,CustOfferCode,ISNULL(CashbackAmount,0) CashbackAmount,CustReedeemAmount,OrderDiscount from [order] where Id= " + OrderId;
                     DataTable dtOrderQry = dbCon.GetDataTable(OrderQry);
                     if (dtOrderQry.Rows.Count > 0)
                     {
@@ -1667,40 +1698,40 @@ namespace Test0555.Controllers.Order
 
                                 string expprostr = "select Product.Id as ProductId from Product where StartDate<='" + dbCon.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss tt") + "' AND EndDate>='" + dbCon.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss tt") + "' ";
 
-                                DataTable dtproducts = dbCon.GetDataTable(expprostr);
+                                //DataTable dtproducts = dbCon.GetDataTable(expprostr);
 
-                                if (dtproducts.Rows.Count > 0)
-                                {
-                                    if (flg == "1")
-                                    {
-                                        MasterDataController msc = new MasterDataController();
-                                        whatsappmsg = msc.ReturnMessage("BuyAlone").Message + ocode;
-                                    }
-                                    else if (flg == "2")
-                                    {
-                                        MasterDataController msc = new MasterDataController();
-                                        whatsappmsg = msc.ReturnMessage("BuyWithOneFrd").Message + ocode;
-                                    }
-                                    else if (flg == "6")
-                                    {
-                                        MasterDataController msc = new MasterDataController();
-                                        whatsappmsg = msc.ReturnMessage("ButWith4Frd").Message + ocode;
-                                    }
+                                //if (dtproducts.Rows.Count > 0)
+                                //{
+                                //    if (flg == "1")
+                                //    {
+                                //        MasterDataController msc = new MasterDataController();
+                                //        whatsappmsg = msc.ReturnMessage("BuyAlone").Message + ocode;
+                                //    }
+                                //    else if (flg == "2")
+                                //    {
+                                //        MasterDataController msc = new MasterDataController();
+                                //        whatsappmsg = msc.ReturnMessage("BuyWithOneFrd").Message + ocode;
+                                //    }
+                                //    else if (flg == "6")
+                                //    {
+                                //        MasterDataController msc = new MasterDataController();
+                                //        whatsappmsg = msc.ReturnMessage("ButWith4Frd").Message + ocode;
+                                //    }
 
-                                    string productdetails = string.Empty;
-                                    string enddate = string.Empty;
+                                //    string productdetails = string.Empty;
+                                //    string enddate = string.Empty;
 
-                                    string proddetails = "Select TOP 1 FORMAT(EndDate, 'dd MMM yyy htt') AS ProductEndDate, Product.Name + ' at only Rs ' + CONVERT(nvarchar, Product.Mrp) + ' (MRP ' + CONVERT(nvarchar, Product.ProductMrp) + ') for ' + isnull(Product.Unit, '0') + ' ' + isnull((select UnitName from UnitMaster where UnitMaster.Id = Product.UnitId),'Gram') as productdetails from Product inner join OrderItem ON OrderItem.ProductId = Product.Id Where OrderItem.OrderId =" + orderid + " Order By EndDate Desc";
+                                //    string proddetails = "Select TOP 1 FORMAT(EndDate, 'dd MMM yyy htt') AS ProductEndDate, Product.Name + ' at only Rs ' + CONVERT(nvarchar, Product.Mrp) + ' (MRP ' + CONVERT(nvarchar, Product.ProductMrp) + ') for ' + isnull(Product.Unit, '0') + ' ' + isnull((select UnitName from UnitMaster where UnitMaster.Id = Product.UnitId),'Gram') as productdetails from Product inner join OrderItem ON OrderItem.ProductId = Product.Id Where OrderItem.OrderId =" + orderid + " Order By EndDate Desc";
 
-                                    DataTable dtproductdetail = dbCon.GetDataTable(proddetails);
-                                    if (dtproductdetail.Rows.Count > 0)
-                                    {
-                                        productdetails = dtproductdetail.Rows[0]["productdetails"].ToString();
-                                        enddate = dtproductdetail.Rows[0]["ProductEndDate"].ToString();
-                                    }
-                                    objfs.whatsappmsg = "Hi! I bought " + productdetails + " and other items at great rates. Free shipping with Covid precautions and Cash on delivery. If you buy it before " + enddate + ", you can also get the same discount. Just follow this link: http://www.sosho.in" + ocode;
+                                //    DataTable dtproductdetail = dbCon.GetDataTable(proddetails);
+                                //    if (dtproductdetail.Rows.Count > 0)
+                                //    {
+                                //        productdetails = dtproductdetail.Rows[0]["productdetails"].ToString();
+                                //        enddate = dtproductdetail.Rows[0]["ProductEndDate"].ToString();
+                                //    }
+                                //    objfs.whatsappmsg = "Hi! I bought " + productdetails + " and other items at great rates. Free shipping with Covid precautions and Cash on delivery. If you buy it before " + enddate + ", you can also get the same discount. Just follow this link: http://www.sosho.in" + ocode;
 
-                                }
+                                //}
 
                             }
                             else

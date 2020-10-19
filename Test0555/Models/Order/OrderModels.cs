@@ -18,7 +18,6 @@ namespace Test0555.Models.Order
         {
             public String Responce = "";
             public String Message = "";
-        
             public List<ListOrder> ListOrder { get; set; }
 
         }
@@ -90,6 +89,7 @@ namespace Test0555.Models.Order
             public string OrderDate;
             public string Amount;
             public string WhatsappMsg = "";
+            //public string facebookMsg;
             //public string Qty;
             public string PaymentMode;
             public string Response;
@@ -105,8 +105,8 @@ namespace Test0555.Models.Order
         {
             public string ProductImg;
             public string ProductName;
-            public string WhatsappbtnShowStatus;
-            public string WhatsappMsg;
+            //public string WhatsappbtnShowStatus;
+           // public string WhatsappMsg;            
             public string ProductEnddate;
             public string Weight;
             public string MRP;

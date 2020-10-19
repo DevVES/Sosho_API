@@ -1691,7 +1691,7 @@ namespace Test0555.Controllers.Order
                 {
                     addressId = dtOrder.Rows[0]["AddressId"].ToString();
                     objeprodt.AddressId = addressId;
-                    string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " +
+                    string Insertdata = " select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " +
                                     " isnull((Select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId),'') as statename, " +
                                     " isnull((Select Area from ZipCode where ZipCode.Id=CustomerAddress.AreaId),'') as Area, " +
                                     " isnull((Select Building from tblBuilding where tblBuilding.Id=CustomerAddress.BuildingId),'') as Building, " +
@@ -1832,7 +1832,6 @@ namespace Test0555.Controllers.Order
                             sHTitle = dtProductList.Rows[j]["HTitle"].ToString();
                             sIsExpired = Convert.ToBoolean( dtProductList.Rows[j]["ISOfferExpired"]);
                             
-                            
                             NewProductDataList objProdList = new NewProductDataList();
                             objProdList.CategoryId = sCategoryId;
                             objProdList.CategoryName = sCategoryName;
@@ -1943,37 +1942,6 @@ namespace Test0555.Controllers.Order
                     objeprodt.response = "0";
                     objeprodt.message = "Details Not Found";
                 }
-                
-
-                //else
-                //{
-                //    
-                //}
-
-
-                //DataTable dtProductList = dbCon.GetDataTable("SELECT O.Id AS OrderId,O.AddressId, OI.ProductId, OI.AttributeId, P.Name AS ProductName, PA.Unit, PA.UnitId, U.UnitName, PA.isOutOfStock, PA.Mrp, P.SoshoPrice, OI.Quantity, CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired' FROM[Order] O INNER JOIN OrderItem OI ON OI.OrderId = O.Id INNER JOIN Product P ON P.Id = OI.ProductId INNER JOIN Product_ProductAttribute_Mapping PA ON PA.Id = OI.AttributeId INNER JOIn UnitMaster U ON U.Id= PA.UnitId WHERE OI.OrderId = " + OrderId+ " AND O.JurisdictionID = "+JurisdictionId+" AND O.CustomerId = "+CustomerId +"");
-                //if (dtProductList != null && dtProductList.Rows.Count > 0)
-                //{
-                //    for (int i = 0; i < dtProductList.Rows.Count; i++)
-                //    {
-                //        orderList.Add(new ReOrderProductList
-                //        {
-                //            OrderId = dtProductList.Rows[i]["OrderId"].ToString(),
-                //            AddressId = dtProductList.Rows[i]["AddressId"].ToString(),
-                //            ProductId = dtProductList.Rows[i]["ProductId"].ToString(),
-                //            AttributeId = dtProductList.Rows[i]["AttributeId"].ToString(),
-                //            ProductName = dtProductList.Rows[i]["ProductName"].ToString(),
-                //            UnitId = dtProductList.Rows[i]["UnitId"].ToString(),
-                //            UnitName = dtProductList.Rows[i]["UnitName"].ToString(),
-                //            Unit = dtProductList.Rows[i]["Unit"].ToString(),
-                //            isOutOfStock = Convert.ToBoolean(dtProductList.Rows[i]["isOutOfStock"]),
-                //            isOfferExpired = Convert.ToBoolean(dtProductList.Rows[i]["ISOfferExpired"]),
-                //            Mrp =Convert.ToDecimal(dtProductList.Rows[i]["Mrp"]),
-                //            SoshoPrice = Convert.ToDecimal(dtProductList.Rows[i]["SoshoPrice"]),
-                //            Quantity = Convert.ToDecimal(dtProductList.Rows[i]["Quantity"])
-                //        });
-                //    }
-                //}
             }
             catch (Exception ex)
             {

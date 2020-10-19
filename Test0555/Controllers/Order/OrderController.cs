@@ -1555,7 +1555,7 @@ namespace Test0555.Controllers.Order
                         //{
                         //    string proname = dtproduct.Rows[0]["Name"].ToString();
                         //    objfs.ProductName = proname;
-                        DataTable custaddr = dbCon.GetDataTable("select FirstName,Address,PinCode,(select Cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cityname from CustomerAddress where id=(select AddressId from [Order] where [Order].Id=" + OrderId + ")");
+                        DataTable custaddr = dbCon.GetDataTable("select FirstName,Address,PinCode,,BuildingNo,landmark,(select Cityname from CityMaster where CityMaster.Id=CustomerAddress.CityId) as Cityname from CustomerAddress where id=(select AddressId from [Order] where [Order].Id=" + OrderId + ")");
                         if (custaddr != null && custaddr.Rows.Count > 0)
                         {
                             string custdetail = custaddr.Rows[0]["FirstName"] + " " + custaddr.Rows[0]["Address"] + "-" + custaddr.Rows[0]["PinCode"];

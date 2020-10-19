@@ -1608,7 +1608,7 @@ namespace Test0555.Controllers.Order
                         string whatsappmsg = "";
                         string mess = "";
                         int BannerProductType = 1;
-                        
+                        string facebookmsg = string.Empty;
                         for (int i = 0; i < dt.Rows.Count; i++)
                         {
 
@@ -1639,10 +1639,8 @@ namespace Test0555.Controllers.Order
                                 else if (flg == "2")
                                 {
                                     forcust = dt.Rows[i]["BuyWith1FriendExtraDiscount"].ToString();
-                                    //string title = "Final Step";
                                     string[] daaata = forcust.Split('.');
                                     forcust = daaata[0].ToString();
-                                    //ClientScript.RegisterStartupScript(this.GetType(), "Popup", "ShowPopup('" + title + "');", true);
                                     mess = "Since you have chosen to buy with 1 friend, share offer to ensure your friend buys it by " + date + " to pay offer price of only ₹" + forcust + " instead of single-buy price of ₹" + mrp + " at time of delivery.";
                                 }
                                 else if (flg == "6")
@@ -1650,9 +1648,6 @@ namespace Test0555.Controllers.Order
                                     forcust = dt.Rows[i]["BuyWith5FriendExtraDiscount"].ToString();
                                     string[] daaata = forcust.Split('.');
                                     forcust = daaata[0].ToString();
-                                    //string title = "Final Step";
-
-                                    //ClientScript.RegisterStartupScript(this.GetType(), "Popup", "ShowPopup('" + title + "');", true);
                                     mess = "Since you have chosen to buy with 5 friends, share offer to ensure your friends buy it by  " + date + " to pay offer price of only ₹" + forcust + " instead of single-buy price of ₹" + mrp + " at time of delivery.";
                                 }
                                 //objfs.msg = mess;
@@ -1713,6 +1708,8 @@ namespace Test0555.Controllers.Order
                                 whatsappmsg = "";
                             }
 
+                            
+                            
                             list.Add(new OrderModels.finallistprod
                             {
                                 BannerProductType = BannerProductType,
@@ -1723,6 +1720,27 @@ namespace Test0555.Controllers.Order
 
                             });
                         }
+                        string qry = "SELECT [Id],[Key],[Value] FROM [tblShareSocialMessage]";
+                        DataTable SocialMsgdt = dbCon.GetDataTable(qry);
+                        if (SocialMsgdt != null && SocialMsgdt.Rows.Count > 0)
+                        {
+                            for (int i = 0; i < SocialMsgdt.Rows.Count; i++)
+                            {
+                                string key = SocialMsgdt.Rows[i]["Key"].ToString();
+                                if (key == "WhatsAppMessage")
+                                {
+                                    whatsappmsg = SocialMsgdt.Rows[i]["Value"].ToString();
+                                }
+                                if (key == "FacebookMessage")
+                                {
+                                    facebookmsg = SocialMsgdt.Rows[i]["Value"].ToString();
+                                }
+                            }
+                            
+
+                        }
+                        objfs.whatsappmsg = whatsappmsg;
+                        objfs.facebookMsg = facebookmsg;
                         objfs.Response = "1";
                         objfs.Message = "Success";
 

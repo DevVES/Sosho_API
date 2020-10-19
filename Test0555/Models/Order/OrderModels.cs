@@ -134,6 +134,7 @@ namespace Test0555.Models.Order
             public string paymentmode;
             public string deliverymsg;
             public string whatsappmsg;
+            public string facebookMsg;
             public string Response;
             public string Message;
             public string OrderTotal;

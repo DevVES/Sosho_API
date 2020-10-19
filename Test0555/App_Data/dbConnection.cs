@@ -137,10 +137,19 @@ namespace InquiryManageAPI.Controllers
                     //("http://hapi.smsapi.org/SendSMS.aspx?UserName=sms_salebhai&password=240955&MobileNo=" + Mobile
                     //+ "&SenderID=ESOSHO&CDMAHeader=ESOSHO&Message=" + Sms);
 
+                    //Sms = System.Web.HttpUtility.UrlEncode(Sms);
+                    //HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
+                    //("http://sms.infisms.co.in/API/SendSMS.aspx?UserID=ESosho&UserPassword=sosho@123&PhoneNumber=" + Mobile
+                    //+ "&Text=" + Sms + "&SenderId=ESosho&AccountType=2&MessageType=0");
+
+                    string sUserId = ConfigurationManager.AppSettings["SMSUserId"];
+                    string sUserPassword = ConfigurationManager.AppSettings["SMSUserPassword"];
+                    string sSenderId = ConfigurationManager.AppSettings["SMSSenderId"];
+
                     Sms = System.Web.HttpUtility.UrlEncode(Sms);
                     HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
-                    ("http://sms.infisms.co.in/API/SendSMS.aspx?UserID=ESosho&UserPassword=sosho@123&PhoneNumber=" + Mobile
-                    + "&Text=" + Sms + "&SenderId=ESosho&AccountType=2&MessageType=0");
+                    ("https://api.onlysms.co.in/httpapi/httpapisms.aspx?UserID=" + sUserId + "&UserPass=" + sUserPassword + "&MobileNo=" + Mobile
+                   + "&GSMID= " + sSenderId + "&Message=" + Sms);
 
                     HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
 

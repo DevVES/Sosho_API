@@ -1344,8 +1344,14 @@ namespace Test0555.Controllers.Order
                                                                          " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
                                             dbCon.ExecuteQuery(updatePromoCodeMark);
                                         }
+                                        if (!string.IsNullOrEmpty(model.discountamount) && model.discountamount != "0" && model.PromoCodeId != "0")
+                                        {
+                                            string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
+                                                                         " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
+                                            dbCon.ExecuteQuery(updatePromoCodeMark);
+                                        }
 
-                                        string values = string.Empty;
+                                            string values = string.Empty;
                                         Logger.InsertLogsApp("Inserting Source Of Order");
                                         if (Request.Headers.GetValues("DeviceType").First() != null)
                                         {

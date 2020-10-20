@@ -1925,7 +1925,7 @@ namespace Test0555.Controllers.Order
                                     attributelist.weight = sAweight;
                                     attributelist.AImageName = Attribuepathimg + sAImage;
                                     attributelist.isOutOfStock = Convert.ToBoolean(bAisOutOfStock);
-                                    attributelist.isSelected = Convert.ToBoolean(sisSelected);
+                                    attributelist.isSelected = true;
                                     attributelist.isQtyFreeze = Convert.ToBoolean(sisQtyFreeze);
                                     attributelist.MinQty = Convert.ToInt32(sMinQty);
                                     attributelist.MaxQty = Convert.ToInt32(sMaxQty);

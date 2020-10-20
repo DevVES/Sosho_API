@@ -35,6 +35,7 @@ namespace Test0555.Models.Order
             public string IsCancel = "";
             public String OrderStatusText = "";
             public string OrderStatus = "";
+            public string productid = "";
 
 
         }
@@ -90,7 +91,7 @@ namespace Test0555.Models.Order
             public string Amount;
             public string WhatsappMsg = "";
             //public string facebookMsg;
-            //public string Qty;
+            public string TotalQty;
             public string PaymentMode;
             public string Response;
             public string Message;

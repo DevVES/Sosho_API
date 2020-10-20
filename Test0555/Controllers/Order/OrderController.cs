@@ -1209,7 +1209,8 @@ namespace Test0555.Controllers.Order
                                 whatsappMessage = whatsappmsg,
                                 IsCancel = isCancel,
                                 OrderStatusText = "",
-                                OrderStatus = "0"
+                                OrderStatus = "0",
+                                productid = productidd
                             });
                         }
 
@@ -1310,8 +1311,8 @@ namespace Test0555.Controllers.Order
                         string totalamt = dtorderdetails.Rows[0]["OrderTotal"].ToString();
                         objorderdtil.Amount = totalamt;
 
-                        //string qty = dtorderdetails.Rows[0]["TotalQTY"].ToString();
-                        //objorderdtil.Qty = qty;
+                        string totalqty = dtorderdetails.Rows[0]["TotalQTY"].ToString();
+                        objorderdtil.TotalQty = totalqty;
 
 
                         string paymentmode = "COD";

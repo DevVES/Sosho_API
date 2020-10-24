@@ -14,7 +14,7 @@ namespace Test0555.Controllers
         [HttpPost]
         public AddFranchiesResponse BecomeNewFranchise(AddFranchies model)
         {
-            Logger.InsertLogsApp("Insert Franchies start ");
+            Logger.InsertLogsApp("Insert Franchisee start ");
 
             AddFranchiesResponse objFranchies = new AddFranchiesResponse();
             try
@@ -26,7 +26,7 @@ namespace Test0555.Controllers
                 {
                     objFranchies.response = "1";
                     objFranchies.FranchieId = sourceid.ToString();
-                    objFranchies.message = "Franchie Detail Save Successfully";
+                    objFranchies.message = "Franchisee Detail Save Successfully";
                     ClsCommon.SendFranchiesEmail(model.Email,model.Name, model.Mobile, model.Address, model.PinCode);
                 }
                 else

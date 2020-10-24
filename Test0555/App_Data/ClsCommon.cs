@@ -136,7 +136,7 @@ namespace GarageXAPINEW
                 sContent.Append("<tr><td>&#160;</td></tr>");
                 sContent.Append("<tr><td style=\"color:cornflowerblue;\">Hello,</td></tr>");
                 sContent.Append("<tr><td>&#160;</td></tr>");
-                sContent.Append("<tr><td style=\"color:cornflowerblue;\"> Inquiry For Franchies </td></tr>");
+                sContent.Append("<tr><td style=\"color:cornflowerblue;\"> Inquiry For Franchisee </td></tr>");
                 sContent.Append("<tr><td>&#160;</td></tr>");
                 sContent.Append("<tr><td style=\"color:cornflowerblue;\"> Name: "+ Name +"</td></tr>");
                 sContent.Append("<tr><td style=\"color:cornflowerblue;\"> Mobile No: "+Mobile+ " </td></tr>");
@@ -151,7 +151,7 @@ namespace GarageXAPINEW
                 sContent.Append("<tr><td style=\"color:cornflowerblue;\">" + dtsettingData.Rows[0]["ContactPerson"].ToString() + "</td></tr>");
                 sContent.Append("<tr><td style=\"color:cornflowerblue;\">" + dtsettingData.Rows[0]["Designation"].ToString() + "</td></tr>");
                 sEmailBody = GetEmailBody("", sContent.ToString());
-                SendEmailForFranchies(dtsettingData.Rows[0]["EmailAddress"].ToString(), "", "Inquiry For Franchies", sEmailBody);
+                SendEmailForFranchies(dtsettingData.Rows[0]["EmailAddress"].ToString(), "", "Inquiry For Franchisee", sEmailBody);
             }
         }
     }

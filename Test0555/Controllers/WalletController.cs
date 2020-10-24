@@ -263,7 +263,7 @@ namespace Test0555.Controllers
                 string where = "";
                 if (CustomerId != "" && CustomerId != null)
                 {
-                    where = "AND [WC].customer_id=" + CustomerId;
+                    where = "AND [H].customer_id=" + CustomerId;
                     string querymain = "SELECT Top 1 w.wallet_id,H.wallet_link_id, W.terms AS CR_description, " +
                                        " WC.created_date AS CR_date,campaign_name,wallet_amount, H.balance " +
                     " FROM[tblWalletCustomerHistory] H " +
@@ -316,7 +316,7 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You have successfully redeemed ₹ " + RedeemeAmount + " for this order.";
                                     }
                                 }
                                 if (dtusageQry.Rows[0]["per_type"].ToString() == "%")
@@ -333,8 +333,8 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
-                                    }
+                                        objeWalletdt.ValidationMessage = "You have successfully redeemed ₹ " + RedeemeAmount + " for this order.";
+                                }
                                 }
                                 if (dtusageQry.Rows[0]["per_type"].ToString() == "Full Amount Applicable")
                                 {
@@ -348,8 +348,8 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
-                                    }
+                                        objeWalletdt.ValidationMessage = "You have successfully redeemed ₹ " + RedeemeAmount + " for this order.";
+                                }
                                 }
                                 if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                                 {

@@ -310,13 +310,13 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtusageQry.Rows[0]["per_type"].ToString() == "%")
@@ -327,13 +327,13 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + redeemPerAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= redeemPerAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (dtusageQry.Rows[0]["per_type"].ToString() == "Full Amount Applicable")
@@ -342,21 +342,21 @@ namespace Test0555.Controllers
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
+                                        objeWalletdt.ValidationMessage = "You can redeem maximun ₹ " + perAmt + " for this order.";
                                     }
                                     else if (Convert.ToDecimal(RedeemeAmount) <= perAmt)
                                     {
                                         objeWalletdt.response = CommonString.successresponse;
                                         objeWalletdt.message = CommonString.successmessage;
-                                        objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + RedeemeAmount + " successfully for this order.";
+                                        objeWalletdt.ValidationMessage = "You redeemed ₹ " + RedeemeAmount + " successfully for this order.";
                                     }
                                 }
                                 if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "Wallet money can be used for order amount more than ₹ " + minOrdAmt;
-                                }
+                                    objeWalletdt.ValidationMessage = "Wallet money can be redeemed only if minimum order amount is more than ₹ " + minOrdAmt;
+                            }
                             }
                             else
                             {
@@ -455,13 +455,20 @@ namespace Test0555.Controllers
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Coupon code can only be used for order amount more than ₹ " + minOrdAmt;
                                 }
                                 else if (calcAmt <= perAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    if (offerName == "Discount")
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a discount of ₹ " + calcAmt + " for this order.";
+                                    }
+                                    else
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a cashback of ₹ " + calcAmt + " in your wallet.";
+                                    }
                                 }
                             }
                             if (dtmain.Rows[i]["per_type"].ToString() == "%")
@@ -471,13 +478,20 @@ namespace Test0555.Controllers
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + redeemPerAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Coupon code can only be used for order amount more than ₹ " + minOrdAmt;
                                 }
                                 else if (calcAmt <= redeemPerAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    if (offerName == "Discount")
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a discount of ₹ " + calcAmt + " for this order.";
+                                    }
+                                    else
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a cashback of ₹ " + calcAmt + " in your wallet.";
+                                    }
                                 }
                             }
                             if (dtmain.Rows[i]["per_type"].ToString() == "Full Amount Applicable")
@@ -486,20 +500,27 @@ namespace Test0555.Controllers
                                 {
                                     objeWalletdt.response = CommonString.DataNotFoundResponse;
                                     objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem maximun ₹ " + perAmt + " for this order.";
+                                    objeWalletdt.ValidationMessage = "Coupon code can only be used for order amount more than ₹ " + minOrdAmt;
                                 }
                                 else if (calcAmt <= perAmt)
                                 {
                                     objeWalletdt.response = CommonString.successresponse;
                                     objeWalletdt.message = CommonString.successmessage;
-                                    objeWalletdt.ValidationMessage = "Sosho can redeem ₹ " + calcAmt + " successfully for this order.";
+                                    if (offerName == "Discount")
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a discount of ₹ " + calcAmt + " for this order.";
+                                    }
+                                    else
+                                    {
+                                        objeWalletdt.ValidationMessage = "Congratulation! you got a cashback of ₹ " + calcAmt + " in your wallet.";
+                                    }
                                 }
                             }
                             if (minOrdAmt > Convert.ToDecimal(OrderAmount))
                             {
                                 objeWalletdt.response = CommonString.DataNotFoundResponse;
                                 objeWalletdt.message = CommonString.DataNotFoundMessage;
-                                objeWalletdt.ValidationMessage = "Coupon money can be used for order amount more than ₹ " + minOrdAmt;
+                                objeWalletdt.ValidationMessage = "Coupon code can only be used for order amount more than ₹ " + minOrdAmt;
                             }
                         }
                     }

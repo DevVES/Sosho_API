@@ -89,7 +89,7 @@ namespace Test0555.Controllers
         }
 
         [HttpGet]
-        public WalletModel.RedeemeWallet GetCustomerOfferDetail(string CustomerId = "")
+        public WalletModel.RedeemeWallet GetCustomerOfferDetail(string CustomerId = "",string OrderAmount ="")
         {
             WalletModel.RedeemeWallet objRedeemeWalletdt = new WalletModel.RedeemeWallet();
             try
@@ -112,11 +112,53 @@ namespace Test0555.Controllers
                     DataTable dtmain = dbc.GetDataTable(querymain);
                     if (dtmain != null && dtmain.Rows.Count > 0)
                     {
-                        for (int i = 0; i < dtmain.Rows.Count; i++)
+                        string usagequery = "SELECT w.per_type,w.per_amount,w.min_order_amount " +
+                                           " FROM[tblWalletUsageMaster] w " +
+                                           " WHERE w.is_active = 1 ";
+                        DataTable dtusageQry = dbc.GetDataTable(usagequery);
+                        //for (int i = 0; i < dtmain.Rows.Count; i++)
+                        //{
+                        //    string redeemeAmt = dtmain.Rows[i]["BalanceAmount"].ToString();
+                        //    objRedeemeWalletdt.RedeemeAmount = redeemeAmt;
+                        //}
+
+                        string balAmt = dtmain.Rows[0]["BalanceAmount"].ToString();
+                        objRedeemeWalletdt.RedeemeAmount = balAmt;
+                        
+                        decimal WalletperAmt = Convert.ToDecimal(dtusageQry.Rows[0]["per_amount"]);
+                        decimal WalletminOrdAmt = Convert.ToDecimal(dtusageQry.Rows[0]["min_order_amount"]);
+                        string Walletpertype = dtusageQry.Rows[0]["per_type"].ToString();
+
+                        objRedeemeWalletdt.MinimumOrderAmount = WalletminOrdAmt.ToString();
+
+                        if (WalletminOrdAmt > Convert.ToDecimal(OrderAmount))
                         {
-                            string redeemeAmt = dtmain.Rows[i]["BalanceAmount"].ToString();
-                            objRedeemeWalletdt.RedeemeAmount = redeemeAmt;
+                            objRedeemeWalletdt.RedeemableAmount = "0";
+                            objRedeemeWalletdt.RedeemDetails = "Wallet money can be redeemed only if minimum order amount is more than ₹ " + WalletminOrdAmt;
                         }
+                        else
+                        {
+                            if (Walletpertype == "Fixed")
+                            {
+                                objRedeemeWalletdt.RedeemableAmount = WalletperAmt.ToString();
+                                objRedeemeWalletdt.RedeemDetails = "Per transaction maximum applicable wallet money is ₹ "+ WalletperAmt;
+                            }
+                            else if(Walletpertype == "%")
+                            {
+                                decimal redeemPerAmt = (Convert.ToDecimal(balAmt) * WalletperAmt) / 100;
+                                objRedeemeWalletdt.RedeemableAmount = redeemPerAmt.ToString("0.00");
+                                objRedeemeWalletdt.RedeemDetails = "Per transaction a maximum of " + WalletperAmt + "% of wallet balance can be used.";
+
+                            }
+                            else if (Walletpertype == "Full Amount Applicable")
+                            {
+                                objRedeemeWalletdt.RedeemableAmount = balAmt;
+                                objRedeemeWalletdt.RedeemDetails = "Maximum applicable wallet balance has been applied.";
+
+                            }
+
+                        }
+
                         //For PromoCode
                         string queryPromoCode = " Select  w.wallet_id, W.coupon_code, w.campaign_name, w.wallet_amount, w.terms, " +
                                         " w.per_type, w.per_amount, w.min_order_amount, w.start_date, w.end_date,  ISNULL((select isnull(H.balance,0) " +
@@ -279,8 +321,9 @@ namespace Test0555.Controllers
                                 }
                                 if (dtusageQry.Rows[0]["per_type"].ToString() == "%")
                                 {
-                                    decimal redeemPerAmt = (walletAmt * perAmt) / 100;
-                                    if (Convert.ToDecimal(RedeemeAmount) > redeemPerAmt)
+                                //decimal redeemPerAmt = (walletAmt * perAmt) / 100;
+                                decimal redeemPerAmt = (Convert.ToDecimal(balance) * perAmt) / 100;
+                                if (Convert.ToDecimal(RedeemeAmount) > redeemPerAmt)
                                     {
                                         objeWalletdt.response = CommonString.DataNotFoundResponse;
                                         objeWalletdt.message = CommonString.DataNotFoundMessage;
@@ -578,7 +621,7 @@ namespace Test0555.Controllers
                         objeWalletdt.WalletBalance = walletBalance;
 
                     }
-                    string querymain = "  SELECT [H].customer_id, H.Cr_date AS[Date], " +
+                    string querymain = "  SELECT [H].customer_id,CAST(H.Cr_date AS DATE) as Cr_date,CAST(H.Dr_date AS DATE) as Dr_date, " +
                                        " (case isnull(H.order_id, 0) when 0 then isnull(H.Cr_description, '') else 'Order Id ' + CAST(O.Id AS varchar) end) AS OrderId, " +
                                        " H.Cr_amount, H.Dr_amount, H.balance " +
                                        " FROM tblWalletCustomerHistory H " +
@@ -612,13 +655,15 @@ namespace Test0555.Controllers
                         {
 
                             WalletModel.WalletHistoryList objHistory = new WalletModel.WalletHistoryList();
-                            string date = dtmain.Rows[i]["Date"].ToString();
+                            //string date = dtmain.Rows[i]["Date"].ToString();
                             string orderId = dtmain.Rows[i]["OrderId"].ToString();
                             string CrAmt = dtmain.Rows[i]["Cr_amount"].ToString();
                             string DrAmt = dtmain.Rows[i]["Dr_amount"].ToString();
                             string balance = dtmain.Rows[i]["balance"].ToString();
+                            string crDate = dtmain.Rows[i]["Cr_date"] is DBNull ? string.Empty : Convert.ToDateTime(dtmain.Rows[i]["Cr_date"]).ToString("dd/MM/yyyy");
+                            string drDate = dtmain.Rows[i]["Dr_date"] is DBNull ? string.Empty : Convert.ToDateTime(dtmain.Rows[i]["Dr_date"]).ToString("dd/MM/yyyy");
 
-                            objHistory.Date = date;
+                            //objHistory.Date = date;
                             objHistory.Summary = orderId;
                             if (DrAmt != "0")
                             {
@@ -629,6 +674,14 @@ namespace Test0555.Controllers
                             {
                                 objHistory.CrDrAmount = CrAmt;
                                 objHistory.type = "Credit";
+                            }
+                            if (string.IsNullOrEmpty(crDate))
+                            {
+                                objHistory.Date = drDate;
+                            }
+                            else
+                            {
+                                objHistory.Date = crDate;
                             }
                             objHistory.Balance = balance;
                             objeWalletdt.WalletHistoryList.Add(objHistory);

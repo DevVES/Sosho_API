@@ -34,6 +34,9 @@ namespace Test0555.Models.WalletManagement
             public string response;
             public string message;
             public string RedeemeAmount;
+            public string RedeemableAmount;
+            public string RedeemDetails;
+            public string MinimumOrderAmount;
             public List<PromoCodeDataList> PromoCodeList { get; set; }
             //public List<CashbackDataList> CashbackList { get; set; }
 

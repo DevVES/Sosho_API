@@ -25,7 +25,8 @@ namespace Test0555.Controllers
 
                 string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
                 string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
-                string querystr = "select  * from Category where IsActive=1 and IsDeleted=0  and Createdon>='" + startdate + "' and Createdon<='" + startend + "' order by ISDefault desc";
+                //string querystr = "select  * from Category where IsActive=1 and IsDeleted=0  and Createdon>='" + startdate + "' and Createdon<='" + startend + "' order by ISDefault desc";
+                string querystr = "select  * from Category where IsActive=1 and IsDeleted=0 order by ISDefault desc";
                 DataTable dtmain = dbc.GetDataTable(querystr);
                 if (dtmain != null && dtmain.Rows.Count > 0)
                 {

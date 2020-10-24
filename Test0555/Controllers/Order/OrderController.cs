@@ -1285,7 +1285,7 @@ namespace Test0555.Controllers.Order
                         objorderdtil.CustMob = mobno;
                     }
 
-                    string OrderDetails = "select OrderItem.BuyWith,ISNULL(OrderItem.CustOfferCode,[Order].CustOfferCode) as CustOfferCode,[Order].Id as oid, (convert(varchar,[Order].CreatedOnUtc,106)+ ' '+ (CONVERT(varchar,[Order].CreatedOnUtc,108))) as OrderDate, (DATENAME(dw,CAST(DATEPART(m, [Order].CreatedOnUtc) AS VARCHAR)+ '/'+ CAST(DATEPART(d, [Order].CreatedOnUtc) AS VARCHAR)  + '/' + CAST(DATEPART(yy, [Order].CreatedOnUtc) AS VARCHAR))) +' '+convert(varchar(12),[Order].CreatedOnUtc,106)+', '+convert(varchar(12),[Order].CreatedOnUtc,108) as EndDate,ISNULL([Order].OrderMRP,0) as MRP,ISNULL([Order].OrderTotal,0)as OrderTotal,[Order].TotalQTY,isnull((select top 1 Name from Payment_Methods where [Order].PaymentGatewayId=Payment_Methods.Id),'Default') as GatwayType ,OrderStatus.[Name] as OrderStatus ,OrderStatus.Id from [Order] Inner Join OrderItem ON OrderItem.OrderId = [Order].Id LEFT Join OrderStatus on OrderStatus.Id = [Order].OrderStatusId where [Order].Id=" + OrderId + "";
+                    string OrderDetails = "select OrderItem.BuyWith,ISNULL(OrderItem.CustOfferCode,[Order].CustOfferCode) as CustOfferCode,[Order].Id as oid, (convert(varchar,[Order].CreatedOnUtc,106)+ ' '+ (CONVERT(varchar,[Order].CreatedOnUtc,108))) as OrderDate, (DATENAME(dw,CAST(DATEPART(m, [Order].CreatedOnUtc) AS VARCHAR)+ '/'+ CAST(DATEPART(d, [Order].CreatedOnUtc) AS VARCHAR)  + '/' + CAST(DATEPART(yy, [Order].CreatedOnUtc) AS VARCHAR))) +' '+convert(varchar(12),[Order].CreatedOnUtc,106)+', '+convert(varchar(12),[Order].CreatedOnUtc,108) as EndDate,ISNULL([Order].OrderMRP,0) as MRP,ISNULL([Order].PaidAmount,0) as PaidAmount,ISNULL([Order].OrderTotal,0)as OrderTotal,[Order].TotalQTY,isnull((select top 1 Name from Payment_Methods where [Order].PaymentGatewayId=Payment_Methods.Id),'Default') as GatwayType ,OrderStatus.[Name] as OrderStatus ,OrderStatus.Id from [Order] Inner Join OrderItem ON OrderItem.OrderId = [Order].Id LEFT Join OrderStatus on OrderStatus.Id = [Order].OrderStatusId where [Order].Id=" + OrderId + "";
 
                     DataTable dtorderdetails = dbCon.GetDataTable(OrderDetails);
 
@@ -1308,7 +1308,7 @@ namespace Test0555.Controllers.Order
                         string orddate = dtorderdetails.Rows[0]["OrderDate"].ToString();
                         objorderdtil.OrderDate = orddate;
 
-                        string totalamt = dtorderdetails.Rows[0]["OrderTotal"].ToString();
+                        string totalamt = dtorderdetails.Rows[0]["PaidAmount"].ToString();
                         objorderdtil.Amount = totalamt;
 
                         string totalqty = dtorderdetails.Rows[0]["TotalQTY"].ToString();

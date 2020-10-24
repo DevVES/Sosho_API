@@ -1774,7 +1774,7 @@ namespace Test0555.Controllers.Order
                         //Image Path
                         Attribuepathimg = dtAttrpathimg.Rows[0]["KeyValue"].ToString();
                     }
-                    string qry = "SELECT O.JurisdictionID,OI.ProductId, OI.AttributeId, O.Id AS OrderId, P.Name AS ProductName, " +
+                    string qry = "SELECT P.JurisdictionID,OI.ProductId, OI.AttributeId,OI.Quantity, O.Id AS OrderId, P.Name AS ProductName, " +
                                  " PL.CategoryID, isnull(cat.CategoryName, '') as CategoryName, O.TotalQty, " +
                                   " CASE WHEN GETDATE() BETWEEN P.StartDate AND P.EndDate THEN 0 ELSE 1 END AS 'ISOfferExpired', OI.BannerProductType, " +
                                  " ISNULL(OI.BannerId, 0) AS BannerId, IM.Title AS ITitle, HM.Title AS HTitle, ISNULL(Im.ImageName,'') AS IImageName, " +
@@ -1823,7 +1823,7 @@ namespace Test0555.Controllers.Order
                             }
                             if (Convert.ToInt32(dtProductList.Rows[j]["TotalQty"]) > 0)
                             {
-                                sTotalQty = Convert.ToInt32(dtProductList.Rows[j]["TotalQty"]).ToString();
+                                sTotalQty = Convert.ToInt32(dtProductList.Rows[j]["Quantity"]).ToString();
                             }
                             sEdate = dtProductList.Rows[j]["edate"].ToString();
                             sProductName = dtProductList.Rows[j]["ProductName"].ToString();
@@ -1910,12 +1910,14 @@ namespace Test0555.Controllers.Order
                                     sAsoshoPrice = dtAttdetails.Rows[n]["SoshoPrice"].ToString();
                                     sAweight = dtAttdetails.Rows[n]["DUnit"].ToString();
                                     sAImage = dtAttdetails.Rows[n]["ProductImage"].ToString();
-                                    if (dtAttdetails.Rows[n]["isOutOfStock"].ToString() == "1")
-                                        bAisOutOfStock = true;
-                                    else
-                                        bAisOutOfStock = false;
+                                //if (dtAttdetails.Rows[n]["isOutOfStock"].ToString() == "1")
+                                //    bAisOutOfStock = true;
+                                //else
+                                //    bAisOutOfStock = false;
 
-                                    sisSelected = dtAttdetails.Rows[n]["isSelectedDetails"].ToString();
+                                bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[n]["isOutOfStock"].ToString());
+
+                                sisSelected = dtAttdetails.Rows[n]["isSelectedDetails"].ToString();
                                     sisQtyFreeze = dtAttdetails.Rows[n]["IsQtyFreeze"].ToString();
 
                                     attributelist.Mrp = Convert.ToDouble(sAMrp);

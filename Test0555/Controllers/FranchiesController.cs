@@ -1,4 +1,5 @@
-﻿using InquiryManageAPI.Controllers;
+﻿using GarageXAPINEW;
+using InquiryManageAPI.Controllers;
 using System;
 using System.Web.Http;
 using static Test0555.Models.Frenchies.FranchiesModel;
@@ -26,6 +27,7 @@ namespace Test0555.Controllers
                     objFranchies.response = "1";
                     objFranchies.FranchieId = sourceid.ToString();
                     objFranchies.message = "Franchie Detail Save Successfully";
+                    ClsCommon.SendFranchiesEmail(model.Email,model.Name, model.Mobile, model.Address, model.PinCode);
                 }
                 else
                 {

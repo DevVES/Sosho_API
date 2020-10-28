@@ -26,7 +26,7 @@ namespace Test0555.Controllers
                 {
                     objFranchies.response = "1";
                     objFranchies.FranchieId = sourceid.ToString();
-                    objFranchies.message = "Franchisee Detail Save Successfully";
+                    objFranchies.message = "Thank you for registering. We will contact you very soon!";
                     ClsCommon.SendFranchiesEmail(model.Email,model.Name, model.Mobile, model.Address, model.PinCode);
                 }
                 else

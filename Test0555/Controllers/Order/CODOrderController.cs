@@ -1853,12 +1853,12 @@ namespace Test0555.Controllers.Order
                             if (sItemType == "2")
                             {
                                 objProdList.Title = sITitle;
-                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["IImageName"].ToString();
+                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["HImageName"].ToString();
                             }
                             else if (sItemType == "3")
                             {
                                 objProdList.Title = sHTitle;
-                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["HImageName"].ToString();
+                                objProdList.bannerURL = urlpath + dtProductList.Rows[j]["IImageName"].ToString();
                             }
                             else 
                             {

@@ -262,10 +262,13 @@ namespace Test0555.Controllers
                                     sAsoshoPrice = dtAttdetails.Rows[nCtr]["SoshoPrice"].ToString();
                                     sAweight = dtAttdetails.Rows[nCtr]["DUnit"].ToString();
                                     sAImage = dtAttdetails.Rows[nCtr]["ProductImage"].ToString();
-                                    if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
-                                        bAisOutOfStock = true;
-                                    else
-                                        bAisOutOfStock = false;
+
+                                    bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString());
+
+                                    //if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
+                                    //    bAisOutOfStock = true;
+                                    //else
+                                    //    bAisOutOfStock = false;
 
                                     sisSelected = dtAttdetails.Rows[nCtr]["isSelectedDetails"].ToString();
                                     sisbestbuy = dtAttdetails.Rows[nCtr]["IsBestBuy"].ToString();
@@ -497,10 +500,13 @@ namespace Test0555.Controllers
                                             sAsoshoPrice = dtAttdetails.Rows[jCtr]["SoshoPrice"].ToString();
                                             sAweight = dtAttdetails.Rows[jCtr]["DUnit"].ToString();
                                             sAImage = dtAttdetails.Rows[jCtr]["ProductImage"].ToString();
-                                            if (dtAttdetails.Rows[jCtr]["isOutOfStock"].ToString() == "1")
-                                                bAisOutOfStock = true;
-                                            else
-                                                bAisOutOfStock = false;
+
+                                            bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[jCtr]["isOutOfStock"].ToString());
+
+                                            //if (dtAttdetails.Rows[jCtr]["isOutOfStock"].ToString() == "1")
+                                            //    bAisOutOfStock = true;
+                                            //else
+                                            //    bAisOutOfStock = false;
 
                                             sisSelected = dtAttdetails.Rows[jCtr]["isSelectedDetails"].ToString();
                                             sisbestbuy = dtAttdetails.Rows[jCtr]["IsBestBuy"].ToString();

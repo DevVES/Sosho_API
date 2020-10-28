@@ -140,7 +140,15 @@ namespace Test0555.Controllers
                         {
                             if (Walletpertype == "Fixed")
                             {
-                                objRedeemeWalletdt.RedeemableAmount = WalletperAmt.ToString();
+                                if (WalletperAmt > Convert.ToDecimal(balAmt))
+                                {
+                                    objRedeemeWalletdt.RedeemableAmount = balAmt;
+                                }
+                                else
+                                {
+                                    objRedeemeWalletdt.RedeemableAmount = WalletperAmt.ToString();
+                                }
+                                //objRedeemeWalletdt.RedeemableAmount = WalletperAmt.ToString();
                                 objRedeemeWalletdt.RedeemDetails = "Per transaction maximum applicable wallet money is ₹ "+ WalletperAmt;
                             }
                             else if(Walletpertype == "%")

@@ -72,14 +72,15 @@ namespace Test0555.Controllers
                                      "  ISNULL(P.MinQty,0) AS MinQty, " +
                                      " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
                                      " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(CL.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
-                                     " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
+                                     " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(P.Id, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
                                      " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
                                      " ISNULL(PA.AttributeId,0) AS AttributeId, ISNULL(AC.CategoryName,'') AS ActionCategory,ISNULL(Im.CategoryId,0) AS ActionCategoryId " +
                                      " From HomepageBanner Im " +
                                      " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                                      " Left join category cg on  cg.categoryId = CL.categoryId " +
                                      " Left join category Ac on  AC.CategoryID = Im.categoryId " +
-                                     " Left join Product P on  P.Id = Im.ProductId " +
+                                     "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") " +
+                                     //"Left join Product P on  P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID +
                                      " Left join UnitMaster U on U.Id = P.UnitId " +
                                      " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
                                      " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
@@ -280,10 +281,13 @@ namespace Test0555.Controllers
                                         sAsoshoPrice = dtAttdetails.Rows[nCtr]["SoshoPrice"].ToString();
                                         sAweight = dtAttdetails.Rows[nCtr]["DUnit"].ToString();
                                         sAImage = dtAttdetails.Rows[nCtr]["ProductImage"].ToString();
-                                        if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
-                                            bAisOutOfStock = true;
-                                        else
-                                            bAisOutOfStock = false;
+
+                                        bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString());
+
+                                        //if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
+                                        //    bAisOutOfStock = true;
+                                        //else
+                                        //    bAisOutOfStock = false;
 
                                         sisSelected = dtAttdetails.Rows[nCtr]["isSelectedDetails"].ToString();
                                         sisbestbuy = dtAttdetails.Rows[nCtr]["IsBestBuy"].ToString();
@@ -470,10 +474,12 @@ namespace Test0555.Controllers
                                     sAsoshoPrice = dtAttdetails.Rows[j]["SoshoPrice"].ToString();
                                     sAweight = dtAttdetails.Rows[j]["DUnit"].ToString();
                                     sAImage = dtAttdetails.Rows[j]["ProductImage"].ToString();
-                                    if (dtAttdetails.Rows[j]["isOutOfStock"].ToString() == "1")
-                                        bAisOutOfStock = true;
-                                    else
-                                        bAisOutOfStock = false;
+                                    //if (dtAttdetails.Rows[j]["isOutOfStock"].ToString() == "1")
+                                    //    bAisOutOfStock = true;
+                                    //else
+                                    //    bAisOutOfStock = false;
+
+                                    bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[j]["isOutOfStock"].ToString());
 
                                     sisSelected = dtAttdetails.Rows[j]["isSelectedDetails"].ToString();
                                     sisbestbuy = dtAttdetails.Rows[j]["IsBestBuy"].ToString();
@@ -571,7 +577,7 @@ namespace Test0555.Controllers
                              " ISNULL(P.MinQty,0) AS MinQty, " +
                              " ISNULL(P.ProductMRP,0) AS MRP, Isnull(cast(cast(P.Discount as decimal(10,2)) AS FLOAT),'') AS Discount," +
                              " ISNULL(P.SoshoPrice,0) AS SellingPrice,Im.Id, Isnull(Im.ActionId,0) As ActionId, ISNULL(Im.Action,'') AS Action, ISNULL(CL.CategoryId,0) AS CategoryId, ISNULL(Im.Link,'') AS Link, " +
-                             " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(Im.ProductId, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
+                             " ISNULL(Im.ImageName,'') AS ImageName, ISNULL(P.Id, 0) AS ProductId, ISNULL(P.IsQtyFreeze,0) AS  IsQtyFreeze, ISNULL(P.Unit,0) AS Weight, " +
                              " ISNULL(U.UnitName ,'') AS UnitName, ISNULL(Im.Title,'') AS Title, " +
                              " ISNULL(PA.AttributeId,0) AS AttributeId, " +
                              " ISNULL(P.SubCategoryId,0) AS SubCategoryId,ISNULL(SC.SubCategory,'') AS SubCategoryName, " +
@@ -580,7 +586,8 @@ namespace Test0555.Controllers
                              " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                              " Left join category cg on  cg.categoryId = CL.categoryId " +
                              " Left join category Ac on  AC.CategoryID = Im.categoryId " +
-                             " Left join Product P on  P.Id = Im.ProductId " +
+                             "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") " +
+                             //"Left join Product Pm on  Pm.ProductMasterId = Im.ProductId and Pm.JurisdictionId = " + JurisdictionID +
                              " Left join tblSubCategory SC on SC.Id = P.SubCategoryId  " +
                              " Left join UnitMaster U on U.Id = P.UnitId " +
                              " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
@@ -739,10 +746,13 @@ namespace Test0555.Controllers
                                     sAsoshoPrice = dtAttdetails.Rows[nCtr]["SoshoPrice"].ToString();
                                     sAweight = dtAttdetails.Rows[nCtr]["DUnit"].ToString();
                                     sAImage = dtAttdetails.Rows[nCtr]["ProductImage"].ToString();
-                                    if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
-                                        bAisOutOfStock = true;
-                                    else
-                                        bAisOutOfStock = false;
+
+                                    bAisOutOfStock = Convert.ToBoolean(dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString());
+
+                                    //if (dtAttdetails.Rows[nCtr]["isOutOfStock"].ToString() == "1")
+                                    //    bAisOutOfStock = true;
+                                    //else
+                                    //    bAisOutOfStock = false;
 
                                     sisSelected = dtAttdetails.Rows[nCtr]["isSelectedDetails"].ToString();
                                     sisbestbuy = dtAttdetails.Rows[nCtr]["IsBestBuy"].ToString();

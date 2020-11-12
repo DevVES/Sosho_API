@@ -1841,7 +1841,7 @@ namespace Test0555.Controllers.Order
                             objProdList.isOfferExpired = sIsExpired;
                             objProdList.OfferEndDate = sEdate;
                             objProdList.bannerId = sBannerId;
-                            objProdList.Quantity = Convert.ToInt32(sTotalQty);
+                            //objProdList.Quantity = Convert.ToInt32(sTotalQty);
                             if (sJurisdictionId == JurisdictionId)
                             {
                                 objProdList.isProductAvailable = true;
@@ -1872,17 +1872,17 @@ namespace Test0555.Controllers.Order
                                                      " pam.Id,pam.ProductId,pam.Unit,pam.UnitId,pam.Mrp,pam.DiscountType,pam.SoshoPrice, " +
                                                      " pam.PackingType,pam.ProductImage, pam.IsActive,pam.IsDeleted,pam.CreatedOn,pam.CreatedBy," +
                                                      " pam.isOutOfStock,case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, " +
-                                                     " pam.MaxQty, pam.MinQty,case when isnull(IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze " +
-                                                     " FROM Product_ProductAttribute_Mapping pam " +
+                                                     " pam.MaxQty, pam.MinQty,OI.Quantity,case when isnull(IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze " +
+                                                     " FROM Product_ProductAttribute_Mapping pam INNER JOIN OrderItem OI ON OI.AttributeId = pam.Id INNER JOIN [Order] o ON o.Id = OI.OrderId " +
                                                      " inner join Unitmaster um on um.id=pam.UnitId " +
-                                                     " where pam.id=" + sAttributeId + " and pam.IsActive=1 and pam.IsDeleted = 0";
+                                                     " where pam.id=" + sAttributeId + " and pam.IsActive=1 and pam.IsDeleted = 0 and o.Id=" + OrderId;
                             DataTable dtAttdetails = dbCon.GetDataTable(AttImageDetails);
                             List<ProductAttributelist> objAttrList = new List<ProductAttributelist>();
                             if (dtAttdetails != null && dtAttdetails.Rows.Count > 0)
                             {
                                 string sAMrp = "", sADiscount = "", sAPackingType = "", sAsoshoPrice = "", sAweight = "", sApackSizeId = "", sAImage = "";
                                 string sAPDiscount = "", sisSelected = "", sisQtyFreeze = "";
-                                string sMaxQty = "", sMinQty = "";
+                                string sMaxQty = "", sMinQty = "", sQty = string.Empty;
                                 Boolean bAisOutOfStock = false;
                                 for (int n = 0; n < dtAttdetails.Rows.Count; n++)
                                 {
@@ -1891,9 +1891,10 @@ namespace Test0555.Controllers.Order
                                     sAMrp = dtAttdetails.Rows[n]["Mrp"].ToString();
                                     sMinQty = dtAttdetails.Rows[n]["MinQty"].ToString();
                                     sMaxQty = dtAttdetails.Rows[n]["MaxQty"].ToString();
+                                sQty = Convert.ToInt32(dtAttdetails.Rows[n]["Quantity"]).ToString();
 
 
-                                    sADiscount = dtAttdetails.Rows[n]["Discount"].ToString();
+                                sADiscount = dtAttdetails.Rows[n]["Discount"].ToString();
                                     if (sADiscount.ToString() != "0")
                                     {
                                         if (dtAttdetails.Rows[n]["DiscountType"].ToString() == "%")
@@ -1931,7 +1932,8 @@ namespace Test0555.Controllers.Order
                                     attributelist.isQtyFreeze = Convert.ToBoolean(sisQtyFreeze);
                                     attributelist.MinQty = Convert.ToInt32(sMinQty);
                                     attributelist.MaxQty = Convert.ToInt32(sMaxQty);
-                                    attributelist.AttributeId = sApackSizeId;
+                                attributelist.Quantity = Convert.ToInt32(sQty);
+                                attributelist.AttributeId = sApackSizeId;
                                     objAttrList.Add(attributelist);
                                 }
                                 objProdList.ProductAttributesList = objAttrList;
@@ -1950,7 +1952,6 @@ namespace Test0555.Controllers.Order
                 Logger.InsertLogs(Logger.InvoiceLOGS.InvoiceLogLevel.Error, "", 0, false, "", ex.StackTrace);
             }
             return objeprodt;
-        }
-
+        }        
     }
 }

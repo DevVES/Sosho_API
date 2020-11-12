@@ -71,7 +71,9 @@ namespace Test0555.Controllers
                             string smstext = "";
                             if(FromApp=="1")
                             {
-                                smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho. "+ otphashkey;
+                                //smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho. "+ otphashkey;
+                                smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho.@" + otphashkey;
+                                smstext = smstext.Replace("@", System.Environment.NewLine);
                             }
                             else
                             {

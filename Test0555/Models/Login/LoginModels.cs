@@ -34,8 +34,8 @@ namespace Test0555.Models
             public string Version = "";
             public string VersionCode = "";
             public bool IsForceUpdate = false;
-            public string PlayStoreURL1 = "https://play.google.com/store/apps/details?id=com.sosho.android";
-            public string PlayStoreURL2 = "market://details?id=com.sosho.android";
+            public string PlayStoreURL2 = "https://play.google.com/store/apps/details?id=com.sosho.android";
+            public string PlayStoreURL1 = "market://details?id=com.sosho.android";
         }
 
     }

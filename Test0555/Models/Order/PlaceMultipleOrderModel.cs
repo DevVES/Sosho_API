@@ -133,7 +133,7 @@ namespace Test0555.Models.Order
         public string CategoryName;
         public string ProductId;
         public string ProductName;
-        public int Quantity;
+        //public int Quantity;
         public string OfferEndDate;
         public string ItemType;
         public string Title;
@@ -159,5 +159,6 @@ namespace Test0555.Models.Order
         public int MaxQty;
         public string AttributeId;
         public string AImageName;
+        public int Quantity;
     }
 }

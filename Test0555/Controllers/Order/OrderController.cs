@@ -1629,7 +1629,7 @@ namespace Test0555.Controllers.Order
                         //}
                         //}
 
-                        string qry1 = "select ISNULL(OrderItem.BannerProductType,0) AS BannerProductType, Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId  where [Order].Id=" + OrderId;
+                        string qry1 = "select ISNULL(OrderItem.BannerProductType,0) AS BannerProductType, Product.Id as ProductId,  Product.Mrp, Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) as pedate , (CONVERT(varchar ,Product.EndDate,100)) as pedate1, [Order].Id as orderid, OrderItem.Id as orderitemid,OrderItem.BuyWith,OrderItem.Quantity,Product.Name,pam.PackingType,pam.Unit + ' - ' + um.UnitName as Weight,Convert(int,Product.ProductMrp) as ProductMrp from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId Inner Join Product_ProductAttribute_Mapping pam ON pam.Id = [OrderItem].AttributeId inner join Unitmaster um on um.id=pam.UnitId  where [Order].Id=" + OrderId;
 
                         //
                         DataTable dt = dbCon.GetDataTable(qry1);
@@ -1745,7 +1745,7 @@ namespace Test0555.Controllers.Order
                             list.Add(new OrderModels.finallistprod
                             {
                                 BannerProductType = BannerProductType,
-                                ProductName = dt.Rows[i]["Name"].ToString(),
+                                ProductName = string.IsNullOrEmpty(dt.Rows[i]["PackingType"].ToString()) ? dt.Rows[i]["Name"].ToString() +" (" + dt.Rows[i]["Weight"].ToString() + ")" : dt.Rows[i]["Name"].ToString() +", "+ dt.Rows[i]["PackingType"].ToString() + " (" + dt.Rows[i]["Weight"].ToString() + ")",
                                // msg = mess,
                                 Qty = dt.Rows[i]["Quantity"].ToString()
                                 //whatsappmsg = whatsappmsg

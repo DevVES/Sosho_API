@@ -221,7 +221,7 @@ namespace Test0555.Controllers
                             Productsearch.Name = dr["Name"].ToString();
                             Productsearch.PageType = "3";
                             Productsearch.CategoryId = dr["CategoryId"].ToString();
-                            Productsearch.SubCategoryId = dr["Link"].ToString(); 
+                            Productsearch.SubCategoryId = dr["Link"].ToString();
                             Productsearch.ProductId = dr["ID"].ToString();
                             Productsearch.CategoryName = dr["CategoryName"].ToString();
                             Productsearch.SubCategoryName = dr["SubCategoryName"].ToString();
@@ -240,7 +240,7 @@ namespace Test0555.Controllers
                     objectToSerialize.resultflag = "0";
                     objectToSerialize.Message = "Service is not available";
                 }
-                
+
             }
             catch (Exception err)
             {
@@ -623,12 +623,20 @@ namespace Test0555.Controllers
                 if (Tablename == "Product")
                 {
                     append1 = ",(" + append1 + ") as Name1";
-                    query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN tblCategoryProductLink cpl on pm.Id = cpl.ProductId Where pm.JurisdictionID=" + JurisdictionID;
+                    query = "select *" + append + append1 + " from " + Tablename + " pm INNER JOIN tblCategoryProductLink cpl on pm.Id = cpl.ProductId INNER JOIN Category c ON c.CategoryID = cpl.CategoryId Where pm.JurisdictionID=" + JurisdictionID + " and isnull(pm.IsActive,0) = 1 and isnull(c.IsActive,0) = 1 and pm.StartDate<='" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "' and pm.EndDate>= '" + dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss") + "'";
                 }
                 else
                 {
                     append1 = ",(" + append1 + ") as Name1";
-                    query = "select *" + append + append1 + " from " + Tablename;
+                    if(Tablename == "tblSubCategory")
+                    {
+                        query = "select *,(replace(replace((isnull(SubCategory,'')), '''', ''),'’','')) as Name,(isnull(SubCategory,'')) as Name1 ";
+                        query += " from tblSubCategory sb ";
+                        query += " inner join Category cg on sb.CategoryId = cg.CategoryId ";
+                        query += " Where isnull(sb.IsActive, 0) = 1 and isnull(cg.IsActive,0) = 1";
+                    }
+                    else
+                        query = "select *" + append + append1 + " from " + Tablename + " Where isnull(IsActive,0) = 1";
                 }
 
                 DataTable dt = dbc.GetDataTable(query);

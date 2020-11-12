@@ -29,7 +29,8 @@ namespace Test0555.Controllers
             LowToHigh = 1,
             HighToLow = 2,
             Discount = 3,
-            SoshoRecommended = 4
+            SoshoRecommended = 4,
+            Default = 0
         }
         public enum BannerActionType
         {
@@ -41,7 +42,7 @@ namespace Test0555.Controllers
 
         [HttpGet]
         //02-10-2020 Developed By :- Vidhi Doshi
-        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1, string InterBannerid = "",int SearchProductId=-1)
+        public ProductModel.getNewproduct GetDashBoardProductDetails(string JurisdictionID, int CategoryId = -1, int SubCategoryId = -1, string ProductId = "", string StartNo = "", string EndNo = "", int Filter = 1, string InterBannerid = "", int SearchProductId = -1)
         {
             ProductModel.getNewproduct objeprodt = new ProductModel.getNewproduct();
             try
@@ -49,9 +50,11 @@ namespace Test0555.Controllers
                 int iBannerPosition = (ConfigurationManager.AppSettings["BannerPosition"] != null && ConfigurationManager.AppSettings["BannerPosition"].Trim() != "") ? Convert.ToInt16(ConfigurationManager.AppSettings["BannerPosition"].Trim()) : 0;
                 //EndNo = (iBannerPosition + 1).ToString();
                 int response = 0;
-                EndNo = ((Convert.ToInt32(StartNo)-1)+ iBannerPosition).ToString();
-                string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
-                string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
+                EndNo = ((Convert.ToInt32(StartNo) - 1) + iBannerPosition).ToString();
+                //string startdate = dbc.getindiantime().AddDays(-50).ToString("dd/MMM/yyyy") + " 00:00:00";
+                //string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
+                string startdate = dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss");
+                string startend = dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss");
                 string sWhatappNo = "";
                 string subquerystr = "select isnull(Mobile,'') as Mobile From users where JurisdictionID =  " + JurisdictionID;
                 DataTable dtsubmain = dbc.GetDataTable(subquerystr);
@@ -79,12 +82,12 @@ namespace Test0555.Controllers
                                      " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                                      " Left join category cg on  cg.categoryId = CL.categoryId " +
                                      " Left join category Ac on  AC.CategoryID = Im.categoryId " +
-                                     "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") " +
+                                     "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + " and P.ProductMasterId <> 0 ) " +
                                      //"Left join Product P on  P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID +
                                      " Left join UnitMaster U on U.Id = P.UnitId " +
                                      " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
                                      " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
-                                     " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate +
+                                     " where Im.IsActive=1 and Im.IsDeleted=0 and Im.EndDate>='" + startdate +
                                      "' and Im.StartDate<='" + startend + "'" +
                                      condstr;
                 if (CategoryId > 0)
@@ -315,9 +318,9 @@ namespace Test0555.Controllers
                         }
                         response = 1;
                     }
-                    
+
                 }
-                
+
                 //string querymain = " with pte as ( select TOP " + iBannerPosition + " ROW_NUMBER() over(order by convert(int,Isnull(Product.DisplayOrder,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
                 //string querymain = " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(order by convert(int,Isnull(Product.id,'0'))) as RowNumber,  Product.id as Pid, [Product].[IsQtyFreeze],";
                 string rownumfield = string.Empty;
@@ -328,6 +331,9 @@ namespace Test0555.Controllers
                         break;
                     case (int)FilterRate.HighToLow:
                         rownumfield = "order by convert(int,Isnull(Product.SoshoPrice,'0')) desc";
+                        break;
+                    case (int)FilterRate.Default:
+                        rownumfield = "order by Convert(int,ISNULL(Product.DisplayOrder,'0'))";
                         break;
                     default:
                         rownumfield = "order by convert(int,Isnull(Product.Id,'0'))";
@@ -362,7 +368,7 @@ namespace Test0555.Controllers
                 {
                     querymain += " and PL.SubCategoryID =" + SubCategoryId;
                 }
-                if(SearchProductId > 0)
+                if (SearchProductId > 0)
                 {
                     querymain += " and Product.Id =" + SearchProductId;
                 }
@@ -385,6 +391,10 @@ namespace Test0555.Controllers
                 if (Filter == FilterRate.HighToLow.GetHashCode())
                 {
                     querymain += " Order by Product.SoshoPrice DESC ";
+                }
+                if (Filter == FilterRate.Default.GetHashCode())
+                {
+                    querymain += " Order by Convert(int,ISNULL(Product.DisplayOrder,'0'))";
                 }
 
                 querymain += " ) select * From pte where RowNumber between " + StartNo + " and " + EndNo;
@@ -411,7 +421,7 @@ namespace Test0555.Controllers
                     }
 
                     response = 1;
-                    
+
                     string sProductId = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSold = "", sProductBanner = "";
                     string sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sIsSoshoRecommended = "";
                     string sIsSpecialMessage = "", sProductDiscription = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription = "";
@@ -592,18 +602,18 @@ namespace Test0555.Controllers
                              " Left join UnitMaster U on U.Id = P.UnitId " +
                              " Left join JurisdictionBanner JB on JB.BannerId = Im.Id " +
                              " Left join (SELECT ProductId, ISNULL(ID,0) AS AttributeId  FROM Product_ProductAttribute_Mapping WHERE ISSelected = 1 ) PA on  P.Id = PA.ProductId " +
-                             " where Im.IsActive=1 and Im.IsDeleted=0 and Im.StartDate>='" + startdate +
+                             " where Im.IsActive=1 and Im.IsDeleted=0 and Im.EndDate>='" + startdate +
                              "' and Im.StartDate<='" + startend + "'" +
                              cond;
                     if (CategoryId > 0)
                     {
                         qry += " and CL.CategoryID =" + CategoryId;
                     }
-                    if(InterBannerid != "0" && !string.IsNullOrEmpty(InterBannerid))
+                    if (InterBannerid != "0" && !string.IsNullOrEmpty(InterBannerid))
                     {
                         qry += " and Im.Id NOT IN (" + InterBannerid + ")";
                     }
-                    
+
                     qry += "  order by Im.Id desc";
                     DataTable dtInterBanner = dbc.GetDataTable(qry);
                     ProductModel.NewProductDataList objBannerProduct = new ProductModel.NewProductDataList();
@@ -780,7 +790,7 @@ namespace Test0555.Controllers
                         }
                     }
                 }
-                
+
                 if (response == 1)
                 {
                     objeprodt.response = "1";
@@ -2135,7 +2145,7 @@ namespace Test0555.Controllers
                 else
                 {
                     append1 = ",(" + append1 + ") as Name1";
-                query = "select *" + append + append1 + " from " + Tablename;
+                    query = "select *" + append + append1 + " from " + Tablename;
                 }
                 //SqlDataAdapter sqladapter = new SqlDataAdapter(query, sqlcon);
                 //sqladapter.Fill(dt);
@@ -2221,10 +2231,10 @@ namespace Test0555.Controllers
             //    drnew["Type"] = Convert.ToInt64(dr[1].ToString());
             drnew["SearchType"] = SearchType;
             //if (SearchType != 1)
-            if(Type ==3)
+            if (Type == 3)
                 drnew["CategoryId"] = dr[55].ToString();
             else
-            drnew["CategoryId"] = dr[1].ToString();
+                drnew["CategoryId"] = dr[1].ToString();
             //else if (SearchType == 1)
             //    drnew["CategoryId"] = Convert.ToInt64(dr[0].ToString());
             string strAppend = "";
@@ -2399,6 +2409,308 @@ namespace Test0555.Controllers
                 sb.Append(recordSplitPattern);
 
                 sb.Append(newRecordPattern);
+            }
+        }
+
+        [HttpGet]
+        public ProductModel.getPreviousProduct GetPreviousProductDetails(string CustomerID, string JurisdictionID, string StartNo = "", string EndNo = "", int Filter = 1)
+        {
+            ProductModel.getPreviousProduct objeprodt = new ProductModel.getPreviousProduct();
+            try
+            {
+                int response = 0;
+                EndNo = ((Convert.ToInt32(StartNo) - 1) + 30).ToString();
+                //string startdate = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 00:00:00";
+                //string startend = dbc.getindiantime().ToString("dd/MMM/yyyy") + " 23:59:59";
+                string startdate = dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss");
+                string startend = dbc.getindiantime().ToString("dd/MMM/yyyy HH:mm:ss");
+                string sWhatappNo = "";
+                string subquerystr = "select isnull(Mobile,'') as Mobile From users where JurisdictionID =  " + JurisdictionID;
+                DataTable dtsubmain = dbc.GetDataTable(subquerystr);
+                if (dtsubmain != null && dtsubmain.Rows.Count > 0)
+                {
+                    sWhatappNo = dtsubmain.Rows[0]["Mobile"].ToString();
+                }
+
+                objeprodt.ProductList = new List<ProductModel.ReOrderProductList>();
+                ProductModel.ProductAttributelist attributeHomePagelist = new ProductModel.ProductAttributelist();
+
+                string rownumfield = string.Empty;
+                switch (Filter)
+                {
+                    case (int)FilterRate.LowToHigh:
+                        rownumfield = "order by convert(int,Isnull(Product.SoshoPrice,'0'))";
+                        break;
+                    case (int)FilterRate.HighToLow:
+                        rownumfield = "order by convert(int,Isnull(Product.SoshoPrice,'0')) desc";
+                        break;
+                    default:
+                        rownumfield = "order by pam.prodcount desc";
+                        break;
+                }
+
+                string querystr = string.Empty;
+                querystr += " with pte as ( select TOP " + EndNo + " ROW_NUMBER() over(" + rownumfield + ") as RowNumber, ";
+                querystr += " Product.id as Pid, ";
+                querystr += " (select top 1 taxvalue from GstTaxCategory where GstTaxCategory.id = Product.GstTaxId) as Tax, ";
+                querystr += " pm.unit + ' - ' + UnitMaster.UnitName as DUnit, ";
+                querystr += " (CONVERT(varchar, EndDate, 103) + ' ' + CONVERT(varchar, EndDate, 108)) as edate, ";
+                querystr += " CONVERT(varchar(12), EndDate, 107) + ' ' + CONVERT(varchar(20), EndDate, 108) as Enddate1,   ";
+                querystr += " isnull(cat.CategoryName, '') as CategoryName, ";
+                querystr += " isnull(Name, '') as [Name], ";
+                querystr += " isnull(sold, '') as [sold], ";
+                querystr += " isnull(ProductBanner, '') as ProductBanner,  ";
+                querystr += " isnull(DisplayOrder, '') as DisplayOrder, ";
+                querystr += " isnull(Recommended, '') as Recommended, ";
+                querystr += " isnull(ProductDiscription, '') as ProductDiscription, ";
+                querystr += " isnull(Note, '') as Note, ";
+                querystr += " isnull(KeyFeatures, '') as KeyFeatures,  ";
+                querystr += " case when isnull(ProductDiscription,'') = '' then 'false' else 'true' end as IsProductDetails,  ";
+                querystr += " case when isnull(ProductTemplateID,'') = '2' then 'true' else 'false' end as Productvariant,  ";
+                querystr += " case when isnull(Recommended,'') = '' then 'false' else 'true' end as IsSoshoRecommended, ";
+                querystr += " case when isnull(ProductBanner,'') = '' then 'false' else 'true' end as IsSpecialMessage, ";
+                querystr += " PL.CategoryID, ";
+                querystr += " pm.Mrp AS mrp, ";
+                querystr += " Isnull(cast(cast(pm.discount as decimal(10,2)) AS FLOAT),'') AS Discount,  ";
+                querystr += " pm.DiscountType, ";
+                querystr += " pm.SoshoPrice, ";
+                querystr += " pm.MaxQty, ";
+                querystr += " pm.MinQty, ";
+                querystr += " case when isnull(IsProductDescription,'') = '1' then 'true' else 'false' end as IsProductDescription, ";
+                querystr += " case when isnull(IsFreeShipping,'') = '' then 'false' else 'true' end as IsFreeShipping, ";
+                querystr += " PL.SubCategoryID, ";
+                querystr += " pm.ID, ";
+                querystr += " pm.Unit, ";
+                querystr += " pm.UnitId, ";
+                querystr += " pm.ProductImage, pm.IsActive,pm.IsDeleted,pm.CreatedOn,pm.CreatedBy,";
+                querystr += " case when isnull(IsBestBuy,'') = '' then 'false' else 'true' end as IsBestBuy, ";
+                querystr += " case when isnull(IsFixedShipping,'') = '' then 'false' else 'true' end as IsFixedShipping,  ";
+                querystr += " case when isnull(pm.IsQtyFreeze,'') = '' then 'false' else 'true' end as IsQtyFreeze, ";
+                querystr += " FixedShipRate, ";
+                querystr += " isnull(Scat.SubCategory, '') as SubCategoryName , ";
+                querystr += " isnull(pm.packingtype, '') as PackingType, ";
+                querystr += " case when isnull(isSelected,'') = '' then 'false' else 'true' end as isSelectedDetails, ";
+                querystr += " (select max(aa.Quantity) from OrderItem aa ";
+                querystr += "   inner join [Order] o on o.id = aa.OrderId ";
+                querystr += "   where aa.AttributeId = pam.AttributeId and o.CustomerId = pam.customerid) as OrderedQuantity, ";
+                querystr += " pm.isOutOfStock, pam.prodcount ";
+                querystr += " from Product ";
+                querystr += " inner join Product_ProductAttribute_Mapping pm on pm.ProductId = Product.id ";
+                querystr += " LEFT join tblCategoryProductLink PL on PL.ProductId = Product.Id ";
+                querystr += " inner join Unitmaster on Unitmaster.id = pm.UnitId ";
+                querystr += " inner join Category cat on cat.CategoryID = PL.CategoryID ";
+                querystr += " inner join tblSubCategory Scat on Scat.Id = PL.SubCategoryID ";
+                querystr += " inner join ";
+                querystr += " (select count(*) as prodcount, AttributeId as AttributeID, o.customerid as customerid from[order] o ";
+                querystr += " inner join[OrderItem] oi on oi.OrderId = o.Id ";
+                querystr += " where o.customerid = " + CustomerID + " and o.jurisdictionid = " + JurisdictionID + " ";
+                querystr += " group by oi.AttributeId, o.customerid) pam on pam.AttributeID = pm.id ";
+                querystr += " Where StartDate<= '" + startdate + "' and EndDate>= '" + startend + "' ";
+                querystr += " and Product.IsActive = 1 ";
+                querystr += " and Product.IsDeleted = 0 ";
+                querystr += " and Isnull(Product.IsApproved,0) = 1 ";
+                querystr += " and pm.IsActive = 1 and pm.IsDeleted = 0 ";
+                querystr += " and Product.JurisdictionID = " + JurisdictionID + " ";
+
+                if (Filter == FilterRate.SoshoRecommended.GetHashCode())
+                {
+                    querystr += " and ISNULL(Recommended,'') != '' ";
+                }
+                if (Filter == FilterRate.Discount.GetHashCode())
+                {
+                    querystr += " and ISNULL(pm.Discount,0) > 0 ";
+                }
+                if (Filter == FilterRate.LowToHigh.GetHashCode())
+                {
+                    querystr += " Order by Product.SoshoPrice ";
+                }
+                if (Filter == FilterRate.HighToLow.GetHashCode())
+                {
+                    querystr += " Order by Product.SoshoPrice DESC ";
+                }
+                if (Filter == FilterRate.Default.GetHashCode())
+                {
+                    querystr += "order by pam.prodcount desc ";
+                }
+                querystr += " ) select * From pte where RowNumber between " + StartNo + " and " + EndNo;
+
+                DataTable dtmain = dbc.GetDataTable(querystr);
+
+                if (dtmain != null && dtmain.Rows.Count > 0)
+                {
+                    string querydata = "select KeyValue from StringResources where KeyName='ProductImageUrl'";
+                    DataTable dtpathimg = dbc.GetDataTable(querydata);
+                    string urlpathimg = "", Attribuepathimg = "";
+                    if (dtpathimg != null && dtpathimg.Rows.Count > 0)
+                    {
+                        //Image Path
+                        urlpathimg = dtpathimg.Rows[0]["KeyValue"].ToString();
+                    }
+                    string Attributedata = "select KeyValue from StringResources where KeyName='ProductAttributeImageUrl'";
+                    DataTable dtAttrpathimg = dbc.GetDataTable(Attributedata);
+                    if (dtAttrpathimg != null && dtAttrpathimg.Rows.Count > 0)
+                    {
+                        //Image Path
+                        Attribuepathimg = dtAttrpathimg.Rows[0]["KeyValue"].ToString();
+                    }
+
+                    response = 1;
+
+                    string sProductId = "", sDiscount = "", sEdate = "", sPname = "", sPDiscount = "", sSold = "", sProductBanner = "";
+                    string sDisplayOrder = "", sMaxQty = "", sMinQty = "", sCategoryId = "", sCategory = "", sIsSoshoRecommended = "";
+                    string sIsSpecialMessage = "", sProductDiscription = "", sRecommended = "", sProductNotes = "", sProductKeyFeatures = "", sIsProductDescription = "";
+                    string sisFreeShipping = "", sisFixedShipping = "", sFixedShipRate = "";
+                    string  sprodcount;
+                    int OrderedQuantity;
+                    decimal dDiscount = 0;
+                    string sActionCategoryId = "", sActionCategoryName = "", sSubCategoryId = "", sSubCategoryName = "";
+                    int prodrowCount = dtmain.Rows.Count;
+
+                    for (int i = 0; i < dtmain.Rows.Count; i++)
+                    {
+                        sProductId = dtmain.Rows[i]["Pid"].ToString();
+
+                        ProductModel.ReOrderProductList objProduct = new ProductModel.ReOrderProductList();
+
+                        string sAMrp = "", sADiscount = "", sAPackingType = "", sAsoshoPrice = "", sAweight = "", sApackSizeId = "", sAImage = "";
+                        string sAPDiscount = "", sisSelected = "", sisbestbuy = "", sisQtyFreeze = "";
+                        sMaxQty = ""; sMinQty = "";
+                        Boolean bAisOutOfStock = false;
+                        sApackSizeId = dtmain.Rows[i]["Id"].ToString();
+                        sAMrp = dtmain.Rows[i]["Mrp"].ToString();
+                        sMinQty = dtmain.Rows[i]["MinQty"].ToString();
+                        sMaxQty = dtmain.Rows[i]["MaxQty"].ToString();
+
+
+                        sADiscount = dtmain.Rows[i]["Discount"].ToString();
+                        if (sADiscount.ToString() != "0")
+                        {
+                            if (dtmain.Rows[i]["DiscountType"].ToString() == "%")
+                                sAPDiscount = sADiscount.ToString() + "% Off";
+                            else if (dtmain.Rows[i]["DiscountType"].ToString() == "Fixed")
+                                sAPDiscount = CommonString.rusymbol + " " + sADiscount.ToString() + " Off";
+                            else
+                                sAPDiscount = "";
+                        }
+                        else
+                            sAPDiscount = "";
+
+                        sAPackingType = dtmain.Rows[i]["PackingType"].ToString();
+                        sAsoshoPrice = dtmain.Rows[i]["SoshoPrice"].ToString();
+                        sAweight = dtmain.Rows[i]["DUnit"].ToString();
+                        sAImage = dtmain.Rows[i]["ProductImage"].ToString();
+                        bAisOutOfStock = Convert.ToBoolean(dtmain.Rows[i]["isOutOfStock"].ToString());
+                        sisSelected = dtmain.Rows[i]["isSelectedDetails"].ToString();
+                        sisbestbuy = dtmain.Rows[i]["IsBestBuy"].ToString();
+                        sisQtyFreeze = dtmain.Rows[i]["IsQtyFreeze"].ToString();
+                        objProduct.MRP = Convert.ToDouble(sAMrp);
+                        objProduct.Discount = sAPDiscount;
+                        objProduct.PackingType = sAPackingType;
+                        objProduct.SoshoPrice = Convert.ToDouble(sAsoshoPrice);
+                        objProduct.Weight = sAweight;
+                        objProduct.AImageName = Attribuepathimg + sAImage;
+                        objProduct.isOutOfStock = Convert.ToBoolean(bAisOutOfStock);
+                        objProduct.MinQty = Convert.ToInt32(sMinQty);
+                        objProduct.MaxQty = Convert.ToInt32(sMaxQty);
+                        //objProduct.isSelected = Convert.ToBoolean(sisSelected);
+                        objProduct.isSelected = true;
+                        objProduct.isQtyFreeze = Convert.ToBoolean(sisQtyFreeze);
+                        objProduct.isBestBuy = Convert.ToBoolean(sisbestbuy);
+                        objProduct.AttributeId = sApackSizeId;
+                        sCategoryId = dtmain.Rows[i]["CategoryId"].ToString();
+                        sCategory = dtmain.Rows[i]["CategoryName"].ToString();
+                        sSubCategoryId = dtmain.Rows[i]["SubCategoryID"].ToString();
+                        sSubCategoryName = dtmain.Rows[i]["SubCategoryName"].ToString();
+
+                        OrderedQuantity = Convert.ToInt32(dtmain.Rows[i]["OrderedQuantity"]);
+
+                        if (sDiscount.ToString() != "0")
+                        {
+                            if (dtmain.Rows[i]["DiscountType"].ToString() == "%")
+                                sPDiscount = sDiscount.ToString() + "% Off";
+                            else if (dtmain.Rows[i]["DiscountType"].ToString() == "Fixed")
+                                sPDiscount = CommonString.rusymbol + " " + sDiscount.ToString() + " Off";
+                            else
+                                sPDiscount = "";
+                        }
+                        else
+                            sPDiscount = "";
+
+                        dDiscount = 0;
+                        decimal.TryParse(sDiscount.ToString(), out dDiscount);
+
+                        sPname = dtmain.Rows[i]["Name"].ToString();
+                        sEdate = dtmain.Rows[i]["edate"].ToString();
+                        sSold = dtmain.Rows[i]["sold"].ToString();
+                        sProductBanner = dtmain.Rows[i]["ProductBanner"].ToString();
+                        sDisplayOrder = dtmain.Rows[i]["DisplayOrder"].ToString();
+                        sIsSoshoRecommended = dtmain.Rows[i]["IsSoshoRecommended"].ToString();
+                        sIsSpecialMessage = dtmain.Rows[i]["IsSpecialMessage"].ToString();
+                        sIsProductDescription = dtmain.Rows[i]["IsProductDescription"].ToString();
+                        sRecommended = dtmain.Rows[i]["Recommended"].ToString();
+                        sProductDiscription = dtmain.Rows[i]["ProductDiscription"].ToString();
+                        sProductNotes = dtmain.Rows[i]["Note"].ToString();
+                        sProductKeyFeatures = dtmain.Rows[i]["KeyFeatures"].ToString();
+                        sisFreeShipping = dtmain.Rows[i]["IsFreeShipping"].ToString();
+                        sisFixedShipping = dtmain.Rows[i]["IsFixedShipping"].ToString();
+                        sFixedShipRate = dtmain.Rows[i]["FixedShipRate"].ToString();
+                        sprodcount = dtmain.Rows[i]["prodcount"].ToString();
+
+                        objProduct.NumberOfTimesOrdered = sprodcount;
+
+                        objProduct.ItemType = "1";
+                        objProduct.CategoryId = sCategoryId;
+                        objProduct.CategoryName = sCategory;
+                        objProduct.OfferEndDate = sEdate;
+                        objProduct.SoldCount = sSold;
+                        objProduct.SpecialMessage = sProductBanner;
+                        objProduct.DisplayOrder = Convert.ToInt32(sDisplayOrder);
+                        objProduct.SoshoRecommended = sRecommended;
+                        objProduct.IsSoshoRecommended = Convert.ToBoolean(sIsSoshoRecommended);
+                        objProduct.IsSpecialMessage = Convert.ToBoolean(sIsSpecialMessage);
+                        objProduct.IsProductDescription = Convert.ToBoolean(sIsProductDescription);
+                        objProduct.ProductDescription = sProductDiscription;
+                        objProduct.ProductNotes = sProductNotes;
+                        objProduct.ProductKeyFeatures = sProductKeyFeatures;
+                        objProduct.ProductId = sProductId;
+                        objProduct.isFreeShipping = Convert.ToBoolean(sisFreeShipping);
+                        objProduct.isFixedShipping = Convert.ToBoolean(sisFixedShipping);
+                        objProduct.FixedShipRate = Convert.ToDouble(sFixedShipRate);
+                        objProduct.ProductName = sPname;
+                        objProduct.Title = "";
+                        objProduct.bannerId = "0";
+                        objProduct.bannerURL = "";
+                        objProduct.ActionId = 0;
+                        objProduct.action = "";
+                        objProduct.openUrlLink = "";
+                        objProduct.ActionCategoryId = sCategoryId;
+                        objProduct.ActionCategoryName = sCategory;
+                        objProduct.SubCategoryId = sSubCategoryId;
+                        objProduct.SubCategoryName = sSubCategoryName;
+                        objProduct.OrderedQuantity = OrderedQuantity;
+                        objeprodt.ProductList.Add(objProduct);
+
+                    }
+                }
+
+                if (response == 1)
+                {
+                    objeprodt.response = "1";
+                    objeprodt.message = "Successfully";
+                }
+                else
+                {
+                    objeprodt.response = "0";
+                    objeprodt.message = "No products found.";
+                }
+                objeprodt.WhatsAppNo = sWhatappNo;
+                return objeprodt;
+            }
+            catch (Exception ex)
+            {
+                objeprodt.response = CommonString.Errorresponse;
+                objeprodt.message = ex.StackTrace + " " + ex.Message;
+                return objeprodt;
             }
         }
     }

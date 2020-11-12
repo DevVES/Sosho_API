@@ -34,6 +34,17 @@ namespace Test0555.Models.ProductManagement
 
         }
 
+        //30-10-2020 Developed By :- Aditya
+        public class getPreviousProduct
+        {
+            public string response;
+            public string message;
+            public string WhatsAppNo;
+            //public List<HomePageBannerImage> HomePageBannerImages { get; set; }
+            public List<ReOrderProductList> ProductList { get; set; }
+
+        }
+
         public class HomePageBannerImage
         {
             public string Title;
@@ -218,6 +229,61 @@ namespace Test0555.Models.ProductManagement
             public string ProductId = "";
             public string CategoryName = "";
             public string SubCategoryName = "";
+        }
+
+        public class ReOrderProductList
+        {
+            public ReOrderProductList()
+            {
+            }
+
+            public string CategoryId;
+            public string CategoryName;
+            public string ProductId;
+            public string ProductName;
+            public string OfferEndDate;
+            public string SoldCount;
+            public int DisplayOrder;
+            public string SoshoRecommended;
+            public bool IsSoshoRecommended;
+            public string SpecialMessage;
+            public bool IsSpecialMessage;
+            public bool IsProductDescription;
+            public string ProductDescription;
+            public string ProductNotes;
+            public string ProductKeyFeatures;
+            public string ItemType;
+            public string SubCategoryId;
+            public string SubCategoryName;
+            public double MRP;
+            public string Discount;
+            //public string Name;
+            public double SoshoPrice;
+            public string Weight;
+            //public string IsProductVariant;
+            //public string IsQtyFreeze;
+            public int MaxQty;
+            public int MinQty;
+            public bool isFreeShipping;
+            public bool isFixedShipping;
+            public bool isOutOfStock;
+            public bool isSelected;
+            public bool isQtyFreeze;
+            public bool isBestBuy;
+            public string AttributeId;
+            public double FixedShipRate;
+            public string Title;
+            public string bannerURL;
+            public string bannerId;
+            public int ActionId;
+            public string action;
+            public string openUrlLink;
+            public string ActionCategoryId;
+            public string ActionCategoryName;
+            public string PackingType;
+            public string AImageName;
+            public int OrderedQuantity;
+            public string NumberOfTimesOrdered;
         }
     }
 }

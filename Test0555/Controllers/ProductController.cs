@@ -94,7 +94,7 @@ namespace Test0555.Controllers
                 {
                     querystr += " and CL.CategoryID =" + CategoryId;
                 }
-                querystr += "  order by Im.Id desc";
+                querystr += "  order by Im.Id";
                 DataTable dtmain = dbc.GetDataTable(querystr);
                 string Id = "", ImageName1 = "", sAction = "", bCategoryId = "", sCategoryName = "", sopenUrlLink = "";
                 string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", bDiscount = "";
@@ -596,7 +596,7 @@ namespace Test0555.Controllers
                              " LEFT join tblCategoryBannerLink CL on CL.BannerId = Im.Id " +
                              " Left join category cg on  cg.categoryId = CL.categoryId " +
                              " Left join category Ac on  AC.CategoryID = Im.categoryId " +
-                             "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") " +
+                             "Left join Product P on  (P.Id = Im.ProductId and P.JurisdictionId = " + JurisdictionID + ") or ( P.ProductMasterId = Im.ProductId and P.JurisdictionId = " + JurisdictionID + " and P.ProductMasterId <> 0) " +
                              //"Left join Product Pm on  Pm.ProductMasterId = Im.ProductId and Pm.JurisdictionId = " + JurisdictionID +
                              " Left join tblSubCategory SC on SC.Id = P.SubCategoryId  " +
                              " Left join UnitMaster U on U.Id = P.UnitId " +
@@ -790,12 +790,40 @@ namespace Test0555.Controllers
                         }
                     }
                 }
+                //else
+                //{
+                //    response = -1;
+
+                //}
 
                 if (response == 1)
                 {
                     objeprodt.response = "1";
                     objeprodt.message = "Successfully";
                 }
+                //else if (response == -1)
+                //{
+                //    string PinDetails = "DECLARE @Names NVARCHAR(MAX) " +
+                //                            " SELECT @Names= COALESCE(@Names + ', ', '') + Convert(nvarchar(100),PincodeId) FROM JurisdictionDetail " +
+                //                            " where JurisdictionId IN " +
+                //                            " (Select DISTINCT JurisdictionId from Product p INNER JOIN tblCategoryProductLink cpl ON p.Id = cpl.ProductId " +
+                //                            " INNER JOIN Category c ON c.CategoryID = cpl.CategoryId Where p.JurisdictionId <>" + JurisdictionID + " and c.IsActive = 1 "+
+                //                            " and p.StartDate <='"+ startdate + "' and p.EndDate >='" + startend + "') SELECT @Names as PinCodes";
+                //    DataTable dtPindetails = dbc.GetDataTable(PinDetails);
+                //    if (dtPindetails != null && dtPindetails.Rows.Count > 0)
+                //    {
+                //        string pincodes = dtPindetails.Rows[0]["PinCodes"].ToString();
+                //        objeprodt.response = "1";
+                //        objeprodt.message = "The products under this category is available in these pincodes: " + pincodes;
+                //    }
+                //    else
+                //    {
+                //        objeprodt.response = "0";
+                //        objeprodt.message = "Details Not Found";
+                //    }
+
+
+                //}
                 else
                 {
                     objeprodt.response = "0";

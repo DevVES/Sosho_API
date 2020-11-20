@@ -65,7 +65,7 @@ namespace Test0555.Controllers
                             //});
                             CategoryModel.SubCategoryDataList objSubCategory = new CategoryModel.SubCategoryDataList();
                             objCategory.SubCategoryList = new List<CategoryModel.SubCategoryDataList>();
-                            string subquerystr = "select  Id AS SubCategoryId, SubCategory,Description, CategoryId from tblSubCategory where IsActive=1 and IsDeleted=0  and CategoryId = " + Id;
+                            string subquerystr = "select  Id AS SubCategoryId, SubCategory,Description, CategoryId from tblSubCategory where IsActive=1 and IsDeleted=0  and CategoryId = " + Id + " order by [sequence]";
                             DataTable subdtmain = dbc.GetDataTable(subquerystr);
                             if (subdtmain != null && subdtmain.Rows.Count > 0)
                             {

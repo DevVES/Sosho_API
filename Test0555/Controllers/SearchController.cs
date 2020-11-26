@@ -44,6 +44,10 @@ namespace Test0555.Controllers
                     if (splt.Length > 1)
                     {
                         Searchname = "";
+                        foreach (string str in splt)
+                        {
+                            Searchname += " " + str;
+                        }
                         Searchname = Searchname.Trim();
                     }
                     else
@@ -89,7 +93,7 @@ namespace Test0555.Controllers
 
                 int Max_Seller = 10;
                 int Max_Category = 10;
-                int Max_Product = 10;
+                int Max_Product = 50;
                 int Max_SubCategory = 10;
                 try
                 {
@@ -273,7 +277,12 @@ namespace Test0555.Controllers
                     string[] splt = Searchname1.Split(ch, StringSplitOptions.RemoveEmptyEntries);
                     if (splt.Length > 1)
                     {
-
+                        Searchname = "";
+                        foreach(string str in splt)
+                        {
+                            Searchname += " " + str;
+                        }
+                        Searchname = Searchname.Trim();
                     }
                     else
                         Searchname = splt[0].Trim();
@@ -284,7 +293,7 @@ namespace Test0555.Controllers
                         if (Searchname.Equals(Searchnamewithoutspace))
                             isSpaceStringSame = true;
                     }
-                    int Max_Seller = 10, Max_Category = 10, Max_Product = 10;
+                    int Max_Seller = 10, Max_Category = 10, Max_Product = 50;
                     DataTable dtCategory = new DataTable();
                     DataTable dtProduct = new DataTable();
                     DataTable dtSubCategory = new DataTable();
@@ -797,6 +806,12 @@ namespace Test0555.Controllers
 
             if (!isSpaceStringSame && Searchnamewithoutspace.Trim() != "")
             {
+                if(Type == 2)
+                {
+                    strSellerSearchwithoutspace = strSellerSearchwithoutspace.Replace("CategoryName", "Name1");
+                }
+                else if (Type == 4)
+                    strSellerSearchwithoutspace = strSellerSearchwithoutspace.Replace("SubCategory", "Name1");
                 DataRow[] drfind1 = dtSeller.Select(strSellerSearchwithoutspace);
                 drfindwithoutspace = drfind1;
             }

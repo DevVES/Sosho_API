@@ -184,7 +184,7 @@ Get_AlternetOrderItem.Rows[orderitem]["BuyWith"].ToString(),
                         {
                             DataTable dtcheck = dbCon.GetDataTable("select distinct Customer.Id,Customer.Mobile from Customer inner  join [Order] on [Order].CustomerId=[Customer].Id where  Customer.Id=" + cust_id + " group by Customer.Id,Customer.Mobile having count([Order].Id)>=1");
 
-                            string data = "SELECT [Order].OrderMRP, [Order].OrderTotal,[Order].CustOfferCode, CONVERT(varchar, Product.EndDate,106)+' '+ CONVERT(varchar, Product.EndDate,108) as lastdate FROM  [Order] INNER JOIN OrderItem ON [Order].Id = OrderItem.OrderId INNER JOIN Product ON OrderItem.ProductId = Product.Id where [Order].Id=" + OrderId;
+                            string data = "SELECT [Order].OrderMRP, [Order].AddressId, [Order].OrderTotal,[Order].CustOfferCode, CONVERT(varchar, Product.EndDate,106)+' '+ CONVERT(varchar, Product.EndDate,108) as lastdate FROM  [Order] INNER JOIN OrderItem ON [Order].Id = OrderItem.OrderId INNER JOIN Product ON OrderItem.ProductId = Product.Id where [Order].Id=" + OrderId;
                             DataTable dtdata = dbCon.GetDataTable(data);
 
 
@@ -193,13 +193,30 @@ Get_AlternetOrderItem.Rows[orderitem]["BuyWith"].ToString(),
                             string orderidid = OrderId.ToString();
                             string offcode = dbCon.Base64Encode(orderidid);
 
+                            DataTable dtcustomerwp = dbCon.GetDataTable("select ISNULL(IsInWhatsappGroup,0) as IsInWhatsappGroup FROM Customer where  Customer.Id=" + cust_id);
+                            var IsInWhatsappGroup = Convert.ToBoolean(dtcustomerwp.Rows[0]["IsInWhatsappGroup"]);
+                            var AddId = dtdata.Rows[0]["AddressId"].ToString();
+                            DataTable dtcustomerzip = dbCon.GetDataTable("select PinCode FROM CustomerAddress  where Id=" + AddId);
+
+                            var zipcode = dtcustomerzip.Rows[0]["PinCode"].ToString();
+                            DataTable dtwpurl = dbCon.GetDataTable("select Url FROM WhatsappUrls  where zipcode=" + zipcode);
+
+                            var wpurl = dtwpurl.Rows[0]["Url"].ToString();
+
 
                             if (dtcheck.Rows.Count > 0)
                             {
-                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.  If you have opted to buy with friend/s, ensure they place order by " + date + " to avoid paying full price during delivery.  Invite now: sosho.in/order_details?Orderid=" + offcode;
+                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.";
 
                                 //string SMS_Text11 = "Your OrderNo:"+ OrderId +" has been Successfully Placed.";
                                 dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), SMS_Text11);
+
+                                if (!IsInWhatsappGroup)
+                                {
+                                    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                                    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
+
+                                }
                             }
                         }
                         catch (Exception e)
@@ -475,7 +492,7 @@ Get_AlternetOrderItem.Rows[orderitem]["BannerId"].ToString()
                         {
                             DataTable dtcheck = dbCon.GetDataTable("select distinct Customer.Id,Customer.Mobile from Customer inner  join [Order] on [Order].CustomerId=[Customer].Id where  Customer.Id=" + cust_id + " group by Customer.Id,Customer.Mobile having count([Order].Id)>=1");
 
-                            string data = "SELECT [Order].OrderMRP, [Order].OrderTotal,[Order].CustOfferCode, CONVERT(varchar, Product.EndDate,106)+' '+ CONVERT(varchar, Product.EndDate,108) as lastdate FROM  [Order] INNER JOIN OrderItem ON [Order].Id = OrderItem.OrderId INNER JOIN Product ON OrderItem.ProductId = Product.Id where [Order].Id=" + OrderId;
+                            string data = "SELECT [Order].OrderMRP,[Order].AddressId, [Order].OrderTotal,[Order].CustOfferCode, CONVERT(varchar, Product.EndDate,106)+' '+ CONVERT(varchar, Product.EndDate,108) as lastdate FROM  [Order] INNER JOIN OrderItem ON [Order].Id = OrderItem.OrderId INNER JOIN Product ON OrderItem.ProductId = Product.Id where [Order].Id=" + OrderId;
                             DataTable dtdata = dbCon.GetDataTable(data);
 
 
@@ -484,13 +501,28 @@ Get_AlternetOrderItem.Rows[orderitem]["BannerId"].ToString()
                             string orderidid = OrderId.ToString();
                             string offcode = dbCon.Base64Encode(orderidid);
 
+                            DataTable dtcustomerwp = dbCon.GetDataTable("select ISNULL(IsInWhatsappGroup,0) as IsInWhatsappGroup FROM Customer where  Customer.Id=" + cust_id);
+                            var IsInWhatsappGroup = Convert.ToBoolean(dtcustomerwp.Rows[0]["IsInWhatsappGroup"]);
+                            var AddId = dtdata.Rows[0]["AddressId"].ToString();
+                            DataTable dtcustomerzip = dbCon.GetDataTable("select PinCode FROM CustomerAddress  where Id=" + AddId);
+
+                            var zipcode = dtcustomerzip.Rows[0]["PinCode"].ToString();
+                            DataTable dtwpurl = dbCon.GetDataTable("select Url FROM WhatsappUrls  where zipcode=" + zipcode);
+
+                            var wpurl = dtwpurl.Rows[0]["Url"].ToString();
 
                             if (dtcheck.Rows.Count > 0)
                             {
-                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.  If you have opted to buy with friend/s, ensure they place order by " + date + " to avoid paying full price during delivery.  Invite now: sosho.in/order_details?Orderid=" + offcode;
+                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.";
 
                                 //string SMS_Text11 = "Your OrderNo:"+ OrderId +" has been Successfully Placed.";
                                 dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), SMS_Text11);
+                                if (!IsInWhatsappGroup)
+                                {
+                                    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                                    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
+
+                                }
                             }
                         }
                         catch (Exception e)

@@ -94,7 +94,7 @@ namespace Test0555.Controllers
                 {
                     querystr += " and CL.CategoryID =" + CategoryId;
                 }
-                querystr += "  order by Im.Id";
+                querystr += "  order by Im.sequence";
                 DataTable dtmain = dbc.GetDataTable(querystr);
                 string Id = "", ImageName1 = "", sAction = "", bCategoryId = "", sCategoryName = "", sopenUrlLink = "";
                 string sProductName = "", sUnitName = "", sWeight = "", sSellingPrice = "", sMRP = "", bDiscount = "";
@@ -364,7 +364,7 @@ namespace Test0555.Controllers
                 {
                     querymain += " and PL.CategoryID =" + CategoryId;
                 }
-                if (SubCategoryId > 0)
+                if (SubCategoryId > 1)
                 {
                     querymain += " and PL.SubCategoryID =" + SubCategoryId;
                 }
@@ -614,7 +614,8 @@ namespace Test0555.Controllers
                         qry += " and Im.Id NOT IN (" + InterBannerid + ")";
                     }
 
-                    qry += "  order by Im.Id desc";
+                    //qry += "  order by Im.Id desc";
+                    qry += "  order by Im.sequence";
                     DataTable dtInterBanner = dbc.GetDataTable(qry);
                     ProductModel.NewProductDataList objBannerProduct = new ProductModel.NewProductDataList();
                     if (dtInterBanner != null && dtInterBanner.Rows.Count > 0)

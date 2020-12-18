@@ -138,5 +138,73 @@ namespace Test0555.Controllers
             }
         }
 
+        [HttpGet]
+        public string SendWpMsgByServiceblePinCode()
+        {
+            try
+            {
+                DataTable dtpin = dbCon.GetDataTable("select distinct c.Mobile, ca.PinCode from Customer C inner join CustomerAddress CA on CA.CustomerId = C.Id inner join JurisdictionDetail d on d.PinCodeID = ca.PinCode where len(ltrim(rtrim(isnull(c.Mobile, '')))) >= 10 and ltrim(rtrim(isnull(c.Mobile, ''))) not in ('0000000000', '1234567688') and len(ltrim(rtrim(ca.PinCode))) = 6 and d.IsActive = 1 order by Pincode");
+                if (dtpin.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtpin.Rows.Count; i++)
+                    {
+                        var zipcode = dtpin.Rows[i]["PinCode"].ToString();
+                        var mobile = dtpin.Rows[i]["Mobile"].ToString();
+                        DataTable dtwpurl = dbCon.GetDataTable("select Url FROM WhatsappUrls  where zipcode=" + zipcode);
+                        string wpurl = string.Empty;
+                        if (dtwpurl.Rows.Count > 0)
+                        {
+                            wpurl = dtwpurl.Rows[0]["Url"].ToString();
+                            string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                            dbCon.SendSMS(mobile, smstxt);
+                        }
+
+                    }
+                }
+                return "SMS Sent";
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+           
+        }
+
+        [HttpGet]
+        public string SendWpMsgByNonServiceblePinCode()
+        {
+            try
+            {
+                DataTable dtpin = dbCon.GetDataTable("select distinct c.Mobile, ca.PinCode from Customer C inner join CustomerAddress CA on CA.CustomerId = C.Id where len(ltrim(rtrim(isnull(c.Mobile, '')))) >= 10 and ltrim(rtrim(isnull(c.Mobile, ''))) not in ('0000000000', '1234567688') and len(ltrim(rtrim(ca.PinCode))) = 6 and ltrim(rtrim(ca.PinCode)) not in (select distinct ca.PinCode from Customer C inner join CustomerAddress CA on CA.CustomerId = C.Id inner join JurisdictionDetail d on d.PinCodeID = ca.PinCode where len(ltrim(rtrim(isnull(c.Mobile, '')))) >= 10 and ltrim(rtrim(isnull(c.Mobile, ''))) not in ('0000000000', '1234567688') and len(ltrim(rtrim(ca.PinCode))) = 6 and d.IsActive = 1) order by Pincode");
+                if (dtpin.Rows.Count > 0)
+                {
+                    for (int i = 0; i < dtpin.Rows.Count; i++)
+                    {
+                        var zipcode = dtpin.Rows[i]["PinCode"].ToString();
+                        var mobile = dtpin.Rows[i]["Mobile"].ToString();
+                        //DataTable dtwpurl = dbCon.GetDataTable("select Url FROM WhatsappUrls  where zipcode=" + zipcode);
+                        string wpurl = string.Empty;
+                        //if (dtwpurl.Rows.Count > 0)
+                        //{
+                            wpurl = "https://chat.whatsapp.com/BvJLY7GP8Ss982etC669yS";
+                            string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                            dbCon.SendSMS(mobile, smstxt);
+                        //}
+
+                    }
+                }
+                return "SMS Sent";
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+        }
+
     }
 }

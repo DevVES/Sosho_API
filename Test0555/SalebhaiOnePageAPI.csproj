@@ -169,12 +169,18 @@
     <Compile Include="Controllers\CommonController.cs" />
     <Compile Include="Controllers\Customer\CustomerAddressController.cs" />
     <Compile Include="Controllers\DataController.cs" />
+    <Compile Include="Controllers\FranchiesController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\MasterDataController.cs" />
     <Compile Include="Controllers\NotificationController.cs" />
     <Compile Include="Controllers\Order\CancelOrderController.cs" />
+    <Compile Include="Controllers\SearchController.cs" />
+    <Compile Include="Controllers\WalletController.cs" />
     <Compile Include="Models\Category\CategoryModel.cs" />
+    <Compile Include="Models\CheckPincode\CheckJurisdictionModel.cs" />
+    <Compile Include="Models\Franchies\FranchiesModel.cs" />
     <Compile Include="Models\LocationModel.cs" />
+    <Compile Include="Models\MasterData\AreaModels.cs" />
     <Compile Include="Models\Order\CancelOrderModel.cs" />
     <Compile Include="Controllers\Order\CODOrderController.cs" />
     <Compile Include="Controllers\Order\OrderController.cs" />
@@ -187,6 +193,7 @@
     <Compile Include="Models\Order\CouponValidation.cs" />
     <Compile Include="Models\Order\CODOrderModel.cs" />
     <Compile Include="Models\Order\PlaceMultipleOrderModel.cs" />
+    <Compile Include="Models\WalletManagement\WalletModel.cs" />
     <Compile Include="Order\AllPaymentResponse.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>

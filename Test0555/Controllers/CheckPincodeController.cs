@@ -205,6 +205,42 @@ namespace Test0555.Controllers
             }
 
         }
+        [HttpGet]
+        public CheckJurisdictionModel CheckJurisdiction(string JurisdictionId,string PinCode)
+        {
+            CheckJurisdictionModel model = new CheckJurisdictionModel();
+            try
+            {
+                if(!string.IsNullOrEmpty(JurisdictionId) && !string.IsNullOrEmpty(PinCode) && PinCode.Length >= 6 && JurisdictionId != "0")
+                {
+                    DataTable dt = dbCon.GetDataTable("Select * from JurisdictionDetail where JurisdictionID =" + JurisdictionId + " AND PinCodeID=" + PinCode);
+                    if (dt != null && dt.Rows.Count > 0)
+                    {
+                        model.Response = CommonString.successresponse;
+                        model.Message = CommonString.successmessage;
+                    }
+                    else
+                    {
+                        model.Response = CommonString.DataNotFoundResponse;
+                        model.Message = "There might be some changes in price and availability of the product for the pin code in the selected address." +
+                            "You will have to first enter this pin code in the Deliver To box at the top of the home screen and select the products again.";
+                    }
+
+                }
+                else
+                {
+                    model.Response = CommonString.DataNotFoundResponse;
+                    model.Message = "Invalid JurisdictionId or PinCode";
+                }
+                
+            }
+            catch(Exception ex)
+            {
+                model.Response = CommonString.Errorresponse;
+                model.Message = ex.StackTrace;
+            }
+            return model;
+        }
 
     }
 }

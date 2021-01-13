@@ -1042,10 +1042,12 @@ namespace Test0555.Controllers.Order
                                        " [Order].id as OrderId,(select top 1 Name from Product where Product.Id=OrderItem.ProductId order by Product.Id desc) as ProductName, " + 
                                        " (select  (DATENAME(dw,CAST(DATEPART(m, EndDate) AS VARCHAR)+ '/'+ CAST(DATEPART(d, EndDate) AS VARCHAR)  + '/' + CAST(DATEPART(yy, EndDate) AS VARCHAR))) +' '+convert(varchar(12),EndDate,106)+', '+convert(varchar(12),EndDate,108) as EndDate " + 
                                        " from  Product where Product.Id=OrderItem.ProductId and Product.EndDate is not null) as EndDate, " + 
-                                       " [Order].OrderTotal, PA.Id AS AttributeId , PA.ProductImage " + 
+                                       " [Order].OrderTotal, PA.Id AS AttributeId , PA.ProductImage, " +
+                                       " OrderStatus.[Name] as OrderStatusText ,OrderStatus.Id as OrderStatus " + 
                                        " from [Order] " + 
                                        " inner join OrderItem on OrderItem.OrderId=[Order].Id " +
                                        " LEFT Join Product_ProductAttribute_Mapping PA ON PA.id = OrderItem.AttributeId " +
+                                       " LEFT Join OrderStatus on OrderStatus.Id = [Order].OrderStatusId " +
                                        " where [Order].CustomerId=" + CustomerId + "  order by [Order].id desc";
 
                     DataTable dtproduct = dbCon.GetDataTable(Querydata);
@@ -1120,6 +1122,8 @@ namespace Test0555.Controllers.Order
                             string productname = dtproduct.Rows[i]["ProductName"].ToString();
                             string prodImage = dtproduct.Rows[i]["ProductImage"].ToString();
                             string imagename = string.Empty;
+                            string OrderStatus = dtproduct.Rows[i]["OrderStatus"].ToString(); 
+                            string OrderStatusText = dtproduct.Rows[i]["OrderStatusText"].ToString(); 
 
 
                             string folder = "";
@@ -1173,7 +1177,7 @@ namespace Test0555.Controllers.Order
                             {
                                 flag = "0";
                             }
-                            string qry = "select Product.Id as ProductId,  [Order].[OrderMRP], Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) +' ' + (CONVERT(varchar ,Product.EndDate,108)) as pedate, [Order].Id as orderid, OrderItem.Id as orderitemid  from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId where [Order].Id=" + orderidd;
+                            string qry = "select Product.Id as ProductId,  [Order].[OrderMRP],[Order].[PaidAmount], Product.BuyWith1FriendExtraDiscount, Product.BuyWith5FriendExtraDiscount, (CONVERT(varchar ,Product.EndDate,106)) +' ' + (CONVERT(varchar ,Product.EndDate,108)) as pedate, [Order].Id as orderid, OrderItem.Id as orderitemid  from Product Inner join OrderItem on OrderItem.ProductId=Product.Id Inner Join [Order] On [Order].Id = OrderItem.OrderId where [Order].Id=" + orderidd;
                             DataTable dt = dbCon.GetDataTable(qry);
                             string mrp = "";
                             string forcust = "";
@@ -1181,7 +1185,8 @@ namespace Test0555.Controllers.Order
                             if (dt != null && dt.Rows.Count > 0)
                             {
                                 string flg = datacust.Buywith;
-                                mrp = dt.Rows[0]["OrderMRP"].ToString();
+                                //mrp = dt.Rows[0]["OrderMRP"].ToString();
+                                mrp = dt.Rows[0]["PaidAmount"].ToString();
                                 if (flg == "1")
                                 {
                                     forcust = dt.Rows[0]["OrderMRP"].ToString();
@@ -1208,8 +1213,8 @@ namespace Test0555.Controllers.Order
                                 whatsappflag = wflag,
                                 whatsappMessage = whatsappmsg,
                                 IsCancel = isCancel,
-                                OrderStatusText = "",
-                                OrderStatus = "0",
+                                OrderStatusText = OrderStatusText,
+                                OrderStatus = OrderStatus,
                                 productid = productidd
                             });
                         }
@@ -1293,7 +1298,8 @@ namespace Test0555.Controllers.Order
                     string imaagedetails = "select Product.ProductMrp,PA.Mrp,Product.BuyWith1FriendExtraDiscount,Product.BuyWith5FriendExtraDiscount, " + 
                                            " Product.id as pid,OrderItem.Quantity,product.Name,isnull(PA.Unit,'0') as unitweg, " + 
                                            " isnull((select UnitName from UnitMaster where UnitMaster.Id=PA.UnitId),'Gram')as Unit,case when OrderItem.BuyWith = 1 then BuyWith1FriendExtraDiscount when OrderItem.BuyWith = 2 then BuyWith5FriendExtraDiscount when OrderItem.BuyWith = 6 then offer else offer end NewProductPrice, " +
-                                           " PA.Id AS AttributeId , PA.ProductImage, PA.SoshoPrice " +
+                                           " PA.Id AS AttributeId , PA.ProductImage, PA.SoshoPrice," +
+                                           "  OrderItem.TotalAmount " +
                                            " from Product " + 
                                            " inner join OrderItem ON OrderItem.ProductId = Product.Id " +
                                            " LEFT Join Product_ProductAttribute_Mapping PA ON PA.id = OrderItem.AttributeId " +
@@ -1357,7 +1363,8 @@ namespace Test0555.Controllers.Order
                             string expon = dtorderdetails.Rows[0]["EndDate"].ToString();
                             //objorderdtil.ProductEnddate = expon;
                             string mrp = dtimgstr.Rows[i]["ProductMrp"].ToString();
-                            string soshoPrice = dtimgstr.Rows[i]["SoshoPrice"].ToString();
+                            //string soshoPrice = dtimgstr.Rows[i]["SoshoPrice"].ToString();
+                            string soshoPrice = dtimgstr.Rows[i]["TotalAmount"].ToString();
                             //objorderdtil.MRP = mrp;
 
 

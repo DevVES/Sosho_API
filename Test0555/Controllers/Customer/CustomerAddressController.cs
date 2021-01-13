@@ -61,6 +61,11 @@ namespace Test0555.Controllers
             DeliveryAddressModel.CustAddress objadd = new DeliveryAddressModel.CustAddress();
             try
             {
+                area = area.Replace("'", "''");
+                building = building.Replace("'", "''");
+                landmark = landmark.Replace("'", "''");
+                others = others.Replace("'", "''");
+
                 string StateName = "";
                 string getState = "SELECT StateName FROM [dbo].[StateMaster] WHERE Id = " + sid;
                 DataTable dtState = dbc.GetDataTable(getState);
@@ -77,7 +82,7 @@ namespace Test0555.Controllers
                 }
                 if (areaid == "-1")
                 {
-                    string[] para1 = { area, pincode, StateName,CityName,"0","1",dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss")};
+                    string[] para1 = { area, pincode, StateName, CityName, "0", "1", dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") };
                     string areadata = "Insert into ZipCode ([Area] ,[zipcode] ,[State] ,[District] ,[IsDeleted] ,[IsActive],[CreatedOn]) Values (@1,@2,@3,@4,@5,@6,@7)select SCOPE_IDENTITY();";
                     int Val = dbc.ExecuteQueryWithParamsId(areadata, para1);
                     areaid = Val.ToString();
@@ -97,22 +102,22 @@ namespace Test0555.Controllers
                     }
                 }
                 string Insertdata = "Insert into CustomerAddress ([CustomerId] ,[FirstName],[TagId] ,[CountryId] ,[StateId] ,[CityId] ,[MobileNo] ,[PinCode] ," +
-                                    " [DOC] ,[DOM] ,[IsDeleted] ,[IsActive],[Email],[AreaId],[BuildingId],[BuildingNo],[LandMark],[OtherDetail]) " + 
+                                    " [DOC] ,[DOM] ,[IsDeleted] ,[IsActive],[Email],[AreaId],[BuildingId],[BuildingNo],[LandMark],[OtherDetail]) " +
                                     " Values ('" + custid + "','" + name + "','" + tagId + "','" + countryId + "','" + sid + "','" +
-                                    cid + "','" + mobile + "','" + pincode + "','" + 
-                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','" + 
-                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','0','1','" + Email + "'," + 
-                                    areaid+ "," + buildingid + ",'" + buildingNo +"','" + landmark + "','" + others + "')select SCOPE_IDENTITY();";
+                                    cid + "','" + mobile + "','" + pincode + "','" +
+                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','" +
+                                    dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + "','0','1','" + Email + "'," +
+                                    areaid + "," + buildingid + ",'" + buildingNo + "','" + landmark + "','" + others + "')select SCOPE_IDENTITY();";
 
                 string dtdata = dbc.ExecuteSQLScaler(Insertdata).ToString();
                 int idlast = 0;
                 int.TryParse(dtdata.ToString(), out idlast);
 
-                
+
                 if (idlast > 0)
                 {
-                    
-                
+
+
                     objadd.Response = CommonString.successresponse;
                     objadd.Message = CommonString.successmessage;
                     objadd.LastId = idlast.ToString();
@@ -219,21 +224,21 @@ namespace Test0555.Controllers
                     for (int i = 0; i < dtdata.Rows.Count; i++)
                     {
                         string custaddid = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["Id"].ToString() : "");
-                        string custid1 =  (dtdata.Rows[i]["CustomerId"]!=null? dtdata.Rows[i]["CustomerId"].ToString():"");
-                        string fnaem1 =  (dtdata.Rows[i]["FirstName"]!=null? dtdata.Rows[i]["FirstName"].ToString():"");
+                        string custid1 = (dtdata.Rows[i]["CustomerId"] != null ? dtdata.Rows[i]["CustomerId"].ToString() : "");
+                        string fnaem1 = (dtdata.Rows[i]["FirstName"] != null ? dtdata.Rows[i]["FirstName"].ToString() : "");
                         string lname1 = "";// dtdata.Rows[i]["LastName"].ToString();
-                        string tagname1 = (dtdata.Rows[i]["Tagname"]!=null? dtdata.Rows[i]["Tagname"].ToString():"");
-                        string country1 =( dtdata.Rows[i]["CountryName"]!=null? dtdata.Rows[i]["CountryName"].ToString():"");
-                        string state1 =(dtdata.Rows[i]["statename"]!=null? dtdata.Rows[i]["statename"].ToString():"");
-                        string city1 = (dtdata.Rows[i]["CityName"]!=null? dtdata.Rows[i]["CityName"].ToString():"");
-                        string addr1 = (dtdata.Rows[i]["Address"]!=null? dtdata.Rows[i]["Address"].ToString():"");
+                        string tagname1 = (dtdata.Rows[i]["Tagname"] != null ? dtdata.Rows[i]["Tagname"].ToString() : "");
+                        string country1 = (dtdata.Rows[i]["CountryName"] != null ? dtdata.Rows[i]["CountryName"].ToString() : "");
+                        string state1 = (dtdata.Rows[i]["statename"] != null ? dtdata.Rows[i]["statename"].ToString() : "");
+                        string city1 = (dtdata.Rows[i]["CityName"] != null ? dtdata.Rows[i]["CityName"].ToString() : "");
+                        string addr1 = (dtdata.Rows[i]["Address"] != null ? dtdata.Rows[i]["Address"].ToString() : "");
                         string mob1 = (dtdata.Rows[i]["MobileNo"] != null ? dtdata.Rows[i]["MobileNo"].ToString() : "");
-                        string pin1 = (dtdata.Rows[i]["PinCode"]!=null? dtdata.Rows[i]["PinCode"].ToString():"");
+                        string pin1 = (dtdata.Rows[i]["PinCode"] != null ? dtdata.Rows[i]["PinCode"].ToString() : "");
                         ;
 
                         Objlistaddr.CustAddressList.Add(new DeliveryAddressModel.CustAddressDataList
                         {
-                            CustomerAddressId=custaddid,
+                            CustomerAddressId = custaddid,
                             Custid = custid1,
                             fname = fnaem1,
                             lname = lname1,
@@ -271,13 +276,13 @@ namespace Test0555.Controllers
             try
             {
 
-                string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " + 
+                string Insertdata = "select isnull((select Tagname from TagMaster where TagMaster.Id=CustomerAddress.TagId),'') as Tagname, " +
                                     " isnull((Select StateName from StateMaster where StateMaster.Id=CustomerAddress.StateId),'') as statename, " +
                                     " isnull((Select Area from ZipCode where ZipCode.Id=CustomerAddress.AreaId),'') as Area, " +
                                     " isnull((Select Building from tblBuilding where tblBuilding.Id=CustomerAddress.BuildingId),'') as Building, " +
-                                    " isnull((Select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId),'') as CountryName, " + 
-                                    " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" + 
-                                    " from CustomerAddress where IsActive=1 and IsDeleted=0 and CustomerAddress.CustomerId=" + custid; 
+                                    " isnull((Select CountryName from CountryMaster where CountryMaster.Id=CustomerAddress.CountryId),'') as CountryName, " +
+                                    " isnull((Select CityName from CityMaster where CityMaster.Id=CustomerAddress.CityId),'') as CityName,*" +
+                                    " from CustomerAddress where IsActive=1 and IsDeleted=0 and CustomerAddress.CustomerId=" + custid;
 
                 DataTable dtdata = dbc.GetDataTable(Insertdata);
                 Objlistaddr.CustAddressList = new List<DeliveryAddressModel.CustAddressDataList>();
@@ -285,7 +290,7 @@ namespace Test0555.Controllers
                 {
                     Objlistaddr.Response = CommonString.successresponse;
                     Objlistaddr.Message = CommonString.successmessage;
-                    
+
 
                     for (int i = 0; i < dtdata.Rows.Count; i++)
                     {
@@ -313,7 +318,7 @@ namespace Test0555.Controllers
                         string countryId = (dtdata.Rows[i]["Id"] != null ? dtdata.Rows[i]["CountryId"].ToString() : "");
                         ;
 
-                        
+
 
                         Objlistaddr.CustAddressList.Add(new DeliveryAddressModel.CustAddressDataList
                         {
@@ -514,13 +519,13 @@ namespace Test0555.Controllers
                 }
 
                 string Insertdata = "Update CustomerAddress set Email='" + Email + "',FirstName='" + name + "',TagId='" + tagId +
-                                    "',CountryId='" + countryId + "',StateId='" + sid + "',CityId='" + cid + "',MobileNo='" + mobile + 
-                                    "',PinCode='" + pincode + "',DOM='" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") + 
-                                    "',BuildingId = "+buildingid+", AreaId = "+ areaid + ",BuildingNo = '" + buildingNo + 
-                                    "',LandMark = '" + landmark + "',OtherDetail = '" + others + 
+                                    "',CountryId='" + countryId + "',StateId='" + sid + "',CityId='" + cid + "',MobileNo='" + mobile +
+                                    "',PinCode='" + pincode + "',DOM='" + dbc.getindiantime().ToString("dd-MMM-yyyy hh:mm:ss") +
+                                    "',BuildingId = " + buildingid + ", AreaId = " + areaid + ",BuildingNo = '" + buildingNo +
+                                    "',LandMark = '" + landmark + "',OtherDetail = '" + others +
                                     "' where CustomerId='" + custid + "' and Id='" + addrid2 + "'";
                 int dtdata = dbc.ExecuteQuery(Insertdata);
-                
+
                 if (dtdata > 0)
                 {
                     Objeditaddr.Response = CommonString.successresponse;

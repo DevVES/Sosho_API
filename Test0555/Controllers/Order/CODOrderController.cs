@@ -1525,8 +1525,8 @@ namespace Test0555.Controllers.Order
                                     string productname = dtmain.Rows[i]["Name"].ToString(); //Null Not check
                                     int gram = 0;
                                     int quantity = Convert.ToInt32(item.Quantity);
-
-                                    string unitqry = "Select * From [UnitMaster] where UnitName ='" + item.UnitId + "'";
+                                    string trimmedUnitId = item.UnitId.Trim();
+                                    string unitqry = "Select * From [UnitMaster] where UnitName ='" + trimmedUnitId + "'";
                                     DataTable dtunit = dbCon.GetDataTable(unitqry);
                                     int unitid = 0;
                                     if (dtunit != null && dtunit.Rows.Count > 0)

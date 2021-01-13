@@ -183,7 +183,7 @@ namespace Test0555.Controllers
         //    }
         //}
 
-        public LoginModels.LoginOtp GetOtpVerify(string mobile_number, string otp)
+        public LoginModels.LoginOtp GetOtpVerify(string mobile_number, string otp, string fcode="")
         {
             LoginModels.LoginOtp objotp = new LoginModels.LoginOtp();
             CommonString cmstr = new CommonString();
@@ -193,6 +193,7 @@ namespace Test0555.Controllers
                 if (!string.IsNullOrWhiteSpace(mobile_number) && !string.IsNullOrWhiteSpace(otp))
                 {
                     DataTable dtUser = dbc.GetDataTable("Select Id,ISNULL(mobile,0)as mobile,ISNULL(firstname,'') as firstname,ISNULL(LastName,'')as LastName,ISNULL(Email,'') as Email,ISNULL(Sex,'')as Sex from Customer where Mobile = '" + mobile_number + "'");
+                    DataTable dtUserFranchiseeLink = dbc.GetDataTable("Select * from customer_franchise_link where mobile = '" + mobile_number + "'");
                     if (dtUser != null && dtUser.Rows.Count > 0)
                     {
                         DataTable dtotpcheck = dbc.GetDataTable("Select * from Users_SendOtp where MobileNo = '" + mobile_number + "' and Otp='" + otp + "' and IsActive=1");
@@ -217,6 +218,12 @@ namespace Test0555.Controllers
                             objotp.LastName = lname;
                             objotp.Email = email;
                             objotp.Sex = sex;
+
+                            if((dtUserFranchiseeLink == null || dtUserFranchiseeLink.Rows.Count== 0) && !string.IsNullOrEmpty(fcode))
+                            {
+                                string datainsert = "Insert into customer_franchise_link  Values('" + mobile_number + "','" + fcode + "','" + dbc.getindiantime() + "')";
+                                int id = dbc.ExecuteQuery(datainsert);
+                            }
                         }
                         else
                         {

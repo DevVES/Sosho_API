@@ -145,10 +145,11 @@ namespace InquiryManageAPI.Controllers
                     string sUserId = ConfigurationManager.AppSettings["SMSUserId"];
                     string sUserPassword = ConfigurationManager.AppSettings["SMSUserPassword"];
                     string sSenderId = ConfigurationManager.AppSettings["SMSSenderId"];
+                    string sUrl = ConfigurationManager.AppSettings["SMSUrl"];
 
                     Sms = System.Web.HttpUtility.UrlEncode(Sms);
                     HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
-                    ("https://api.onlysms.co.in/httpapi/httpapisms.aspx?UserID=" + sUserId + "&UserPass=" + sUserPassword + "&MobileNo=" + Mobile
+                    (sUrl + sUserId + "&UserPass=" + sUserPassword + "&MobileNo=" + Mobile
                    + "&GSMID= " + sSenderId + "&Message=" + Sms);
 
                     HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();

@@ -155,7 +155,8 @@ namespace Test0555.Controllers
                         if (dtwpurl.Rows.Count > 0)
                         {
                             wpurl = dtwpurl.Rows[0]["Url"].ToString();
-                            string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                            //string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                            string smstxt = "Fortune sunflower Rs2095 (2850)15ltr " + Environment.NewLine + "Gulab Groundnut Rs2195(3350)15ltr " + Environment.NewLine + "Amul ghee Rs438 (450)1ltr " + Environment.NewLine + "Madhur Sugar Rs212(270)5kg "  + Environment.NewLine + "COD.Free shipping  " + Environment.NewLine + "http://www.sosho.in";
                             dbCon.SendSMS(mobile, smstxt);
                         }
 

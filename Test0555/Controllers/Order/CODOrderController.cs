@@ -1316,7 +1316,7 @@ namespace Test0555.Controllers.Order
 
                                         decimal redeemeAmt = 0;
                                         decimal balanceAmt = 0;
-                                        if (model.Redeemeamount.ToString() != "0" && model.Walletbalance.ToString() != "0" && model.WalletId != "0")
+                                        if (!string.IsNullOrEmpty(model.Redeemeamount) && model.Redeemeamount != "0" && !string.IsNullOrEmpty(model.Walletbalance) && model.Walletbalance != "0" && !string.IsNullOrEmpty(model.WalletId) && model.WalletId != "0")
                                         {
                                             if (model.WalletType == "%")
                                             {
@@ -1337,9 +1337,9 @@ namespace Test0555.Controllers.Order
                                                                           " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,null,null,null,@5,@6,@7,@8,@9,@10,@11);";
                                             dbCon.ExecuteScalarQueryWithParams(insertredeemewallet, parm1);
                                         }
-                                        if (model.Cashbackamount > 0 && model.PromoCodeId != "0")
+                                        if (model.Cashbackamount > 0 && !string.IsNullOrEmpty(model.PromoCodeId) &&  model.PromoCodeId != "0")
                                         {
-                                            if (model.Redeemeamount.ToString() != "0")
+                                            if (!string.IsNullOrEmpty(model.Redeemeamount) && model.Redeemeamount != "0")
                                             {
                                                 balanceAmt = balanceAmt + Convert.ToInt32(Convert.ToDecimal(model.Cashbackamount));
                                             }
@@ -1355,15 +1355,33 @@ namespace Test0555.Controllers.Order
                                                                       " [Dr_amount],[balance],[is_active],[created_date],[created_by]) VALUES (@1,@2,@3,@4,@5,@6,@7,null,null,@8,@9,@10,@11,@12);";
                                             int historyid = dbCon.ExecuteScalarQueryWithParams(insertCouponCodeAmt, parm2);
 
-                                            string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
-                                                                         " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
-                                            dbCon.ExecuteQuery(updatePromoCodeMark);
+
+
+                                            DataTable dt = dbCon.GetDataTable("select ISNULL(is_multiple_usage_allowed,0) as is_multiple_usage_allowed FROM WalletMaster  where wallet_id=" + model.PromoCodeId);
+                                            if (dt != null && dt.Rows.Count > 0)
+                                            {
+                                                if (!Convert.ToBoolean(dt.Rows[0]["is_multiple_usage_allowed"]))
+                                                {
+                                                    string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
+                                                                       " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
+                                                    dbCon.ExecuteQuery(updatePromoCodeMark);
+                                                }
+                                            }
                                         }
-                                        if (!string.IsNullOrEmpty(model.discountamount) && model.discountamount != "0" && model.PromoCodeId != "0")
+                                        if (!string.IsNullOrEmpty(model.discountamount) && model.discountamount != "0" && !string.IsNullOrEmpty(model.PromoCodeId) && model.PromoCodeId != "0")
                                         {
-                                            string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
-                                                                         " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
-                                            dbCon.ExecuteQuery(updatePromoCodeMark);
+
+                                            DataTable dt = dbCon.GetDataTable("select ISNULL(is_multiple_usage_allowed,0) as is_multiple_usage_allowed FROM WalletMaster  where wallet_id=" + model.PromoCodeId);
+                                            if (dt != null && dt.Rows.Count > 0)
+                                            {
+                                                if (!Convert.ToBoolean(dt.Rows[0]["is_multiple_usage_allowed"]))
+                                                {
+                                                    string updatePromoCodeMark = " UPDATE tblWalletCustomerLink SET is_used = 1 WHERE customer_id = " + Convert.ToInt32(model.CustomerId) +
+                                                                       " AND wallet_id = " + Convert.ToInt32(model.PromoCodeId);
+                                                    dbCon.ExecuteQuery(updatePromoCodeMark);
+                                                }
+                                            }
+                                          
                                         }
 
 

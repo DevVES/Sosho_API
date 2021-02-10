@@ -31,12 +31,12 @@ namespace Test0555.Models.WalletManagement
 
         public class RedeemeWallet
         {
-            public string response;
-            public string message;
-            public string RedeemeAmount;
-            public string RedeemableAmount;
-            public string RedeemDetails;
-            public string MinimumOrderAmount;
+            public string response = string.Empty;
+            public string message = string.Empty;
+            public string RedeemeAmount = string.Empty;
+            public string RedeemableAmount = string.Empty;
+            public string RedeemDetails = string.Empty;
+            public string MinimumOrderAmount = string.Empty;
             public List<PromoCodeDataList> PromoCodeList { get; set; }
             //public List<CashbackDataList> CashbackList { get; set; }
 

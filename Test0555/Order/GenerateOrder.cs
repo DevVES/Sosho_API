@@ -206,17 +206,18 @@ Get_AlternetOrderItem.Rows[orderitem]["BuyWith"].ToString(),
 
                             if (dtcheck.Rows.Count > 0)
                             {
-                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.";
+                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days." +
+                                    Environment.NewLine + "Join us to receive exciting offer from sosho click here " + wpurl;
 
                                 //string SMS_Text11 = "Your OrderNo:"+ OrderId +" has been Successfully Placed.";
                                 dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), SMS_Text11);
 
-                                if (!IsInWhatsappGroup)
-                                {
-                                    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
-                                    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
+                                //if (!IsInWhatsappGroup)
+                                //{
+                                //    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                                //    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
 
-                                }
+                                //}
                             }
                         }
                         catch (Exception e)
@@ -371,8 +372,15 @@ Get_ALternetOrder.Rows[0]["CashbackAmount"].ToString(),
 Get_ALternetOrder.Rows[0]["ReOrderId"].ToString()
 };
                             string cmd = "INSERT INTO [dbo].[Order]([OrderGuid],[CustomerId],[AddressId],[OrderStatusId],[OrderDiscount],[OrderMRP],[OrderTotal],[ShippingId],[TotalQTY],[PaidAmount],[TotalGram],[CustReedeemAmount],[TRNID],[IsPaymentDone],[CustOfferCode],[RefferedOfferCode],[PaymentGatewayId],[BuyWith],[CreatedOnUtc],[UpdatedOnUtc],[JurisdictionID],[CashbackAmount],[ReOrderId]) VALUES(@1,@2,@3,@4,@5,@6,@7,@8,@9,@10,@11,@12,@13,@14,@15,@16,@17,@18,DATEADD(MINUTE, 330, GETUTCDATE()),DATEADD(MINUTE, 330, GETUTCDATE()),@19,@20,@21); SELECT SCOPE_IDENTITY();";
+                            try
+                            {
+                                OrderId = dbCon.ExecuteScalarQueryWithParams(cmd, insert);
+                            }
+                            catch (Exception ex)
+                            {
 
-                            OrderId = dbCon.ExecuteScalarQueryWithParams(cmd, insert);
+                            }
+                           
 
                             if (OrderId == 0)
                             {
@@ -513,16 +521,17 @@ Get_AlternetOrderItem.Rows[orderitem]["BannerId"].ToString()
 
                             if (dtcheck.Rows.Count > 0)
                             {
-                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days.";
+                                string SMS_Text11 = "Your SoSho order " + OrderId + " for COD  " + price + " placed. Delivery in 1-2 days." +
+                                     Environment.NewLine + "Join us to receive exciting offer from sosho click here " + wpurl;
 
                                 //string SMS_Text11 = "Your OrderNo:"+ OrderId +" has been Successfully Placed.";
                                 dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), SMS_Text11);
-                                if (!IsInWhatsappGroup)
-                                {
-                                    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
-                                    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
+                                //if (!IsInWhatsappGroup)
+                                //{
+                                //    string smstxt = "Join us to receive exciting offer from sosho click here " + wpurl;
+                                //    dbCon.SendSMS(dtcheck.Rows[0]["Mobile"].ToString(), smstxt);
 
-                                }
+                                //}
                             }
                         }
                         catch (Exception e)

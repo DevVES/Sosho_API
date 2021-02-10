@@ -124,33 +124,17 @@ namespace InquiryManageAPI.Controllers
             /// <param name="Sms"></param>
             try
             {
-                //dbConnection dbc = new dbConnection();
-                //string[] prm = { Request.Cookies["TUser"]["Id"].ToString(), Mobile, Sms, flag.ToString() };
-                //int i = dbc.ExecuteQueryWithParams("insert into Taaza_Sms (Userid,Sentto,SmsText,Flag,doc) Values (@1,@2,@3,@4,DATEADD(MINUTE, 330, GETUTCDATE()))", prm);
-                //if (i > 0)
-                {
-                    //Sms = System.Web.HttpUtility.UrlEncode(Sms);
-                    //HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
-                    //("https://hapi.smsapi.org/SendSMS.aspx?UserName=TaazaFood&password=TaazaFood2016&MobileNo=" + Mobile
-                    //+ "&SenderID=TaazaF&CDMAHeader=TaazaF&Message=" + Sms);
-                    //HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
-                    //("http://hapi.smsapi.org/SendSMS.aspx?UserName=sms_salebhai&password=240955&MobileNo=" + Mobile
-                    //+ "&SenderID=ESOSHO&CDMAHeader=ESOSHO&Message=" + Sms);
-
-                    //Sms = System.Web.HttpUtility.UrlEncode(Sms);
-                    //HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
-                    //("http://sms.infisms.co.in/API/SendSMS.aspx?UserID=ESosho&UserPassword=sosho@123&PhoneNumber=" + Mobile
-                    //+ "&Text=" + Sms + "&SenderId=ESosho&AccountType=2&MessageType=0");
-
                     string sUserId = ConfigurationManager.AppSettings["SMSUserId"];
                     string sUserPassword = ConfigurationManager.AppSettings["SMSUserPassword"];
                     string sSenderId = ConfigurationManager.AppSettings["SMSSenderId"];
                     string sUrl = ConfigurationManager.AppSettings["SMSUrl"];
+                    string PeId = ConfigurationManager.AppSettings["PEID"];
+                    string TempId = ConfigurationManager.AppSettings["OrderTEMPID"];
 
                     Sms = System.Web.HttpUtility.UrlEncode(Sms);
                     HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
                     (sUrl + sUserId + "&UserPass=" + sUserPassword + "&MobileNo=" + Mobile
-                   + "&GSMID= " + sSenderId + "&Message=" + Sms);
+                   + "&GSMID= " + sSenderId + "&PEID=" + PeId + "&Message=" + Sms + "&TEMPID=" + TempId + "&UNICODE=TEXT");
 
                     HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
 
@@ -159,11 +143,38 @@ namespace InquiryManageAPI.Controllers
                     string correct = responseString.Substring(0, 2);
                     respStreamReader.Close();
                     myResp.Close();
+               
+            }
+            catch (Exception ex)
+            {
 
+            }
+        }
 
+        public void SendOtpSMS(String Mobile, String Sms)
+        {
 
+            try
+            {
+                    string sUserId = ConfigurationManager.AppSettings["SMSUserId"];
+                    string sUserPassword = ConfigurationManager.AppSettings["SMSUserPassword"];
+                    string sSenderId = ConfigurationManager.AppSettings["SMSSenderId"];
+                    string sUrl = ConfigurationManager.AppSettings["OtpSMSUrl"];
+                string PeId = ConfigurationManager.AppSettings["PEID"];
+                string TempId = ConfigurationManager.AppSettings["OtpTEMPID"];
 
-                }
+                Sms = System.Web.HttpUtility.UrlEncode(Sms);
+                    HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create
+                    (sUrl + sUserId + "&UserPass=" + sUserPassword + "&MobileNo=" + Mobile
+                   + "&GSMID= " + sSenderId + "&PEID=" + PeId +"&Message=" + Sms + "&TEMPID=" + TempId + "&UNICODE=TEXT");
+
+                    HttpWebResponse myResp = (HttpWebResponse)myReq.GetResponse();
+
+                    System.IO.StreamReader respStreamReader = new System.IO.StreamReader(myResp.GetResponseStream());
+                    string responseString = respStreamReader.ReadToEnd();
+                    string correct = responseString.Substring(0, 2);
+                    respStreamReader.Close();
+                    myResp.Close();
             }
             catch (Exception ex)
             {

@@ -83,7 +83,7 @@ namespace Test0555.Controllers
 
                             if (mobile_number != "8000201268" && mobile_number!= "7383080418")
                             {
-                                dbc.SendSMS(mobile_number, smstext);
+                                dbc.SendOtpSMS(mobile_number, smstext);
                             }
 
                             objUserList.response = CommonString.successresponse;
@@ -219,9 +219,11 @@ namespace Test0555.Controllers
                             objotp.Email = email;
                             objotp.Sex = sex;
 
-                            if((dtUserFranchiseeLink == null || dtUserFranchiseeLink.Rows.Count== 0) && !string.IsNullOrEmpty(fcode))
+                            DataTable dtNewUser = dbc.GetDataTable("Select * from Customer where Mobile = '" + mobile_number + "' AND DOC between '" + dbc.getindiantime().ToString("yyyy-MM-dd 00:00:00.000") + "' AND '" + dbc.getindiantime().ToString("yyyy-MM-dd 23:59:00.000") + "'");
+
+                            if ((dtUserFranchiseeLink == null || dtUserFranchiseeLink.Rows.Count== 0) && !string.IsNullOrEmpty(fcode) && dtNewUser != null && dtNewUser.Rows.Count > 0)
                             {
-                                string datainsert = "Insert into customer_franchise_link  Values('" + mobile_number + "','" + fcode + "','" + dbc.getindiantime() + "')";
+                                string datainsert = "Insert into customer_franchise_link  Values('" + mobile_number + "','" + fcode + "','" + dbc.getindiantimeString() + "')";
                                 int id = dbc.ExecuteQuery(datainsert);
                             }
                         }

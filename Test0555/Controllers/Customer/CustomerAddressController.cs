@@ -56,7 +56,7 @@ namespace Test0555.Controllers
 
         #region AddNewAddressV4
         [HttpGet]
-        public DeliveryAddressModel.CustAddress AddAddressV4(string custid, string name, string tagId, string countryId, string sid, string cid, string pincode, string mobile, string Email, string areaid, string area, string buildingid, string building, string buildingNo, string landmark, string others)
+        public DeliveryAddressModel.CustAddress AddAddressV4(string custid, string name, string tagId, string countryId, string sid, string cid, string pincode, string mobile, string Email, string areaid, string area, string buildingid, string building, string buildingNo, string landmark, string others = "")
         {
             DeliveryAddressModel.CustAddress objadd = new DeliveryAddressModel.CustAddress();
             try
@@ -64,7 +64,9 @@ namespace Test0555.Controllers
                 area = area.Replace("'", "''");
                 building = building.Replace("'", "''");
                 landmark = landmark.Replace("'", "''");
-                others = others.Replace("'", "''");
+                others = others == null ? string.Empty : others.Replace("'", "''");
+                name = name.Replace("'", "''");
+                buildingNo = buildingNo.Replace("'", "''");
 
                 string StateName = "";
                 string getState = "SELECT StateName FROM [dbo].[StateMaster] WHERE Id = " + sid;
@@ -482,6 +484,14 @@ namespace Test0555.Controllers
             DeliveryAddressModel.CustEditAddress Objeditaddr = new DeliveryAddressModel.CustEditAddress();
             try
             {
+                area = area.Replace("'", "''");
+                building = building.Replace("'", "''");
+                landmark = landmark.Replace("'", "''");
+                others = others == null ? string.Empty : others.Replace("'", "''");
+                name = name.Replace("'", "''");
+                buildingNo = buildingNo.Replace("'", "''");
+
+
                 string StateName = "";
                 string getState = "SELECT StateName FROM [dbo].[StateMaster] WHERE Id = " + sid;
                 DataTable dtState = dbc.GetDataTable(getState);

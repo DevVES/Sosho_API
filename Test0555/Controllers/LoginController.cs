@@ -72,12 +72,15 @@ namespace Test0555.Controllers
                             if(FromApp=="1")
                             {
                                 //smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho. "+ otphashkey;
-                                smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho.@" + otphashkey;
-                                smstext = smstext.Replace("@", System.Environment.NewLine);
+                                //smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho.@" + otphashkey;
+                                smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho."+ System.Environment.NewLine + otphashkey + System.Environment.NewLine + "www.sosho.in";
+                                //smstext = smstext.Replace("@", System.Environment.NewLine);
                             }
                             else
                             {
-                                smstext = otpgne.ToString() + " is your one-time login password for SoSho.";
+                                //smstext = otpgne.ToString() + " is your one-time login password for SoSho.";
+                                //smstext = otpgne.ToString() + " is your one-time login password for SoSho." + System.Environment.NewLine + "www.sosho.in";
+                                smstext = "[#] " + otpgne.ToString() + " is your one-time login password for SoSho." + System.Environment.NewLine + otphashkey + System.Environment.NewLine + "www.sosho.in";
                             }
                             //string smstext = otpgne.ToString() + " is your one time login password. ";
 
